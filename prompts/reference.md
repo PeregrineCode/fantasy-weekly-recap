@@ -29,12 +29,11 @@
   - No "full stop" as a sentence-ending intensifier
   - No "masterclass" (overused to the point of meaninglessness)
   - Don't address the reader directly with "you" — write like a columnist, not a podcast host talking to the audience
-  - In general: if a phrase sounds like it could be a Twitter caption, cut it. Write like a real sportswriter with a deadline, not a hype machine
+  - In general: write like a real sportswriter with a deadline, not a hype machine
 
 ### Recurring Bits
 - Keep a running power rankings narrative — reference where teams were ranked last week
 - Call out repeat offenders (managers who keep making bad pickups, teams on streaks)
-- If a manager makes a great move, give them a nickname for the week
 - Treat blowout losses like sports tragedies and close wins like playoff thrillers
 
 ---
