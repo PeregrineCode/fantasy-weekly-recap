@@ -1,0 +1,12 @@
+node_modules/
+.env
+.yahoo-token.json
+certs/
+snapshots/
+articles/
+site/
+.deploy/
+logs/
+data/faab-bids.json
+.prompt-tmp.txt
+*.tgz

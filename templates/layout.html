@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{TITLE}}</title>
+  <link rel="stylesheet" href="{{CSS_PATH}}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="page">
+    <header class="masthead">
+      <div class="masthead-rule-top"></div>
+      <div class="masthead-inner">
+        <a href="{{HOME_PATH}}" class="masthead-title">The League Report</a>
+        <div class="masthead-sub">{{LEAGUE_NAME}} &middot; {{DATE_DISPLAY}}</div>
+      </div>
+      <div class="masthead-rule-bottom"></div>
+      <nav class="nav">
+        {{NAV}}
+      </nav>
+    </header>
+    <main class="main">
+      {{CONTENT}}
+    </main>
+    <footer class="site-footer">
+      <div class="footer-rule"></div>
+      <p>The League Report &middot; {{LEAGUE_NAME}} &middot; {{SEASON}} Season</p>
+    </footer>
+  </div>
+</body>
+</html>
