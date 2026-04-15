@@ -76,17 +76,15 @@ function buildNav(articles, activeWeek, pathPrefix = '') {
     );
   }
 
-  if (RUMOURS_API_URL) {
-    const isActive = activeWeek === 'submit';
-    links.push(
-      `<a href="${pathPrefix}submit.html"${isActive ? ' class="active"' : ''}>Submit a Rumour</a>`
-    );
-  }
-
   return links.join('\n        ');
 }
 
-function renderPage(title, content, nav, cssPath, homePath, dateDisplay, leagueName) {
+function buildSubmitLink(pathPrefix = '') {
+  if (!RUMOURS_API_URL) return '';
+  return `<div class="submit-link"><a href="${pathPrefix}submit.html">Submit a Rumour &rarr;</a></div>`;
+}
+
+function renderPage(title, content, nav, cssPath, homePath, dateDisplay, leagueName, { pathPrefix = '' } = {}) {
   const layout = fs.readFileSync(path.join(TEMPLATES_DIR, 'layout.html'), 'utf-8');
   const season = new Date().getFullYear().toString();
   return layout
@@ -94,6 +92,7 @@ function renderPage(title, content, nav, cssPath, homePath, dateDisplay, leagueN
     .replace('{{CSS_PATH}}', cssPath)
     .replace('{{HOME_PATH}}', homePath)
     .replace('{{NAV}}', nav)
+    .replace('{{SUBMIT_LINK}}', buildSubmitLink(pathPrefix))
     .replace('{{DATE_DISPLAY}}', dateDisplay)
     .replace(/\{\{LEAGUE_NAME\}\}/g, leagueName || 'Fantasy Baseball League')
     .replace('{{SEASON}}', season)
@@ -151,12 +150,18 @@ function buildSubmitContent() {
     <div class="rumour-box">
       <p class="rumour-intro">Heard whispers about a trade? Know which manager is shopping a player? Drop a tip for our insider.</p>
       <form id="rumour-form" class="rumour-form">
-        <textarea id="rumour-text" name="text" rows="4" maxlength="1000" placeholder="e.g., Jarren Duran is on the trade block. His manager is looking for pitching help..." required></textarea>
-        <div class="rumour-meta">
-          <input type="text" id="rumour-source" name="source" placeholder="Your name or alias (optional)" maxlength="50">
-          <button type="submit" id="rumour-submit">Submit Tip</button>
+        <div>
+          <label for="rumour-text">Your tip</label>
+          <textarea id="rumour-text" name="text" rows="5" maxlength="1000" placeholder="e.g., Jarren Duran is on the trade block. His manager is looking for pitching help..." required></textarea>
         </div>
-        <div id="rumour-status" class="rumour-status"></div>
+        <div class="rumour-field">
+          <label for="rumour-source">Your name or alias (optional)</label>
+          <input type="text" id="rumour-source" name="source" placeholder="Anonymous" maxlength="50">
+        </div>
+        <div class="rumour-actions">
+          <button type="submit" id="rumour-submit">Submit Tip</button>
+          <div id="rumour-status" class="rumour-status"></div>
+        </div>
       </form>
     </div>
     <script>
@@ -236,7 +241,8 @@ function build() {
       '../style.css',
       '../index.html',
       dateDisplay,
-      leagueName
+      leagueName,
+      { pathPrefix: '../' }
     );
 
     const outPath = path.join(WEEKS_DIR, `week-${String(article.weekNum).padStart(2, '0')}.html`);
@@ -293,7 +299,7 @@ function build() {
 
   // Build submit page (if rumours API is configured)
   if (RUMOURS_API_URL) {
-    const submitNav = buildNav(articles, 'submit');
+    const submitNav = buildNav(articles, null);
     const submitPage = renderPage(
       `Submit a Rumour — The League Report`,
       buildSubmitContent(),
