@@ -107,6 +107,43 @@ The analysis generates these segments from the weekly data:
 - **Best Stream** — Top streaming pitcher add
 - **Transaction Desk** — Trade analysis, FAAB spending, notable moves
 - **Bench Blunders** — Players who produced while benched (requires nightly position data)
+- **The Insider Report** — Trade rumours submitted by league members, narrated by a fictional insider persona (requires rumours worker, see below)
+
+## Trade Rumours
+
+League members can submit trade rumours and team gossip via a form on the recap site. These are stored in a Cloudflare Worker + KV backend and fed into the narration pipeline as "The Insider Report" — a column written by a fictional baseball insider persona.
+
+### Setup
+
+The rumours feature requires a [Cloudflare account](https://dash.cloudflare.com/sign-up) (free tier).
+
+```bash
+cd rumours-worker
+npm install
+npx wrangler login
+npx wrangler kv namespace create RUMOURS
+```
+
+Paste the returned namespace ID into `rumours-worker/wrangler.toml`, then deploy:
+
+```bash
+npx wrangler deploy
+```
+
+Add the worker URL to your `.env`:
+
+```
+RUMOURS_API_URL=https://your-worker.your-subdomain.workers.dev/api/rumours
+```
+
+Rebuild the site (`node build.js`) — a "Submit a Rumour" page and nav link will appear automatically.
+
+### How It Works
+
+- **Submit form** — League members submit tips via `/submit.html` on the recap site (1 per IP per 12 hours)
+- **Storage** — Rumours are stored in Cloudflare KV with a 90-day auto-expiry
+- **Narration** — `narrate.js` fetches rumours for the current week and feeds them to the insider persona, who weaves them into a cohesive column with speculation and context
+- **Optional** — If `RUMOURS_API_URL` is not set, the feature is completely disabled — no form, no nav link, no insider segment
 
 ## Daily Data Collection (Two-Phase)
 

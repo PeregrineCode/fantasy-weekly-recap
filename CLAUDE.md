@@ -23,9 +23,13 @@ fantasy-weekly-recap/
 ├── prompts/
 │   ├── system.txt            # Core role instruction for claude CLI
 │   └── reference.md          # Style guide + league context (edit to improve quality)
+├── rumours-worker/           # Cloudflare Worker for trade rumour submissions
+│   ├── worker.js             # POST/GET API (~110 lines)
+│   ├── wrangler.toml         # Worker config with KV namespace binding
+│   └── package.json          # wrangler dev dependency
 ├── templates/
 │   ├── layout.html           # Page template ({{LEAGUE_NAME}} etc.)
-│   └── style.css             # Newspaper-style CSS
+│   └── style.css             # Newspaper-style CSS (includes rumour form styles)
 ├── test/                     # Node.js test suite
 ├── .github/workflows/        # Daily collection GitHub Actions
 ├── snapshots/                # Collected data (gitignored, accumulates via Actions)
@@ -86,7 +90,7 @@ node deploy.js                  # Push to GitHub Pages repo
 - **Stats index varies:** Yahoo sometimes inserts extra fields (like `is_editable`) before the `player_stats` object in roster responses, shifting its index. Always search for `player_stats` at any index rather than hardcoding `p[2]`.
 
 ## Segments
-Matchup Recaps (includes mid-week drama/storylines when daily data available), Players of the Week (1 winner + 3 runners-up for batters and pitchers), Best Pickup, Worst Pickup (Hall of Shame), Best Pitcher Stream, Transaction Desk, Standings Movers, Waiver Wire Misses, Power Rankings, Bench Blunders (requires nightly position data)
+Matchup Recaps (includes mid-week drama/storylines when daily data available), Players of the Week (1 winner + 3 runners-up for batters and pitchers), Best Pickup, Worst Pickup (Hall of Shame), Best Pitcher Stream, Transaction Desk, Standings Movers, Waiver Wire Misses, Power Rankings, Bench Blunders (requires nightly position data), The Insider Report (trade rumours from league members, requires `RUMOURS_API_URL`)
 
 ## Prompts
 - `prompts/system.txt` — Core role instruction for claude CLI
@@ -100,10 +104,29 @@ YAHOO_REDIRECT_URI       # Must be https://localhost:3000/auth/callback
 YAHOO_MLB_LEAGUE_ID      # 75479
 ANTHROPIC_API_KEY        # For AI advisor features
 DEPLOY_REPO              # GitHub Pages target (e.g., PeregrineCode/dads-league-recap)
+RUMOURS_API_URL          # Optional: Cloudflare Worker URL for trade rumours
 LEAGUE_NAME              # Optional: override auto-detected league name
 FAAB_BUDGET              # Optional: starting FAAB budget (default: 200)
 MIN_IP                   # Optional: minimum innings pitched per week (default: 30)
 ```
+
+## Trade Rumours
+League members submit trade rumours and team gossip via a form on the recap site. These feed "The Insider Report" column, written by "Deep Source" DiNapoli.
+
+**Architecture:** Static form on GitHub Pages → Cloudflare Worker + KV → pipeline fetches via GET during narration.
+
+**Worker:** `rumours-worker/` — Cloudflare Worker with KV storage. Deployed at `https://trade-rumours.dads-league.workers.dev`. The Cloudflare account is under the pucksavant domain. Requires `CLOUDFLARE_API_TOKEN` env var for deploys (set in `~/.zshenv`).
+- `POST /api/rumours` — accepts `{ text, source? }`, stores in KV with 90-day TTL, rate-limited to 1 per IP per 12 hours
+- `GET /api/rumours?since=YYYY-MM-DD` — returns rumours since the given date
+- KV uses metadata for fast `list()` reads (no per-key fetches), with value fallback for legacy entries
+- Deploy: `cd rumours-worker && npm install && npx wrangler deploy`
+- Manage KV: entries visible at https://dash.cloudflare.com → Workers & Pages → KV
+
+**Pipeline integration:** `narrate.js` fetches rumours from `RUMOURS_API_URL` at narration time. If no rumours exist or the URL is not configured, the insider segment is silently skipped. The segment key is `insider` — use `--only insider` to regenerate just this column.
+
+**Submit page:** `build.js` generates `site/submit.html` and adds a nav link when `RUMOURS_API_URL` is set. Without the env var, the submit page and nav link are omitted.
+
+**Writers:** The insider persona ("Deep Source" DiNapoli) is defined in `prompts/reference.md`. He writes with the urgency of an ESPN insider covering a 10-team friends league like it's the MLB Winter Meetings.
 
 ## Related Repos
 - **yahoo-fantasy-api** — npm package this repo depends on: https://github.com/PeregrineCode/yahoo-fantasy-api

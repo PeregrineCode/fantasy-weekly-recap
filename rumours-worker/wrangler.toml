@@ -1,0 +1,7 @@
+name = "trade-rumours"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "RUMOURS"
+id = "4758befba9f24f3d8ea00d2c531c1161"

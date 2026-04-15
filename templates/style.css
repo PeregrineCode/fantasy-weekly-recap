@@ -305,6 +305,97 @@ body {
   color: var(--ink-muted);
 }
 
+/* ============ RUMOUR FORM ============ */
+.rumour-box {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule-light);
+}
+
+.rumour-intro {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 16px;
+  font-style: italic;
+  color: var(--ink-secondary);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.rumour-form textarea {
+  width: 100%;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  border: 1px solid var(--rule-light);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--ink);
+  resize: vertical;
+  min-height: 80px;
+}
+
+.rumour-form textarea:focus {
+  outline: none;
+  border-color: var(--ink-muted);
+}
+
+.rumour-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.rumour-meta input {
+  flex: 1;
+  min-width: 150px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 14px;
+  border: 1px solid var(--rule-light);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.rumour-meta input:focus {
+  outline: none;
+  border-color: var(--ink-muted);
+}
+
+.rumour-meta button {
+  padding: 8px 20px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--paper);
+  background: var(--ink);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.rumour-meta button:hover {
+  background: var(--ink-secondary);
+}
+
+.rumour-meta button:disabled {
+  background: var(--ink-muted);
+  cursor: not-allowed;
+}
+
+.rumour-status {
+  font-size: 13px;
+  margin-top: 8px;
+  min-height: 20px;
+}
+
+.rumour-status.success { color: #2d7a3a; }
+.rumour-status.error { color: var(--accent); }
+
 /* ============ FOOTER ============ */
 .site-footer {
   padding: 0 16px 24px;

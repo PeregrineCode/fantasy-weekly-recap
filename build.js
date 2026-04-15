@@ -9,10 +9,13 @@ const fs = require('fs');
 const path = require('path');
 const { marked } = require('marked');
 
+require('dotenv').config();
+
 const TEMPLATES_DIR = path.join(__dirname, 'templates');
 const ARTICLES_DIR = path.join(__dirname, 'articles');
 const SITE_DIR = path.join(__dirname, 'site');
 const WEEKS_DIR = path.join(SITE_DIR, 'weeks');
+const RUMOURS_API_URL = process.env.RUMOURS_API_URL || '';
 
 function parseFrontmatter(raw) {
   const match = raw.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
@@ -73,6 +76,13 @@ function buildNav(articles, activeWeek, pathPrefix = '') {
     );
   }
 
+  if (RUMOURS_API_URL) {
+    const isActive = activeWeek === 'submit';
+    links.push(
+      `<a href="${pathPrefix}submit.html"${isActive ? ' class="active"' : ''}>Submit a Rumour</a>`
+    );
+  }
+
   return links.join('\n        ');
 }
 
@@ -130,6 +140,70 @@ function getLeagueName() {
     }
   }
   return process.env.LEAGUE_NAME || 'Fantasy Baseball League';
+}
+
+function buildSubmitContent() {
+  return `
+    <div class="article-header">
+      <div class="kicker">League Intel</div>
+      <h1>Submit a Rumour</h1>
+    </div>
+    <div class="rumour-box">
+      <p class="rumour-intro">Heard whispers about a trade? Know which manager is shopping a player? Drop a tip for our insider.</p>
+      <form id="rumour-form" class="rumour-form">
+        <textarea id="rumour-text" name="text" rows="4" maxlength="1000" placeholder="e.g., Jarren Duran is on the trade block. His manager is looking for pitching help..." required></textarea>
+        <div class="rumour-meta">
+          <input type="text" id="rumour-source" name="source" placeholder="Your name or alias (optional)" maxlength="50">
+          <button type="submit" id="rumour-submit">Submit Tip</button>
+        </div>
+        <div id="rumour-status" class="rumour-status"></div>
+      </form>
+    </div>
+    <script>
+    (function() {
+      var API = ${JSON.stringify(RUMOURS_API_URL)};
+      var form = document.getElementById('rumour-form');
+      var btn = document.getElementById('rumour-submit');
+      var status = document.getElementById('rumour-status');
+
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var text = document.getElementById('rumour-text').value.trim();
+        var source = document.getElementById('rumour-source').value.trim();
+        if (!text) return;
+
+        btn.disabled = true;
+        status.textContent = 'Submitting...';
+        status.className = 'rumour-status';
+
+        fetch(API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: text, source: source || undefined })
+        })
+        .then(function(res) {
+          if (!res.ok) return res.text().then(function(t) {
+            try { var d = JSON.parse(t); throw new Error(d.error || 'Submission failed'); }
+            catch(e) { if (e instanceof SyntaxError) throw new Error('Submission failed'); throw e; }
+          });
+          return res.json();
+        })
+        .then(function() {
+          status.textContent = 'Tip received. Our insider will look into it.';
+          status.className = 'rumour-status success';
+          document.getElementById('rumour-text').value = '';
+          document.getElementById('rumour-source').value = '';
+        })
+        .catch(function(err) {
+          status.textContent = err.message || 'Something went wrong. Try again.';
+          status.className = 'rumour-status error';
+        })
+        .finally(function() {
+          btn.disabled = false;
+        });
+      });
+    })();
+    </script>`;
 }
 
 function build() {
@@ -216,6 +290,23 @@ function build() {
 
   fs.writeFileSync(path.join(SITE_DIR, 'index.html'), indexPage);
   console.log(`  Built index.html`);
+
+  // Build submit page (if rumours API is configured)
+  if (RUMOURS_API_URL) {
+    const submitNav = buildNav(articles, 'submit');
+    const submitPage = renderPage(
+      `Submit a Rumour — The League Report`,
+      buildSubmitContent(),
+      submitNav,
+      'style.css',
+      'index.html',
+      'League Intel',
+      leagueName
+    );
+    fs.writeFileSync(path.join(SITE_DIR, 'submit.html'), submitPage);
+    console.log(`  Built submit.html`);
+  }
+
   console.log(`\nSite built → ${SITE_DIR}`);
 }
 

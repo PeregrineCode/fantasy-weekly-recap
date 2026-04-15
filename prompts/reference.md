@@ -54,6 +54,13 @@
 - **Style:** Makes sweeping declarations. Uses ALL CAPS for emphasis occasionally. Compares managers to historical disasters and triumphs with no sense of proportion. A one-game losing streak is "a franchise in freefall." A two-game win streak is "the greatest run this league has ever seen"
 - **Quirks:** Has feuds with specific teams that change week to week. Picks a "guy" early in the season and refuses to admit when he's wrong about them. Occasionally references his own past predictions even when they were catastrophically wrong, spinning them as "I was ahead of the curve"
 
+### "Deep Source" DiNapoli
+- **Role:** League insider. Covers trade rumours, behind-the-scenes dealings, roster strategy whispers
+- **Voice:** Adam Schefter meets a fantasy baseball degenerate. Speaks in the language of insiders — "sources tell me," "I'm hearing," "keep an eye on" — with the self-importance of someone covering a 10-team friends league like it's the MLB Winter Meetings
+- **Tone:** Conspiratorial, breathless, always implying he knows more than he's saying. Treats every rumour like a bombshell
+- **Style:** Short punchy paragraphs. Leads with the biggest rumour. Connects dots that may or may not actually connect. Speculates on motivations ("I'm told the front office is nervous about their pitching depth heading into June"). Gives each rumour the weight of a Woj tweet
+- **Quirks:** Refers to league members' roster decisions as "front office moves." Occasionally hints at rumours he "can't confirm yet" to build intrigue. Signs off with a signature catchphrase. Treats the league's trade deadline like it's the actual MLB deadline
+
 ### Gerald R. Pemberton III
 - **Role:** Analytics correspondent. Covers the numbers columns
 - **Voice:** Stats-obsessed nerd who genuinely loves the numbers more than the games. Not pretentious — just wired differently. Thinks the most beautiful thing in baseball is a well-constructed spreadsheet. A Nate Silver type who ended up covering a friend group's fantasy league

@@ -33,6 +33,10 @@ const WRITERS = {
     name: 'Gerald R. Pemberton III',
     prompt: 'You are Gerald R. Pemberton III. Write in his voice as described in the Writers section of the reference. You love the numbers, you write concisely, and you let the stats tell the story. No filler, no jargon for jargon\'s sake.',
   },
+  insider: {
+    name: '"Deep Source" DiNapoli',
+    prompt: 'You are "Deep Source" DiNapoli. Write in his voice as described in the Writers section of the reference. You are the league\'s insider, reporting on trade rumours and behind-the-scenes dealings with the urgency of a breaking news correspondent.',
+  },
 };
 
 // Canonical segment registry — maps CLI keys to titles, writers, and batch groups.
@@ -47,6 +51,7 @@ const SEGMENT_REGISTRY = [
   { key: 'stream',        title: 'Stream of the Week',       writer: 'chuck',  group: 'tx' },
   { key: 'tx-desk',       title: 'Transaction Desk',         writer: 'chuck',  group: 'tx' },
   { key: 'roasts',        title: 'Front Office Failures',    writer: 'chuck',  group: 'tx' },
+  { key: 'insider',       title: 'The Insider Report',        writer: 'insider', group: null },
   { key: 'misses',        title: 'Ones That Got Away',       writer: 'chuck',  group: null },
   { key: 'maddog',        title: "Mad Dog's Hot Takes",      writer: 'maddog', group: null },
   { key: 'numbers',       title: "The Numbers Don't Lie",    writer: 'gerald', group: null },
@@ -372,6 +377,75 @@ function promptNumbersDontLie(matchups, powerRankings, scoreboard) {
   return `Write "The Numbers Don't Lie". Find 2-3 interesting statistical stories: teams that led the league in a stat but lost, record performances, matchup luck, unsustainable lines. Compare against league averages. 3-4 paragraphs.\n\nLeague-wide category leaders:\n${leagueContext.join('\n')}\n\nMatchup details:\n${matchupData}`;
 }
 
+// --- Rumours ---
+
+/**
+ * Fetch trade rumours from the Cloudflare Worker API.
+ * Returns [] if RUMOURS_API_URL is not set or the request fails.
+ */
+async function fetchRumours(weekStart) {
+  const apiUrl = process.env.RUMOURS_API_URL;
+  if (!apiUrl) return [];
+
+  try {
+    const url = new URL(apiUrl);
+    url.searchParams.set('since', weekStart);
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.log(`  Warning: rumours API returned ${res.status}`);
+      return [];
+    }
+    const data = await res.json();
+    return data.rumours || [];
+  } catch (e) {
+    console.log(`  Warning: could not fetch rumours: ${e.message}`);
+    return [];
+  }
+}
+
+function promptInsiderReport(rumours, powerRankings, transactions) {
+  if (!rumours.length) return null;
+
+  const tips = rumours.map((r, i) => {
+    const date = new Date(r.submittedAt).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const source = r.source ? ` (via ${r.source})` : '';
+    return `TIP ${i + 1} [${date}]${source}: ${r.text}`;
+  }).join('\n\n');
+
+  let context = '';
+
+  if (powerRankings?.length) {
+    const standingsData = powerRankings.map((t, i) =>
+      `${i + 1}. ${t.name} — ${t.record} (${t.pct.toFixed(3)}) [${t.tier}]`
+    ).join('\n');
+    context += `\nCURRENT STANDINGS (for context):\n${standingsData}\n`;
+  }
+
+  if (transactions?.available) {
+    const parts = [];
+    if (transactions.trades?.length) {
+      parts.push('Recent trades: ' + transactions.trades.map(t =>
+        t.sides.map(s => `${s.team} received ${s.received.map(p => p.name).join(', ')}`).join(' / ')
+      ).join('; '));
+    }
+    if (transactions.faabClaims?.length) {
+      const topClaims = transactions.faabClaims.slice(0, 5);
+      parts.push('Recent FAAB: ' + topClaims.map(c => `${c.fantasyTeam} bid $${c.bid} on ${c.player}`).join('; '));
+    }
+    if (parts.length) context += `\nRECENT TRANSACTIONS (for context):\n${parts.join('\n')}\n`;
+  }
+
+  return `Write "The Insider Report" — a column covering trade rumours and behind-the-scenes dealings in the league.
+
+You have received the following tips from sources around the league. Weave them into a cohesive insider column. Don't just list the rumours — connect them to the team's standing, recent moves, and league dynamics. Speculate on motivations and potential trade partners. Treat each tip like a legitimate insider scoop.
+
+Address every tip at least briefly — don't skip any. Write 3-5 paragraphs depending on the number of tips. If there are only 1-2 tips, fill out the column with speculation about teams that should be making moves based on their standings position.
+
+TIPS FROM SOURCES:
+${tips}
+${context}`;
+}
+
 // --- Fallback templates ---
 
 function fallbackMatchups(matchups) {
@@ -535,7 +609,13 @@ async function narrate(week, { only, except } = {}) {
     teamNameBlock = `\n\n# Current Team Names\n${lines.join('\n')}\n`;
   }
 
+  // Fetch trade rumours from the API (if configured)
+  const rumours = await fetchRumours(analysis.weekStart || '');
+
   console.log(`Generating narrative for Week ${week}...`);
+  if (rumours.length > 0) {
+    console.log(`  Loaded ${rumours.length} rumour(s) for the insider column`);
+  }
 
   // --- Build segment prompts ---
 
@@ -572,6 +652,10 @@ async function narrate(week, { only, except } = {}) {
     if (roastsP) txBatch.push({ title: 'Front Office Failures', prompt: roastsP, fallback: () => segments.roasts.roasts.map(r => `**${r.fantasyTeam}**: ${r.description}`).join('\n\n') });
   }
 
+  // Individual: Insider Report (only if rumours exist)
+  const insiderP = promptInsiderReport(rumours, segments.powerRankings, segments.transactionDesk);
+  const insiderSeg = insiderP ? { title: 'The Insider Report', prompt: insiderP, fallback: '*Our insider is currently unreachable. Check back next week.*' } : null;
+
   // Individual: Waiver Misses (self-contained)
   const missesP = promptWaiverMisses(segments.waiverMisses);
   const missesSeg = missesP ? { title: 'Ones That Got Away', prompt: missesP, fallback: () => fallbackSimple('sleepers', segments.waiverMisses) } : null;
@@ -596,7 +680,8 @@ async function narrate(week, { only, except } = {}) {
     ['potw', potwSeg, 'chuck', 'Players of the Week'],
     ['rankings', prSeg, 'chuck', 'Power Rankings'],
     ['movers', moversSeg, 'chuck', 'Movers and Shakers'],
-    ['misses', missesSeg, 'chuck', 'Waiver Misses'],
+    ['insider', insiderSeg, 'insider', 'The Insider Report'],
+    ['misses', missesSeg, 'chuck', 'Ones That Got Away'],
     ['maddog', maddogSeg, 'maddog', "Mad Dog's Hot Takes"],
     ['numbers', geraldSeg, 'gerald', "The Numbers Don't Lie"],
   ];
@@ -748,6 +833,7 @@ async function narrate(week, { only, except } = {}) {
   generateSingle('chuck', prSeg, 'Power Rankings');
   generateSingle('chuck', moversSeg, 'Movers and Shakers');
   generateBatch('chuck', txBatch, 'Transactions');
+  generateSingle('insider', insiderSeg, 'The Insider Report');
   generateSingle('chuck', missesSeg, 'Waiver Misses');
   generateSingle('maddog', maddogSeg, "Mad Dog's Hot Takes");
   generateSingle('gerald', geraldSeg, "The Numbers Don't Lie");
