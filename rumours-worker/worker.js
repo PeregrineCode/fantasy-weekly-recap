@@ -6,7 +6,7 @@
  *
  * KV key prefixes:
  *   rumour:*     — rumour data (stored in metadata for fast listing)
- *   ratelimit:*  — ephemeral per-IP rate limit markers (60s TTL)
+ *   ratelimit:*  — ephemeral per-IP rate limit markers (12h TTL)
  *
  * Routes:
  *   POST /api/rumours    — submit a rumour { text, source? }
