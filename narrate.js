@@ -50,8 +50,8 @@ const SEGMENT_REGISTRY = [
   { key: 'best-pickup',   title: 'Best Pickup of the Week',  writer: 'chuck',  group: 'tx' },
   { key: 'hall-of-shame', title: 'Hall of Shame',            writer: 'chuck',  group: 'tx' },
   { key: 'stream',        title: 'Stream of the Week',       writer: 'chuck',  group: 'tx' },
-  { key: 'tx-desk',       title: 'Transaction Desk',         writer: 'chuck',  group: 'tx' },
   { key: 'roasts',        title: 'Front Office Failures',    writer: 'chuck',  group: 'tx' },
+  { key: 'tx-desk',       title: 'Transaction Desk',         writer: 'chuck',  group: 'tx' },
   { key: 'insider',       title: 'The Insider Report',        writer: 'insider', group: null },
   { key: 'misses',        title: 'Ones That Got Away',       writer: 'chuck',  group: null },
   { key: 'maddog',        title: "Mad Dog's Hot Takes",      writer: 'maddog', group: null },
@@ -675,13 +675,13 @@ async function narrate(week, { only, except } = {}) {
   if (worstP) txBatch.push({ title: 'Hall of Shame', prompt: worstP, fallback: () => fallbackSimple('duds', segments.worstPickup.bottom) });
   const streamP = promptBestStream(segments.bestStream);
   if (streamP) txBatch.push({ title: 'Stream of the Week', prompt: streamP, fallback: () => fallbackSimple('streams', segments.bestStream.top) });
-  if (segments.transactionDesk?.available) {
-    const txDeskP = promptTransactionDesk(segments.transactionDesk);
-    if (txDeskP) txBatch.push({ title: 'Transaction Desk', prompt: txDeskP, fallback: '*No trades or FAAB activity this week.*' });
-  }
   if (segments.roasts?.available) {
     const roastsP = promptRoasts(segments.roasts);
     if (roastsP) txBatch.push({ title: 'Front Office Failures', prompt: roastsP, fallback: () => segments.roasts.roasts.map(r => `**${r.fantasyTeam}**: ${r.description}`).join('\n\n') });
+  }
+  if (segments.transactionDesk?.available) {
+    const txDeskP = promptTransactionDesk(segments.transactionDesk);
+    if (txDeskP) txBatch.push({ title: 'Transaction Desk', prompt: txDeskP, fallback: '*No trades or FAAB activity this week.*' });
   }
 
   // Individual: Insider Report (only if rumours exist)
