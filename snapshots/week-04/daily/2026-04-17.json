@@ -685,7 +685,7 @@
         {
           "playerKey": "469.p.11235",
           "name": "Logan Webb",
-          "selectedPosition": "BN",
+          "selectedPosition": "SP",
           "stats": {
             "IP": 6,
             "K": 6,
@@ -751,7 +751,7 @@
         {
           "playerKey": "469.p.11121",
           "name": "Jeffrey Springs",
-          "selectedPosition": "BN",
+          "selectedPosition": "P",
           "stats": {}
         },
         {
@@ -763,7 +763,7 @@
         {
           "playerKey": "469.p.1000002",
           "name": "Shohei Ohtani (Pitcher)",
-          "selectedPosition": "P",
+          "selectedPosition": "BN",
           "stats": {
             "IP": 0,
             "K": 0,
@@ -774,7 +774,7 @@
         {
           "playerKey": "469.p.60042",
           "name": "Parker Messick",
-          "selectedPosition": "SP",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {
@@ -964,7 +964,7 @@
         {
           "playerKey": "469.p.10903",
           "name": "Edward Cabrera",
-          "selectedPosition": "BN",
+          "selectedPosition": "SP",
           "stats": {
             "IP": 6,
             "K": 4,
@@ -978,7 +978,7 @@
         {
           "playerKey": "469.p.60295",
           "name": "Will Warren",
-          "selectedPosition": "BN",
+          "selectedPosition": "SP",
           "stats": {}
         },
         {
@@ -1033,13 +1033,13 @@
         {
           "playerKey": "469.p.11661",
           "name": "Michael King",
-          "selectedPosition": "SP",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {
           "playerKey": "469.p.10514",
           "name": "Luis Castillo",
-          "selectedPosition": "SP",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {
@@ -1083,7 +1083,7 @@
         {
           "playerKey": "469.p.8658",
           "name": "Freddie Freeman",
-          "selectedPosition": "BN",
+          "selectedPosition": "1B",
           "stats": {
             "H/AB": 2,
             "R": 1,
@@ -1181,7 +1181,7 @@
         {
           "playerKey": "469.p.12024",
           "name": "Jordan Walker",
-          "selectedPosition": "BN",
+          "selectedPosition": "Util",
           "stats": {
             "H/AB": 1,
             "R": 1,
@@ -1195,7 +1195,7 @@
         {
           "playerKey": "469.p.9846",
           "name": "Christian Walker",
-          "selectedPosition": "1B",
+          "selectedPosition": "Util",
           "stats": {
             "H/AB": 0,
             "R": 0,
@@ -1209,7 +1209,7 @@
         {
           "playerKey": "469.p.10572",
           "name": "Josh Naylor",
-          "selectedPosition": "Util",
+          "selectedPosition": "BN",
           "stats": {
             "H/AB": 2,
             "R": 0,
@@ -1223,7 +1223,7 @@
         {
           "playerKey": "469.p.64318",
           "name": "Konnor Griffin",
-          "selectedPosition": "Util",
+          "selectedPosition": "BN",
           "stats": {
             "H/AB": 1,
             "R": 2,
@@ -1976,7 +1976,7 @@
         {
           "playerKey": "469.p.10646",
           "name": "Ronald Acuña Jr.",
-          "selectedPosition": "BN",
+          "selectedPosition": "OF",
           "stats": {
             "H/AB": 1,
             "R": 2,
@@ -1990,7 +1990,7 @@
         {
           "playerKey": "469.p.11778",
           "name": "Michael Busch",
-          "selectedPosition": "BN",
+          "selectedPosition": "Util",
           "stats": {
             "H/AB": 2,
             "R": 2,
@@ -2004,7 +2004,7 @@
         {
           "playerKey": "469.p.9571",
           "name": "Trevor Story",
-          "selectedPosition": "BN",
+          "selectedPosition": "Util",
           "stats": {
             "H/AB": 0,
             "R": 0,
@@ -2018,7 +2018,7 @@
         {
           "playerKey": "469.p.12314",
           "name": "Steven Kwan",
-          "selectedPosition": "OF",
+          "selectedPosition": "BN",
           "stats": {
             "H/AB": 1,
             "R": 1,
@@ -2032,7 +2032,7 @@
         {
           "playerKey": "469.p.62973",
           "name": "Wyatt Langford",
-          "selectedPosition": "Util",
+          "selectedPosition": "BN",
           "stats": {
             "H/AB": 3,
             "R": 1,
@@ -2046,7 +2046,7 @@
         {
           "playerKey": "469.p.12480",
           "name": "Jackson Chourio",
-          "selectedPosition": "Util",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {
@@ -2292,7 +2292,7 @@
         {
           "playerKey": "469.p.60137",
           "name": "Tanner Bibee",
-          "selectedPosition": "BN",
+          "selectedPosition": "SP",
           "stats": {
             "IP": 6,
             "K": 5,
@@ -2391,7 +2391,7 @@
         {
           "playerKey": "469.p.10940",
           "name": "MacKenzie Gore",
-          "selectedPosition": "SP",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {
@@ -2455,7 +2455,7 @@
         {
           "playerKey": "469.p.12501",
           "name": "Max Muncy",
-          "selectedPosition": "BN",
+          "selectedPosition": "2B",
           "stats": {
             "H/AB": 0,
             "R": 1,
@@ -2469,7 +2469,7 @@
         {
           "playerKey": "469.p.9724",
           "name": "Eugenio Suárez",
-          "selectedPosition": "3B",
+          "selectedPosition": "BN",
           "stats": {
             "H/AB": 2,
             "R": 0,
@@ -2553,7 +2553,7 @@
         {
           "playerKey": "469.p.66369",
           "name": "Munetaka Murakami",
-          "selectedPosition": "Util",
+          "selectedPosition": "BN",
           "stats": {
             "H/AB": 3,
             "R": 2,
@@ -2573,7 +2573,7 @@
         {
           "playerKey": "469.p.1000001",
           "name": "Shohei Ohtani (Batter)",
-          "selectedPosition": "BN",
+          "selectedPosition": "Util",
           "stats": {
             "H/AB": 2,
             "R": 1,
@@ -2601,7 +2601,7 @@
         {
           "playerKey": "469.p.11892",
           "name": "Ernie Clement",
-          "selectedPosition": "2B",
+          "selectedPosition": "3B",
           "stats": {
             "H/AB": 1,
             "R": 0,
@@ -2887,13 +2887,13 @@
         {
           "playerKey": "469.p.12354",
           "name": "Robert Suarez",
-          "selectedPosition": "BN",
+          "selectedPosition": "P",
           "stats": {}
         },
         {
           "playerKey": "469.p.9902",
           "name": "Raisel Iglesias",
-          "selectedPosition": "BN",
+          "selectedPosition": "P",
           "stats": {}
         },
         {
@@ -2905,19 +2905,19 @@
         {
           "playerKey": "469.p.10326",
           "name": "Seth Lugo",
-          "selectedPosition": "SP",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {
           "playerKey": "469.p.12345",
           "name": "Kyle Bradish",
-          "selectedPosition": "P",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {
           "playerKey": "469.p.10610",
           "name": "Cole Ragans",
-          "selectedPosition": "P",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {
@@ -3017,7 +3017,7 @@
         {
           "playerKey": "469.p.12731",
           "name": "Wilyer Abreu",
-          "selectedPosition": "BN",
+          "selectedPosition": "OF",
           "stats": {
             "H/AB": 0,
             "R": 0,
@@ -3031,7 +3031,7 @@
         {
           "playerKey": "469.p.10440",
           "name": "Ian Happ",
-          "selectedPosition": "BN",
+          "selectedPosition": "OF",
           "stats": {
             "H/AB": 1,
             "R": 1,
@@ -3087,7 +3087,7 @@
         {
           "playerKey": "469.p.12056",
           "name": "Michael Harris II",
-          "selectedPosition": "OF",
+          "selectedPosition": "BN",
           "stats": {
             "H/AB": 3,
             "R": 2,
@@ -3107,7 +3107,7 @@
         {
           "playerKey": "469.p.9320",
           "name": "Christian Yelich",
-          "selectedPosition": "OF",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {
@@ -3127,7 +3127,7 @@
         {
           "playerKey": "469.p.8780",
           "name": "Chris Sale",
-          "selectedPosition": "BN",
+          "selectedPosition": "SP",
           "stats": {}
         },
         {
@@ -3146,7 +3146,7 @@
         {
           "playerKey": "469.p.12175",
           "name": "Kyle Harrison",
-          "selectedPosition": "P",
+          "selectedPosition": "RP",
           "stats": {}
         },
         {
@@ -3158,7 +3158,7 @@
         {
           "playerKey": "469.p.10597",
           "name": "Sandy Alcantara",
-          "selectedPosition": "BN",
+          "selectedPosition": "P",
           "stats": {}
         },
         {
@@ -3176,13 +3176,13 @@
         {
           "playerKey": "469.p.11138",
           "name": "Framber Valdez",
-          "selectedPosition": "SP",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {
           "playerKey": "469.p.64316",
           "name": "Chase Burns",
-          "selectedPosition": "RP",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {

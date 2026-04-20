@@ -880,7 +880,7 @@
         {
           "playerKey": "469.p.10766",
           "name": "Bo Bichette",
-          "selectedPosition": "SS",
+          "selectedPosition": "Util",
           "stats": {
             "H/AB": 0,
             "R": 0,
@@ -894,13 +894,13 @@
         {
           "playerKey": "469.p.12449",
           "name": "Vinnie Pasquantino",
-          "selectedPosition": "Util",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {
           "playerKey": "469.p.12351",
           "name": "Brendan Donovan",
-          "selectedPosition": "BN",
+          "selectedPosition": "Util",
           "stats": {
             "H/AB": 2,
             "R": 0,
@@ -962,7 +962,7 @@
         {
           "playerKey": "469.p.60295",
           "name": "Will Warren",
-          "selectedPosition": "BN",
+          "selectedPosition": "SP",
           "stats": {
             "IP": 3.2,
             "K": 6,
@@ -988,13 +988,13 @@
         {
           "playerKey": "469.p.11372",
           "name": "Braxton Ashcraft",
-          "selectedPosition": "P",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {
           "playerKey": "469.p.9339",
           "name": "George Springer",
-          "selectedPosition": "BN",
+          "selectedPosition": "IL",
           "stats": {}
         },
         {
@@ -1771,7 +1771,7 @@
         {
           "playerKey": "469.p.10465",
           "name": "Yandy Díaz",
-          "selectedPosition": "1B",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {
@@ -1825,7 +1825,7 @@
         {
           "playerKey": "469.p.10639",
           "name": "Fernando Tatis Jr.",
-          "selectedPosition": "Util",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {
@@ -1845,13 +1845,13 @@
         {
           "playerKey": "469.p.11778",
           "name": "Michael Busch",
-          "selectedPosition": "Util",
+          "selectedPosition": "1B",
           "stats": {}
         },
         {
           "playerKey": "469.p.9571",
           "name": "Trevor Story",
-          "selectedPosition": "BN",
+          "selectedPosition": "Util",
           "stats": {
             "H/AB": 1,
             "R": 0,
@@ -1879,7 +1879,7 @@
         {
           "playerKey": "469.p.62973",
           "name": "Wyatt Langford",
-          "selectedPosition": "BN",
+          "selectedPosition": "Util",
           "stats": {}
         },
         {
@@ -1897,7 +1897,7 @@
         {
           "playerKey": "469.p.11789",
           "name": "Drew Rasmussen",
-          "selectedPosition": "P",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {
@@ -1909,7 +1909,7 @@
         {
           "playerKey": "469.p.61627",
           "name": "Ryan Walker",
-          "selectedPosition": "P",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {
@@ -1927,7 +1927,7 @@
         {
           "playerKey": "469.p.9701",
           "name": "Jacob deGrom",
-          "selectedPosition": "BN",
+          "selectedPosition": "P",
           "stats": {}
         },
         {
@@ -1945,7 +1945,7 @@
         {
           "playerKey": "469.p.9882",
           "name": "Aaron Nola",
-          "selectedPosition": "BN",
+          "selectedPosition": "P",
           "stats": {}
         },
         {
@@ -2656,7 +2656,7 @@
         {
           "playerKey": "469.p.10683",
           "name": "Nick Pivetta",
-          "selectedPosition": "BN",
+          "selectedPosition": "P",
           "stats": {}
         }
       ]
@@ -2766,7 +2766,7 @@
         {
           "playerKey": "469.p.12056",
           "name": "Michael Harris II",
-          "selectedPosition": "BN",
+          "selectedPosition": "Util",
           "stats": {
             "H/AB": 2,
             "R": 0,
@@ -2806,7 +2806,7 @@
         {
           "playerKey": "469.p.62119",
           "name": "Jakob Marsee",
-          "selectedPosition": "BN",
+          "selectedPosition": "Util",
           "stats": {
             "H/AB": 1,
             "R": 2,
@@ -2902,7 +2902,7 @@
         {
           "playerKey": "469.p.9552",
           "name": "Mookie Betts",
-          "selectedPosition": "BN",
+          "selectedPosition": "IL",
           "stats": {}
         },
         {

@@ -1,6 +1,6 @@
 {
   "date": "2026-04-15",
-  "collectedAt": "2026-04-15T11:11:04.554Z",
+  "collectedAt": "2026-04-16T05:21:27.631Z",
   "week": 4,
   "positions": {
     "469.l.75479.t.1": {
@@ -56,11 +56,6 @@
           "playerKey": "469.p.11822",
           "name": "CJ Abrams",
           "selectedPosition": "Util"
-        },
-        {
-          "playerKey": "469.p.12309",
-          "name": "Jonathan Aranda",
-          "selectedPosition": "BN"
         },
         {
           "playerKey": "469.p.12046",
@@ -120,6 +115,11 @@
         {
           "playerKey": "469.p.60592",
           "name": "Andrew Painter",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "469.p.11121",
+          "name": "Jeffrey Springs",
           "selectedPosition": "BN"
         },
         {
@@ -320,6 +320,11 @@
           "selectedPosition": "Util"
         },
         {
+          "playerKey": "469.p.9846",
+          "name": "Christian Walker",
+          "selectedPosition": "BN"
+        },
+        {
           "playerKey": "469.p.11735",
           "name": "Jarren Duran",
           "selectedPosition": "BN"
@@ -327,11 +332,6 @@
         {
           "playerKey": "469.p.64318",
           "name": "Konnor Griffin",
-          "selectedPosition": "BN"
-        },
-        {
-          "playerKey": "469.p.10166",
-          "name": "Willson Contreras",
           "selectedPosition": "BN"
         },
         {
@@ -441,11 +441,6 @@
           "selectedPosition": "OF"
         },
         {
-          "playerKey": "469.p.9228",
-          "name": "Jorge Soler",
-          "selectedPosition": "Util"
-        },
-        {
           "playerKey": "469.p.12390",
           "name": "Matt McLain",
           "selectedPosition": "Util"
@@ -453,6 +448,11 @@
         {
           "playerKey": "469.p.64329",
           "name": "Carson Benge",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "469.p.9228",
+          "name": "Jorge Soler",
           "selectedPosition": "BN"
         },
         {
@@ -466,13 +466,13 @@
           "selectedPosition": "BN"
         },
         {
-          "playerKey": "469.p.62972",
-          "name": "Paul Skenes",
+          "playerKey": "469.p.12500",
+          "name": "Randy Vásquez",
           "selectedPosition": "SP"
         },
         {
-          "playerKey": "469.p.63423",
-          "name": "Yoshinobu Yamamoto",
+          "playerKey": "469.p.12120",
+          "name": "Bryce Elder",
           "selectedPosition": "SP"
         },
         {
@@ -491,11 +491,6 @@
           "selectedPosition": "P"
         },
         {
-          "playerKey": "469.p.12275",
-          "name": "Dylan Lee",
-          "selectedPosition": "P"
-        },
-        {
           "playerKey": "469.p.10657",
           "name": "Paul Sewald",
           "selectedPosition": "P"
@@ -506,13 +501,18 @@
           "selectedPosition": "P"
         },
         {
-          "playerKey": "469.p.12120",
-          "name": "Bryce Elder",
+          "playerKey": "469.p.12695",
+          "name": "Louis Varland",
+          "selectedPosition": "P"
+        },
+        {
+          "playerKey": "469.p.62972",
+          "name": "Paul Skenes",
           "selectedPosition": "BN"
         },
         {
-          "playerKey": "469.p.12500",
-          "name": "Randy Vásquez",
+          "playerKey": "469.p.63423",
+          "name": "Yoshinobu Yamamoto",
           "selectedPosition": "BN"
         },
         {
@@ -668,8 +668,8 @@
           "selectedPosition": "C"
         },
         {
-          "playerKey": "469.p.11778",
-          "name": "Michael Busch",
+          "playerKey": "469.p.10465",
+          "name": "Yandy Díaz",
           "selectedPosition": "1B"
         },
         {
@@ -703,23 +703,23 @@
           "selectedPosition": "OF"
         },
         {
-          "playerKey": "469.p.62973",
-          "name": "Wyatt Langford",
-          "selectedPosition": "Util"
-        },
-        {
           "playerKey": "469.p.9571",
           "name": "Trevor Story",
           "selectedPosition": "Util"
         },
         {
-          "playerKey": "469.p.10465",
-          "name": "Yandy Díaz",
+          "playerKey": "469.p.10639",
+          "name": "Fernando Tatis Jr.",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "469.p.11778",
+          "name": "Michael Busch",
           "selectedPosition": "BN"
         },
         {
-          "playerKey": "469.p.10639",
-          "name": "Fernando Tatis Jr.",
+          "playerKey": "469.p.62973",
+          "name": "Wyatt Langford",
           "selectedPosition": "BN"
         },
         {
@@ -1141,8 +1141,8 @@
           "selectedPosition": "P"
         },
         {
-          "playerKey": "469.p.10683",
-          "name": "Nick Pivetta",
+          "playerKey": "469.p.10494",
+          "name": "Jakob Junis",
           "selectedPosition": "P"
         },
         {
@@ -1173,6 +1173,11 @@
         {
           "playerKey": "469.p.10917",
           "name": "Brent Rooker",
+          "selectedPosition": "IL"
+        },
+        {
+          "playerKey": "469.p.10683",
+          "name": "Nick Pivetta",
           "selectedPosition": "IL"
         }
       ]
@@ -1207,11 +1212,6 @@
           "selectedPosition": "SS"
         },
         {
-          "playerKey": "469.p.12731",
-          "name": "Wilyer Abreu",
-          "selectedPosition": "OF"
-        },
-        {
           "playerKey": "469.p.10440",
           "name": "Ian Happ",
           "selectedPosition": "OF"
@@ -1219,6 +1219,11 @@
         {
           "playerKey": "469.p.9590",
           "name": "Byron Buxton",
+          "selectedPosition": "OF"
+        },
+        {
+          "playerKey": "469.p.12056",
+          "name": "Michael Harris II",
           "selectedPosition": "OF"
         },
         {
@@ -1232,8 +1237,8 @@
           "selectedPosition": "Util"
         },
         {
-          "playerKey": "469.p.12056",
-          "name": "Michael Harris II",
+          "playerKey": "469.p.12731",
+          "name": "Wilyer Abreu",
           "selectedPosition": "BN"
         },
         {
@@ -1277,13 +1282,13 @@
           "selectedPosition": "P"
         },
         {
-          "playerKey": "469.p.66492",
-          "name": "Tatsuya Imai",
+          "playerKey": "469.p.60238",
+          "name": "Emmet Sheehan",
           "selectedPosition": "P"
         },
         {
-          "playerKey": "469.p.60238",
-          "name": "Emmet Sheehan",
+          "playerKey": "469.p.60188",
+          "name": "Spencer Arrighetti",
           "selectedPosition": "P"
         },
         {

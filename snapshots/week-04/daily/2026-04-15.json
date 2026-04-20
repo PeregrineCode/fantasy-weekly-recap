@@ -1456,7 +1456,7 @@
         {
           "playerKey": "469.p.64329",
           "name": "Carson Benge",
-          "selectedPosition": "BN",
+          "selectedPosition": "Util",
           "stats": {
             "H/AB": 1,
             "R": 1,
@@ -1470,7 +1470,7 @@
         {
           "playerKey": "469.p.9228",
           "name": "Jorge Soler",
-          "selectedPosition": "Util",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {
@@ -1496,7 +1496,7 @@
         {
           "playerKey": "469.p.12500",
           "name": "Randy Vásquez",
-          "selectedPosition": "BN",
+          "selectedPosition": "SP",
           "stats": {
             "IP": 4,
             "K": 6,
@@ -1510,7 +1510,7 @@
         {
           "playerKey": "469.p.12120",
           "name": "Bryce Elder",
-          "selectedPosition": "BN",
+          "selectedPosition": "SP",
           "stats": {
             "IP": 5.2,
             "K": 7,
@@ -1575,13 +1575,13 @@
         {
           "playerKey": "469.p.62972",
           "name": "Paul Skenes",
-          "selectedPosition": "SP",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {
           "playerKey": "469.p.63423",
           "name": "Yoshinobu Yamamoto",
-          "selectedPosition": "SP",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {
@@ -1877,7 +1877,7 @@
         {
           "playerKey": "469.p.10465",
           "name": "Yandy Díaz",
-          "selectedPosition": "BN",
+          "selectedPosition": "1B",
           "stats": {
             "H/AB": 1,
             "R": 1,
@@ -1961,7 +1961,7 @@
         {
           "playerKey": "469.p.10639",
           "name": "Fernando Tatis Jr.",
-          "selectedPosition": "BN",
+          "selectedPosition": "Util",
           "stats": {
             "H/AB": 0,
             "R": 0,
@@ -1974,7 +1974,7 @@
         {
           "playerKey": "469.p.62973",
           "name": "Wyatt Langford",
-          "selectedPosition": "Util",
+          "selectedPosition": "BN",
           "stats": {
             "H/AB": 2,
             "R": 1,
@@ -2008,7 +2008,7 @@
         {
           "playerKey": "469.p.11778",
           "name": "Michael Busch",
-          "selectedPosition": "1B",
+          "selectedPosition": "BN",
           "stats": {
             "H/AB": 0,
             "R": 0,
@@ -2834,7 +2834,7 @@
         {
           "playerKey": "469.p.10494",
           "name": "Jakob Junis",
-          "selectedPosition": "RP",
+          "selectedPosition": "P",
           "stats": {}
         },
         {
@@ -2922,7 +2922,7 @@
         {
           "playerKey": "469.p.10683",
           "name": "Nick Pivetta",
-          "selectedPosition": "P",
+          "selectedPosition": "IL",
           "stats": {}
         }
       ]
@@ -3032,7 +3032,7 @@
         {
           "playerKey": "469.p.12056",
           "name": "Michael Harris II",
-          "selectedPosition": "BN",
+          "selectedPosition": "OF",
           "stats": {
             "H/AB": 0,
             "R": 0,
@@ -3074,7 +3074,7 @@
         {
           "playerKey": "469.p.12731",
           "name": "Wilyer Abreu",
-          "selectedPosition": "OF",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {

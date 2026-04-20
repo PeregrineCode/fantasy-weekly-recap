@@ -1,6 +1,6 @@
 {
   "date": "2026-04-16",
-  "collectedAt": "2026-04-16T05:21:27.631Z",
+  "collectedAt": "2026-04-17T05:19:50.012Z",
   "week": 4,
   "positions": {
     "469.l.75479.t.1": {
@@ -58,13 +58,13 @@
           "selectedPosition": "Util"
         },
         {
-          "playerKey": "469.p.12046",
-          "name": "Garrett Crochet",
+          "playerKey": "469.p.60042",
+          "name": "Parker Messick",
           "selectedPosition": "SP"
         },
         {
-          "playerKey": "469.p.1000002",
-          "name": "Shohei Ohtani (Pitcher)",
+          "playerKey": "469.p.12561",
+          "name": "Jack Leiter",
           "selectedPosition": "SP"
         },
         {
@@ -76,6 +76,11 @@
           "playerKey": "469.p.11495",
           "name": "Jhoan Duran",
           "selectedPosition": "RP"
+        },
+        {
+          "playerKey": "469.p.1000002",
+          "name": "Shohei Ohtani (Pitcher)",
+          "selectedPosition": "P"
         },
         {
           "playerKey": "469.p.8616",
@@ -93,9 +98,9 @@
           "selectedPosition": "P"
         },
         {
-          "playerKey": "469.p.12561",
-          "name": "Jack Leiter",
-          "selectedPosition": "P"
+          "playerKey": "469.p.12046",
+          "name": "Garrett Crochet",
+          "selectedPosition": "BN"
         },
         {
           "playerKey": "469.p.11706",
@@ -105,11 +110,6 @@
         {
           "playerKey": "469.p.11235",
           "name": "Logan Webb",
-          "selectedPosition": "BN"
-        },
-        {
-          "playerKey": "469.p.60042",
-          "name": "Parker Messick",
           "selectedPosition": "BN"
         },
         {
@@ -159,8 +159,8 @@
           "selectedPosition": "3B"
         },
         {
-          "playerKey": "469.p.11417",
-          "name": "Geraldo Perdomo",
+          "playerKey": "469.p.12351",
+          "name": "Brendan Donovan",
           "selectedPosition": "SS"
         },
         {
@@ -189,8 +189,8 @@
           "selectedPosition": "Util"
         },
         {
-          "playerKey": "469.p.12351",
-          "name": "Brendan Donovan",
+          "playerKey": "469.p.11417",
+          "name": "Geraldo Perdomo",
           "selectedPosition": "BN"
         },
         {
@@ -199,8 +199,8 @@
           "selectedPosition": "SP"
         },
         {
-          "playerKey": "469.p.10438",
-          "name": "Dylan Cease",
+          "playerKey": "469.p.10514",
+          "name": "Luis Castillo",
           "selectedPosition": "SP"
         },
         {
@@ -214,8 +214,8 @@
           "selectedPosition": "RP"
         },
         {
-          "playerKey": "469.p.11358",
-          "name": "Garrett Whitlock",
+          "playerKey": "469.p.10438",
+          "name": "Dylan Cease",
           "selectedPosition": "P"
         },
         {
@@ -234,8 +234,8 @@
           "selectedPosition": "P"
         },
         {
-          "playerKey": "469.p.10514",
-          "name": "Luis Castillo",
+          "playerKey": "469.p.11358",
+          "name": "Garrett Whitlock",
           "selectedPosition": "BN"
         },
         {
@@ -275,8 +275,8 @@
           "selectedPosition": "C"
         },
         {
-          "playerKey": "469.p.8658",
-          "name": "Freddie Freeman",
+          "playerKey": "469.p.9846",
+          "name": "Christian Walker",
           "selectedPosition": "1B"
         },
         {
@@ -310,28 +310,28 @@
           "selectedPosition": "OF"
         },
         {
-          "playerKey": "469.p.12024",
-          "name": "Jordan Walker",
-          "selectedPosition": "Util"
-        },
-        {
           "playerKey": "469.p.10572",
           "name": "Josh Naylor",
           "selectedPosition": "Util"
         },
         {
-          "playerKey": "469.p.9846",
-          "name": "Christian Walker",
+          "playerKey": "469.p.64318",
+          "name": "Konnor Griffin",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "469.p.8658",
+          "name": "Freddie Freeman",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "469.p.12024",
+          "name": "Jordan Walker",
           "selectedPosition": "BN"
         },
         {
           "playerKey": "469.p.11735",
           "name": "Jarren Duran",
-          "selectedPosition": "BN"
-        },
-        {
-          "playerKey": "469.p.64318",
-          "name": "Konnor Griffin",
           "selectedPosition": "BN"
         },
         {
@@ -365,23 +365,23 @@
           "selectedPosition": "P"
         },
         {
-          "playerKey": "469.p.12554",
-          "name": "Taj Bradley",
-          "selectedPosition": "P"
-        },
-        {
           "playerKey": "469.p.11381",
           "name": "Logan Gilbert",
           "selectedPosition": "P"
         },
         {
-          "playerKey": "469.p.12468",
-          "name": "Eury Pérez",
+          "playerKey": "469.p.64985",
+          "name": "Cam Schlittler",
+          "selectedPosition": "P"
+        },
+        {
+          "playerKey": "469.p.12554",
+          "name": "Taj Bradley",
           "selectedPosition": "BN"
         },
         {
-          "playerKey": "469.p.64985",
-          "name": "Cam Schlittler",
+          "playerKey": "469.p.12468",
+          "name": "Eury Pérez",
           "selectedPosition": "BN"
         },
         {
@@ -617,14 +617,19 @@
           "selectedPosition": "P"
         },
         {
-          "playerKey": "469.p.11251",
-          "name": "Merrill Kelly",
+          "playerKey": "469.p.12395",
+          "name": "Andrew Abbott",
           "selectedPosition": "P"
         },
         {
-          "playerKey": "469.p.11253",
-          "name": "Jordan Romano",
+          "playerKey": "469.p.11453",
+          "name": "Rico Garcia",
           "selectedPosition": "P"
+        },
+        {
+          "playerKey": "469.p.11251",
+          "name": "Merrill Kelly",
+          "selectedPosition": "BN"
         },
         {
           "playerKey": "469.p.10909",
@@ -639,11 +644,6 @@
         {
           "playerKey": "469.p.11116",
           "name": "Zac Gallen",
-          "selectedPosition": "BN"
-        },
-        {
-          "playerKey": "469.p.12395",
-          "name": "Andrew Abbott",
           "selectedPosition": "BN"
         },
         {
@@ -693,24 +693,29 @@
           "selectedPosition": "OF"
         },
         {
-          "playerKey": "469.p.10646",
-          "name": "Ronald Acuña Jr.",
-          "selectedPosition": "OF"
-        },
-        {
           "playerKey": "469.p.10496",
           "name": "Taylor Ward",
           "selectedPosition": "OF"
         },
         {
-          "playerKey": "469.p.9571",
-          "name": "Trevor Story",
+          "playerKey": "469.p.10639",
+          "name": "Fernando Tatis Jr.",
+          "selectedPosition": "OF"
+        },
+        {
+          "playerKey": "469.p.62973",
+          "name": "Wyatt Langford",
           "selectedPosition": "Util"
         },
         {
-          "playerKey": "469.p.10639",
-          "name": "Fernando Tatis Jr.",
+          "playerKey": "469.p.12480",
+          "name": "Jackson Chourio",
           "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "469.p.9571",
+          "name": "Trevor Story",
+          "selectedPosition": "BN"
         },
         {
           "playerKey": "469.p.11778",
@@ -718,23 +723,18 @@
           "selectedPosition": "BN"
         },
         {
-          "playerKey": "469.p.62973",
-          "name": "Wyatt Langford",
+          "playerKey": "469.p.10646",
+          "name": "Ronald Acuña Jr.",
           "selectedPosition": "BN"
-        },
-        {
-          "playerKey": "469.p.12480",
-          "name": "Jackson Chourio",
-          "selectedPosition": "BN"
-        },
-        {
-          "playerKey": "469.p.10627",
-          "name": "Jesús Luzardo",
-          "selectedPosition": "SP"
         },
         {
           "playerKey": "469.p.63640",
           "name": "Shota Imanaga",
+          "selectedPosition": "SP"
+        },
+        {
+          "playerKey": "469.p.11789",
+          "name": "Drew Rasmussen",
           "selectedPosition": "SP"
         },
         {
@@ -768,13 +768,13 @@
           "selectedPosition": "P"
         },
         {
-          "playerKey": "469.p.9882",
-          "name": "Aaron Nola",
+          "playerKey": "469.p.10627",
+          "name": "Jesús Luzardo",
           "selectedPosition": "BN"
         },
         {
-          "playerKey": "469.p.11789",
-          "name": "Drew Rasmussen",
+          "playerKey": "469.p.9882",
+          "name": "Aaron Nola",
           "selectedPosition": "BN"
         },
         {
@@ -849,13 +849,13 @@
           "selectedPosition": "BN"
         },
         {
-          "playerKey": "469.p.60137",
-          "name": "Tanner Bibee",
+          "playerKey": "469.p.10940",
+          "name": "MacKenzie Gore",
           "selectedPosition": "SP"
         },
         {
-          "playerKey": "469.p.10940",
-          "name": "MacKenzie Gore",
+          "playerKey": "469.p.63017",
+          "name": "Brandon Sproat",
           "selectedPosition": "SP"
         },
         {
@@ -889,6 +889,11 @@
           "selectedPosition": "P"
         },
         {
+          "playerKey": "469.p.60137",
+          "name": "Tanner Bibee",
+          "selectedPosition": "BN"
+        },
+        {
           "playerKey": "469.p.12007",
           "name": "Cade Cavalli",
           "selectedPosition": "BN"
@@ -896,11 +901,6 @@
         {
           "playerKey": "469.p.11397",
           "name": "Matthew Liberatore",
-          "selectedPosition": "BN"
-        },
-        {
-          "playerKey": "469.p.63017",
-          "name": "Brandon Sproat",
           "selectedPosition": "BN"
         },
         {
@@ -935,8 +935,8 @@
           "selectedPosition": "1B"
         },
         {
-          "playerKey": "469.p.12501",
-          "name": "Max Muncy",
+          "playerKey": "469.p.11892",
+          "name": "Ernie Clement",
           "selectedPosition": "2B"
         },
         {
@@ -945,8 +945,8 @@
           "selectedPosition": "3B"
         },
         {
-          "playerKey": "469.p.11817",
-          "name": "Bryson Stott",
+          "playerKey": "469.p.9893",
+          "name": "Willy Adames",
           "selectedPosition": "SS"
         },
         {
@@ -965,11 +965,6 @@
           "selectedPosition": "OF"
         },
         {
-          "playerKey": "469.p.1000001",
-          "name": "Shohei Ohtani (Batter)",
-          "selectedPosition": "Util"
-        },
-        {
           "playerKey": "469.p.12400",
           "name": "Angel Martínez",
           "selectedPosition": "Util"
@@ -977,6 +972,21 @@
         {
           "playerKey": "469.p.66369",
           "name": "Munetaka Murakami",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "469.p.12501",
+          "name": "Max Muncy",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "469.p.11817",
+          "name": "Bryson Stott",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "469.p.1000001",
+          "name": "Shohei Ohtani (Batter)",
           "selectedPosition": "BN"
         },
         {
@@ -985,23 +995,13 @@
           "selectedPosition": "BN"
         },
         {
-          "playerKey": "469.p.9893",
-          "name": "Willy Adames",
-          "selectedPosition": "BN"
-        },
-        {
-          "playerKey": "469.p.11892",
-          "name": "Ernie Clement",
-          "selectedPosition": "BN"
-        },
-        {
           "playerKey": "469.p.9334",
           "name": "Kevin Gausman",
           "selectedPosition": "SP"
         },
         {
-          "playerKey": "469.p.10549",
-          "name": "Grant Holmes",
+          "playerKey": "469.p.10185",
+          "name": "Joe Musgrove",
           "selectedPosition": "SP"
         },
         {
@@ -1035,8 +1035,8 @@
           "selectedPosition": "P"
         },
         {
-          "playerKey": "469.p.10185",
-          "name": "Joe Musgrove",
+          "playerKey": "469.p.10549",
+          "name": "Grant Holmes",
           "selectedPosition": "BN"
         },
         {
@@ -1106,19 +1106,14 @@
           "selectedPosition": "Util"
         },
         {
-          "playerKey": "469.p.12345",
-          "name": "Kyle Bradish",
-          "selectedPosition": "SP"
-        },
-        {
           "playerKey": "469.p.10326",
           "name": "Seth Lugo",
           "selectedPosition": "SP"
         },
         {
-          "playerKey": "469.p.12354",
-          "name": "Robert Suarez",
-          "selectedPosition": "RP"
+          "playerKey": "469.p.11319",
+          "name": "Kris Bubic",
+          "selectedPosition": "SP"
         },
         {
           "playerKey": "469.p.10659",
@@ -1126,48 +1121,53 @@
           "selectedPosition": "RP"
         },
         {
-          "playerKey": "469.p.12776",
-          "name": "Kodai Senga",
-          "selectedPosition": "P"
-        },
-        {
-          "playerKey": "469.p.9902",
-          "name": "Raisel Iglesias",
-          "selectedPosition": "P"
-        },
-        {
-          "playerKey": "469.p.9459",
-          "name": "Sonny Gray",
-          "selectedPosition": "P"
-        },
-        {
           "playerKey": "469.p.10494",
           "name": "Jakob Junis",
+          "selectedPosition": "RP"
+        },
+        {
+          "playerKey": "469.p.12345",
+          "name": "Kyle Bradish",
           "selectedPosition": "P"
         },
         {
           "playerKey": "469.p.10610",
           "name": "Cole Ragans",
+          "selectedPosition": "P"
+        },
+        {
+          "playerKey": "469.p.10730",
+          "name": "Brandon Woodruff",
+          "selectedPosition": "P"
+        },
+        {
+          "playerKey": "469.p.9329",
+          "name": "Michael Wacha",
+          "selectedPosition": "P"
+        },
+        {
+          "playerKey": "469.p.12354",
+          "name": "Robert Suarez",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "469.p.12776",
+          "name": "Kodai Senga",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "469.p.9902",
+          "name": "Raisel Iglesias",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "469.p.9459",
+          "name": "Sonny Gray",
           "selectedPosition": "BN"
         },
         {
           "playerKey": "469.p.11014",
           "name": "Freddy Peralta",
-          "selectedPosition": "BN"
-        },
-        {
-          "playerKey": "469.p.11319",
-          "name": "Kris Bubic",
-          "selectedPosition": "BN"
-        },
-        {
-          "playerKey": "469.p.10730",
-          "name": "Brandon Woodruff",
-          "selectedPosition": "BN"
-        },
-        {
-          "playerKey": "469.p.9329",
-          "name": "Michael Wacha",
           "selectedPosition": "BN"
         },
         {
@@ -1212,11 +1212,6 @@
           "selectedPosition": "SS"
         },
         {
-          "playerKey": "469.p.10440",
-          "name": "Ian Happ",
-          "selectedPosition": "OF"
-        },
-        {
           "playerKey": "469.p.9590",
           "name": "Byron Buxton",
           "selectedPosition": "OF"
@@ -1227,28 +1222,33 @@
           "selectedPosition": "OF"
         },
         {
+          "playerKey": "469.p.9320",
+          "name": "Christian Yelich",
+          "selectedPosition": "OF"
+        },
+        {
           "playerKey": "469.p.11760",
           "name": "Riley Greene",
           "selectedPosition": "Util"
         },
         {
+          "playerKey": "469.p.12409",
+          "name": "Hunter Goodman",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "469.p.10440",
+          "name": "Ian Happ",
+          "selectedPosition": "BN"
+        },
+        {
           "playerKey": "469.p.62119",
           "name": "Jakob Marsee",
-          "selectedPosition": "Util"
+          "selectedPosition": "BN"
         },
         {
           "playerKey": "469.p.12731",
           "name": "Wilyer Abreu",
-          "selectedPosition": "BN"
-        },
-        {
-          "playerKey": "469.p.12409",
-          "name": "Hunter Goodman",
-          "selectedPosition": "BN"
-        },
-        {
-          "playerKey": "469.p.9320",
-          "name": "Christian Yelich",
           "selectedPosition": "BN"
         },
         {
@@ -1277,11 +1277,6 @@
           "selectedPosition": "P"
         },
         {
-          "playerKey": "469.p.10597",
-          "name": "Sandy Alcantara",
-          "selectedPosition": "P"
-        },
-        {
           "playerKey": "469.p.60238",
           "name": "Emmet Sheehan",
           "selectedPosition": "P"
@@ -1292,13 +1287,18 @@
           "selectedPosition": "P"
         },
         {
-          "playerKey": "469.p.8780",
-          "name": "Chris Sale",
+          "playerKey": "469.p.12175",
+          "name": "Kyle Harrison",
+          "selectedPosition": "P"
+        },
+        {
+          "playerKey": "469.p.10597",
+          "name": "Sandy Alcantara",
           "selectedPosition": "BN"
         },
         {
-          "playerKey": "469.p.12175",
-          "name": "Kyle Harrison",
+          "playerKey": "469.p.8780",
+          "name": "Chris Sale",
           "selectedPosition": "BN"
         },
         {

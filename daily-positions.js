@@ -90,9 +90,13 @@ async function dailyPositions() {
   const week = parseInt(meta.fantasy_content.league[0].current_week) || 1;
 
   // Capture TODAY's positions (lineups are locked by 11 PM ET).
-  // Use ET-aware date since the cron runs at 03:00 UTC (11 PM ET) —
-  // toISOString() would give the wrong (next) date in UTC.
-  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+  // Cron fires at 03:00 UTC (11 PM ET prev day in EDT) — the intended moment —
+  // but GitHub Actions delays scheduled runs by 1-2+ hours, pushing actual run
+  // time into 1-3 AM ET of the NEXT calendar day. Subtract 3 hours from "now"
+  // before computing the ET date so both on-time and delayed runs land on the
+  // same target day (the day whose games just completed).
+  const targetMs = Date.now() - 3 * 60 * 60 * 1000;
+  const today = new Date(targetMs).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 
   console.log(`Position capture: Week ${week}, date ${today}`);
 
