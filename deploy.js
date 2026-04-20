@@ -6,6 +6,7 @@
  * Target repo is configured via DEPLOY_REPO env var (required).
  */
 
+require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
