@@ -99,7 +99,7 @@ Always use the current team name in your writing, never the key.
 | t.2 | Philip | |
 | t.3 | Dennis | |
 | t.4 | Matt | |
-| t.5 | Gordon |Not in the league chat, this is shamefull|
+| t.5 | Gordon | |
 | t.6 | Fantasy Guru | |
 | t.7 | Nate | |
 | t.8 | Jesse | First year in league |
