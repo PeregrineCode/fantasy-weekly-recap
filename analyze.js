@@ -1272,12 +1272,14 @@ async function analyze(week) {
   _statDistributions = computeStatDistributions(weeklyStats);
 
   // Load daily snapshots (used by storylines and bench analysis)
-  // Files are named by date (YYYY-MM-DD.json), sorted chronologically
+  // Files are named by date (YYYY-MM-DD.json), sorted chronologically.
+  // Exclude positions-YYYY-MM-DD.json — those are raw position captures
+  // from daily-positions.js that get merged into the stats files at collect time.
   const dailyDir = path.join(snapshotDir, 'daily');
   const dailySnapshots = [];
   if (fs.existsSync(dailyDir)) {
     const files = fs.readdirSync(dailyDir)
-      .filter(f => f.endsWith('.json'))
+      .filter(f => f.endsWith('.json') && !f.startsWith('positions-'))
       .sort();
     for (const file of files) {
       const data = loadSnapshot(dailyDir, file);

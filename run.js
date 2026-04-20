@@ -41,7 +41,7 @@ async function run() {
 
     // Step 2: Analyze data
     console.log('--- STEP 2: Analyze ---');
-    analyze(week);
+    await analyze(week);
     console.log('');
 
     // Step 3: Generate narrative
