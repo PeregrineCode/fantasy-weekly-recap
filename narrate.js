@@ -8,6 +8,7 @@
  * Usage: node narrate.js [--week N] [--only key,...] [--except key,...] [--list-segments]
  */
 
+require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
@@ -561,21 +562,52 @@ function matchSectionsToRegistry(sections) {
  */
 function spliceArticle(parsed, newSections, sectionToKey) {
   const newContentByKey = new Map();
-  for (const ns of newSections) {
-    newContentByKey.set(ns.registryKey, ns.content);
-  }
+  for (const ns of newSections) newContentByKey.set(ns.registryKey, ns.content);
 
-  let article = parsed.header;
+  const registryIndex = new Map();
+  SEGMENT_REGISTRY.forEach((entry, idx) => registryIndex.set(entry.key, idx));
 
+  // Build emit list from existing sections (content possibly replaced by newContentByKey).
+  const emit = [];
   for (let i = 0; i < parsed.sections.length; i++) {
     const existing = parsed.sections[i];
     const key = sectionToKey.get(i);
     const newContent = key ? newContentByKey.get(key) : null;
-
-    const content = newContent != null ? newContent : existing.content;
-    article += `## ${existing.title}\n\n<p class="byline">by ${existing.byline}</p>\n\n${content}\n\n---\n\n`;
+    emit.push({
+      key,
+      title: existing.title,
+      byline: existing.byline,
+      content: newContent != null ? newContent : existing.content,
+    });
   }
 
+  // Insert any new sections that don't correspond to an existing section,
+  // placing each at its registry position relative to existing sections.
+  const existingKeys = new Set(emit.map(e => e.key).filter(k => k != null));
+  for (const ns of newSections) {
+    if (existingKeys.has(ns.registryKey)) continue;
+    const regEntry = SEGMENT_REGISTRY.find(e => e.key === ns.registryKey);
+    if (!regEntry) continue;
+    const writer = WRITERS[regEntry.writer];
+    const insertRegIdx = registryIndex.get(ns.registryKey);
+
+    let insertAt = emit.length;
+    for (let i = 0; i < emit.length; i++) {
+      const existingRegIdx = emit[i].key != null ? (registryIndex.get(emit[i].key) ?? Infinity) : Infinity;
+      if (existingRegIdx > insertRegIdx) { insertAt = i; break; }
+    }
+    emit.splice(insertAt, 0, {
+      key: ns.registryKey,
+      title: regEntry.title,
+      byline: writer.name,
+      content: ns.content,
+    });
+  }
+
+  let article = parsed.header;
+  for (const e of emit) {
+    article += `## ${e.title}\n\n<p class="byline">by ${e.byline}</p>\n\n${e.content}\n\n---\n\n`;
+  }
   return article;
 }
 
