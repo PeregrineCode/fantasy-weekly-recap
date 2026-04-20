@@ -1,7 +1,9 @@
 /**
  * Daily stats collector — snapshots the scoreboard and player stats for yesterday.
  *
- * Usage: node daily-collect.js
+ * Usage:
+ *   node daily-collect.js                    # default: yesterday (ET)
+ *   node daily-collect.js --date 2026-04-13  # backfill a specific date
  *
  * Run daily at 7 AM ET (after all games finish ~2 AM). Collects finalized stats
  * for the previous day and merges in roster positions from the nightly capture
@@ -98,10 +100,21 @@ async function dailyCollect() {
 
   // Collect yesterday's completed games (cron runs at 7 AM ET / 11:00 UTC).
   // Use ET-aware date to avoid UTC day-boundary issues.
-  const now = new Date();
-  const todayET = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-  todayET.setDate(todayET.getDate() - 1);
-  const statsDate = todayET.toISOString().split('T')[0];
+  // Override with --date YYYY-MM-DD for backfills.
+  const dateArgIdx = process.argv.indexOf('--date');
+  let statsDate;
+  if (dateArgIdx !== -1 && process.argv[dateArgIdx + 1]) {
+    statsDate = process.argv[dateArgIdx + 1];
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(statsDate)) {
+      console.error(`Invalid --date value: ${statsDate} (expected YYYY-MM-DD)`);
+      process.exit(1);
+    }
+  } else {
+    const now = new Date();
+    const todayET = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+    todayET.setDate(todayET.getDate() - 1);
+    statsDate = todayET.toISOString().split('T')[0];
+  }
 
   // Fetch scoreboard — check if yesterday actually falls within this week.
   // On the first morning of a new week, Yahoo's current_week has already advanced,
