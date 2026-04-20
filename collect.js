@@ -112,7 +112,7 @@ async function fetchAllRostersWeekly(leagueKey, week) {
     const t = teams[i];
     console.log(`  Fetching weekly roster ${i + 1}/${teams.length}: ${t.name}...`);
     const data = await client.get(
-      `/team/${t.teamKey}/roster/players/stats;type=week;week=${week}`
+      `/team/${t.teamKey}/roster/players;out=percent_owned/stats;type=week;week=${week}`
     );
 
     const players = [];
@@ -133,13 +133,16 @@ async function fetchAllRostersWeekly(leagueKey, week) {
         // Selected position (BN, IL, or starting slot) is at p[1]
         const selectedPosition = p[1]?.selected_position?.[1]?.position || '';
 
-        // Weekly stats — search for player_stats (index varies, Yahoo sometimes
-        // inserts extra fields like is_editable before the stats object)
+        // Weekly stats, percent_owned — index varies, scan all
         let stats = {};
+        let ownership = 0;
         for (let k = 1; k < p.length; k++) {
-          if (p[k]?.player_stats?.stats) {
+          if (p[k]?.player_stats?.stats && Object.keys(stats).length === 0) {
             stats = parseYahooStats(p[k].player_stats.stats);
-            break;
+          }
+          if (Array.isArray(p[k]?.percent_owned) && ownership === 0) {
+            const valObj = p[k].percent_owned.find(x => x?.value !== undefined);
+            ownership = parseFloat(valObj?.value) || 0;
           }
         }
 
@@ -158,7 +161,7 @@ async function fetchAllRostersWeekly(leagueKey, week) {
           displayPosition: info.display_position || '',
           selectedPosition,
           status: info.status || '',
-          ownership: parseFloat(info.ownership?.value) || 0,
+          ownership,
           stats,
         });
       }
