@@ -102,7 +102,6 @@ YAHOO_CLIENT_ID          # OAuth client ID
 YAHOO_CLIENT_SECRET      # OAuth client secret
 YAHOO_REDIRECT_URI       # Must be https://localhost:3000/auth/callback
 YAHOO_MLB_LEAGUE_ID      # 75479
-ANTHROPIC_API_KEY        # For AI advisor features
 DEPLOY_REPO              # GitHub Pages target (e.g., PeregrineCode/dads-league-recap)
 RUMOURS_API_URL          # Optional: Cloudflare Worker URL for trade rumours
 LEAGUE_NAME              # Optional: override auto-detected league name
