@@ -78,7 +78,7 @@ function parseScoreboardResponse(data) {
           statWinners.push({
             stat: name || `stat_${winner.stat_id}`,
             winnerTeamKey: winner.winner_team_key || null,
-            isTied: winner.is_tied === '1',
+            isTied: winner.is_tied == 1, // Yahoo returns is_tied as number 1, not string '1'
           });
         }
       }

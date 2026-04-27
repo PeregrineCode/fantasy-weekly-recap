@@ -253,7 +253,23 @@ function hasRealStats(stats) {
   return false;
 }
 
-function findAddedPlayersWithStats(transactions, weeklyStats, teamNames) {
+// Count fantasy days a pickup had to contribute, from the add timestamp through
+// week end. ET-aware: an add after noon ET doesn't count that day (afternoon
+// games already started), so a Saturday-night add for a Sunday-only week
+// returns 1 day, not 2. Used to keep low-opportunity pickups out of the
+// worst-pickup pool — a 1-day cold stat line isn't a roastable decision.
+function computeDaysRostered(addTimestampSec, weekEndStr) {
+  if (!addTimestampSec || !weekEndStr) return null;
+  const ET_OFFSET_MS = -4 * 3600 * 1000; // EDT; close enough for April–Oct MLB season
+  const addEt = new Date(addTimestampSec * 1000 + ET_OFFSET_MS);
+  const startDay = Date.UTC(addEt.getUTCFullYear(), addEt.getUTCMonth(), addEt.getUTCDate())
+    + (addEt.getUTCHours() >= 12 ? 86400000 : 0);
+  const [y, m, d] = weekEndStr.split('-').map(Number);
+  const weekEndDay = Date.UTC(y, m - 1, d);
+  return Math.max(0, Math.round((weekEndDay - startDay) / 86400000) + 1);
+}
+
+function findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd) {
   const adds = transactions.filter(tx =>
     tx.type === 'add' || tx.type === 'add/drop'
   );
@@ -291,6 +307,7 @@ function findAddedPlayersWithStats(transactions, weeklyStats, teamNames) {
         score: scorePlayer(playerStats),
         isPitcher: PITCHING_POSITIONS.some(p => added.position.includes(p)),
         timestamp: tx.timestamp,
+        daysRostered: computeDaysRostered(tx.timestamp, weekEnd),
       });
     }
   }
@@ -301,8 +318,8 @@ function findAddedPlayersWithStats(transactions, weeklyStats, teamNames) {
 /**
  * Best pickup — added player with best weekly stat line.
  */
-function analyzeBestPickup(transactions, weeklyStats, teamNames) {
-  const added = findAddedPlayersWithStats(transactions, weeklyStats, teamNames);
+function analyzeBestPickup(transactions, weeklyStats, teamNames, weekEnd) {
+  const added = findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd);
   const sorted = added
     .filter(p => !p.isPitcher)
     .sort((a, b) => b.score - a.score);
@@ -314,6 +331,7 @@ function analyzeBestPickup(transactions, weeklyStats, teamNames) {
       position: p.position,
       fantasyTeam: p.fantasyTeam,
       stats: p.stats,
+      daysRostered: p.daysRostered,
     })),
     count: sorted.length,
   };
@@ -321,10 +339,14 @@ function analyzeBestPickup(transactions, weeklyStats, teamNames) {
 
 /**
  * Worst pickup — added player who produced nothing or negative value.
+ * Excludes players added too late in the week to have a real chance to
+ * contribute (≤1 fantasy day) — a 0-fer in a single game isn't a roastable
+ * decision, the manager simply didn't have a week of data to look bad.
  */
-function analyzeWorstPickup(transactions, weeklyStats, teamNames) {
-  const added = findAddedPlayersWithStats(transactions, weeklyStats, teamNames);
-  const sorted = added.sort((a, b) => a.score - b.score);
+function analyzeWorstPickup(transactions, weeklyStats, teamNames, weekEnd) {
+  const added = findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd);
+  const eligible = added.filter(p => p.daysRostered == null || p.daysRostered >= 2);
+  const sorted = eligible.sort((a, b) => a.score - b.score);
 
   return {
     bottom: sorted.slice(0, 3).map(p => ({
@@ -333,6 +355,7 @@ function analyzeWorstPickup(transactions, weeklyStats, teamNames) {
       position: p.position,
       fantasyTeam: p.fantasyTeam,
       stats: p.stats,
+      daysRostered: p.daysRostered,
     })),
     count: sorted.length,
   };
@@ -341,8 +364,8 @@ function analyzeWorstPickup(transactions, weeklyStats, teamNames) {
 /**
  * Best pitcher stream — best pitching add of the week.
  */
-function analyzeBestStream(transactions, weeklyStats, teamNames) {
-  const added = findAddedPlayersWithStats(transactions, weeklyStats, teamNames);
+function analyzeBestStream(transactions, weeklyStats, teamNames, weekEnd) {
+  const added = findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd);
   const pitchers = added
     .filter(p => p.isPitcher)
     .sort((a, b) => scorePitcher(b.stats) - scorePitcher(a.stats));
@@ -354,6 +377,7 @@ function analyzeBestStream(transactions, weeklyStats, teamNames) {
       position: p.position,
       fantasyTeam: p.fantasyTeam,
       stats: p.stats,
+      daysRostered: p.daysRostered,
     })),
     count: pitchers.length,
   };
@@ -486,10 +510,13 @@ function analyzePowerRankings(standings, scoreboard, teamNames) {
   const ranked = standings
     .map(team => {
       const weekly = weeklyPerf[team.teamKey] || { wins: 0, catWins: 0, catLosses: 0 };
-      // Composite score: win% * 0.6 + weekly cat win rate * 0.4
+      // Composite score: win% * 0.85 + weekly cat win rate * 0.15.
+      // The weekly term nudges for hot/cold form without letting one matchup
+      // overwhelm a team's season body of work — a 2-10 week shouldn't move
+      // a top-3 team out of the top half.
       const seasonScore = team.pct;
       const weeklyScore = weekly.catWins / Math.max(1, weekly.catWins + weekly.catLosses);
-      const composite = seasonScore * 0.6 + weeklyScore * 0.4;
+      const composite = seasonScore * 0.85 + weeklyScore * 0.15;
 
       return {
         teamKey: team.teamKey,
@@ -1316,9 +1343,9 @@ async function analyze(week) {
       storylines,
       matchups: analyzeMatchups(scoreboard, teamNames),
       playersOfTheWeek: analyzePlayersOfTheWeek(weeklyRosters),
-      bestPickup: analyzeBestPickup(transactions, weeklyStats, teamNames),
-      worstPickup: analyzeWorstPickup(transactions, weeklyStats, teamNames),
-      bestStream: analyzeBestStream(transactions, weeklyStats, teamNames),
+      bestPickup: analyzeBestPickup(transactions, weeklyStats, teamNames, meta?.weekEnd),
+      worstPickup: analyzeWorstPickup(transactions, weeklyStats, teamNames, meta?.weekEnd),
+      bestStream: analyzeBestStream(transactions, weeklyStats, teamNames, meta?.weekEnd),
       transactionDesk: analyzeTransactionDesk(transactions, weeklyStats, teamNames, standings, week),
       standingsMovers: analyzeStandingsMovers(standings, prevStandings, teamNames),
       powerRankings: analyzePowerRankings(standings, scoreboard, teamNames),
