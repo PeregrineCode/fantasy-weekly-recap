@@ -404,6 +404,41 @@ async function fetchRumours(weekStart) {
   }
 }
 
+// The since=weekStart API filter can catch rumours submitted in the early
+// hours of the week's first day (ET) that were already consumed by the prior
+// week's narration. Each week records the rumours it claimed; future weeks
+// exclude those by submittedAt.
+function loadConsumedRumourTimestamps(currentWeek) {
+  const consumed = new Set();
+  const snapshotsDir = path.join(__dirname, 'snapshots');
+  if (!fs.existsSync(snapshotsDir)) return consumed;
+
+  for (const dir of fs.readdirSync(snapshotsDir)) {
+    const match = dir.match(/^week-(\d+)$/);
+    if (!match) continue;
+    if (parseInt(match[1], 10) >= currentWeek) continue;
+
+    const manifestPath = path.join(snapshotsDir, dir, 'rumours-used.json');
+    if (!fs.existsSync(manifestPath)) continue;
+
+    try {
+      const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+      for (const r of manifest.consumed || []) {
+        if (r.submittedAt) consumed.add(r.submittedAt);
+      }
+    } catch (e) {
+      console.log(`  Warning: could not read ${manifestPath}: ${e.message}`);
+    }
+  }
+
+  return consumed;
+}
+
+function saveConsumedRumours(snapshotDir, rumours) {
+  const manifestPath = path.join(snapshotDir, 'rumours-used.json');
+  fs.writeFileSync(manifestPath, JSON.stringify({ consumed: rumours }, null, 2));
+}
+
 function promptInsiderReport(rumours, powerRankings, transactions) {
   if (!rumours.length) return null;
 
@@ -641,12 +676,19 @@ async function narrate(week, { only, except } = {}) {
     teamNameBlock = `\n\n# Current Team Names\n${lines.join('\n')}\n`;
   }
 
-  // Fetch trade rumours from the API (if configured)
-  const rumours = await fetchRumours(analysis.weekStart || '');
+  // Fetch trade rumours from the API and filter out any already consumed
+  // by prior weeks (see loadConsumedRumourTimestamps for rationale).
+  const rawRumours = await fetchRumours(analysis.weekStart || '');
+  const consumedFromPriorWeeks = loadConsumedRumourTimestamps(week);
+  const rumours = rawRumours.filter(r => !consumedFromPriorWeeks.has(r.submittedAt));
 
   console.log(`Generating narrative for Week ${week}...`);
+  if (rawRumours.length > rumours.length) {
+    console.log(`  Skipped ${rawRumours.length - rumours.length} rumour(s) already used in prior weeks`);
+  }
   if (rumours.length > 0) {
     console.log(`  Loaded ${rumours.length} rumour(s) for the insider column`);
+    saveConsumedRumours(snapshotDir, rumours);
   }
 
   // --- Build segment prompts ---

@@ -121,7 +121,7 @@ League members submit trade rumours and team gossip via a form on the recap site
 - Deploy: `cd rumours-worker && npm install && npx wrangler deploy`
 - Manage KV: entries visible at https://dash.cloudflare.com → Workers & Pages → KV
 
-**Pipeline integration:** `narrate.js` fetches rumours from `RUMOURS_API_URL` at narration time. If no rumours exist or the URL is not configured, the insider segment is silently skipped. The segment key is `insider` — use `--only insider` to regenerate just this column.
+**Pipeline integration:** `narrate.js` fetches rumours from `RUMOURS_API_URL` at narration time. If no rumours exist or the URL is not configured, the insider segment is silently skipped. The segment key is `insider` — use `--only insider` to regenerate just this column. Each week records the rumours it consumed to `snapshots/week-N/rumours-used.json`; future narrations exclude any submittedAt timestamps already claimed, so a rumour submitted in the early hours of Monday ET can't get double-counted across two weeks.
 
 **Submit page:** `build.js` generates `site/submit.html` and adds a nav link when `RUMOURS_API_URL` is set. Without the env var, the submit page and nav link are omitted.
 

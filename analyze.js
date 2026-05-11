@@ -363,11 +363,13 @@ function analyzeWorstPickup(transactions, weeklyStats, teamNames, weekEnd) {
 
 /**
  * Best pitcher stream — best pitching add of the week.
+ * A stream implies a starting pitcher: require 5+ IP so tiny relief
+ * lines (2 IP, ERA 0.00) can't dominate the z-score ranking.
  */
 function analyzeBestStream(transactions, weeklyStats, teamNames, weekEnd) {
   const added = findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd);
   const pitchers = added
-    .filter(p => p.isPitcher)
+    .filter(p => p.isPitcher && Number(p.stats.IP) >= 5)
     .sort((a, b) => scorePitcher(b.stats) - scorePitcher(a.stats));
 
   return {
