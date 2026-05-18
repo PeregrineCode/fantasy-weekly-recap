@@ -90,7 +90,7 @@ node deploy.js                  # Push to GitHub Pages repo
 - **Stats index varies:** Yahoo sometimes inserts extra fields (like `is_editable`) before the `player_stats` object in roster responses, shifting its index. Always search for `player_stats` at any index rather than hardcoding `p[2]`.
 
 ## Segments
-Matchup Recaps (includes mid-week drama/storylines when daily data available), Players of the Week (1 winner + 3 runners-up for batters and pitchers), Best Pickup, Worst Pickup (Hall of Shame), Best Pitcher Stream, Transaction Desk, Standings Movers, Waiver Wire Misses, Power Rankings, Bench Blunders (requires nightly position data), The Insider Report (trade rumours from league members, requires `RUMOURS_API_URL`)
+Matchup Recaps (includes mid-week drama/storylines when daily data available), Players of the Week (1 winner + 3 runners-up for batters and pitchers), Best Pickup, Worst Pickup (Hall of Shame), Best Pitcher Stream, Transaction Desk, Standings Movers, Power Rankings, Bench Blunders (requires nightly position data), The Insider Report (trade rumours from league members, requires `RUMOURS_API_URL`)
 
 ## Prompts
 - `prompts/system.txt` — Core role instruction for claude CLI

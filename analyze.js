@@ -625,59 +625,6 @@ function analyzePlayersOfTheWeek(weeklyRosters) {
 }
 
 /**
- * Waiver wire misses — best unrostered performers of the week.
- * Looks at all players on rosters who have low ownership.
- */
-function analyzeWaiverMisses(rosters, weeklyRosters) {
-  // Find low-ownership players who had great weeks.
-  // Use season rosters for ownership data, weekly rosters for weekly stats.
-  const allPlayers = [];
-
-  // Build ownership lookup from season rosters
-  const ownershipMap = {};
-  if (rosters) {
-    for (const roster of Object.values(rosters)) {
-      for (const player of roster.players) {
-        ownershipMap[player.playerKey] = player.ownership;
-      }
-    }
-  }
-
-  // Score players using weekly stats
-  const source = weeklyRosters || rosters;
-  if (!source) return [];
-
-  for (const roster of Object.values(source)) {
-    for (const player of roster.players) {
-      const ownership = ownershipMap[player.playerKey] ?? player.ownership ?? 0;
-      if (ownership <= 0 || ownership >= 30) continue;
-      const stats = player.stats || {};
-      if (Object.keys(stats).length === 0) continue;
-
-      allPlayers.push({
-        name: player.name,
-        team: player.team,
-        position: player.displayPosition,
-        ownership,
-        stats,
-        score: scorePlayer(stats),
-        fantasyTeam: roster.name,
-      });
-    }
-  }
-
-  allPlayers.sort((a, b) => b.score - a.score);
-  return allPlayers.slice(0, 5).map(p => ({
-    name: p.name,
-    team: p.team,
-    position: p.position,
-    ownership: p.ownership,
-    stats: p.stats,
-    fantasyTeam: p.fantasyTeam,
-  }));
-}
-
-/**
  * Compute rolling batting stats from recent weekly roster snapshots.
  * Looks back up to ROLLING_WEEKS weeks and sums H/AB to compute rolling AVG/OBP.
  * Returns { playerKey: { hits, ab, avg, obp, weeks } }
@@ -776,9 +723,11 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
     // Snapshots without nightly positions have stale API positions from the next morning,
     // which reflect lineup changes made after games ended.
     const benchDays = {};
+    let nightlySnapshotCount = 0;
     for (const snap of dailySnapshots) {
       if (!snap.rosters) continue;
       if (snap.positionsSource !== 'nightly') continue;
+      nightlySnapshotCount++;
       for (const roster of Object.values(snap.rosters)) {
         for (const player of roster.players) {
           const key = `${player.playerKey}|${roster.teamKey}`;
@@ -819,6 +768,9 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
     // Find players who were benched on at least 1 day they had stats
     for (const info of Object.values(benchDays)) {
       if (info.benchedWithStats === 0) continue;
+      // Skip players who were only on the roster for a single day — a late-week
+      // pickup who didn't start is a timing slip, not a "front office failure."
+      if (info.totalDays < 2) continue;
 
       // Sum stats from only the benched days (not the full week)
       const benchStats = {};
@@ -870,7 +822,9 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
         .map(([k, v]) => `${k}: ${typeof v === 'number' && v % 1 !== 0 ? v.toFixed(3) : v}`)
         .join(', ');
 
-      const benchDesc = info.daysOnBench === info.totalDays
+      // "Entire week" only when the player was on the roster every nightly-snapshot day
+      // AND was benched on all of them. Otherwise describe by benched-with-stats days.
+      const benchDesc = (info.totalDays === nightlySnapshotCount && info.daysOnBench === nightlySnapshotCount)
         ? 'the entire week'
         : `${info.benchedWithStats} day(s) he had stats`;
 
@@ -1351,7 +1305,6 @@ async function analyze(week) {
       transactionDesk: analyzeTransactionDesk(transactions, weeklyStats, teamNames, standings, week),
       standingsMovers: analyzeStandingsMovers(standings, prevStandings, teamNames),
       powerRankings: analyzePowerRankings(standings, scoreboard, teamNames),
-      waiverMisses: analyzeWaiverMisses(rosters, weeklyRosters),
       roasts: analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNames, computeRecentPlayerStats(week), dailySnapshots, scoreboard, gameStarts),
     },
   };

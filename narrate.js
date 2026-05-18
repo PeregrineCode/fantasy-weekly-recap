@@ -53,7 +53,6 @@ const SEGMENT_REGISTRY = [
   { key: 'roasts',        title: 'Front Office Failures',    writer: 'chuck',  group: 'tx' },
   { key: 'tx-desk',       title: 'Transaction Desk',         writer: 'chuck',  group: 'tx' },
   { key: 'insider',       title: 'The Insider Report',        writer: 'insider', group: null },
-  { key: 'misses',        title: 'Ones That Got Away',       writer: 'chuck',  group: null },
   { key: 'maddog',        title: "Mad Dog's Hot Takes",      writer: 'maddog', group: null },
   { key: 'numbers',       title: "The Numbers Don't Lie",    writer: 'gerald', group: null },
 ];
@@ -307,15 +306,6 @@ function promptStandingsMovers(movers) {
     return `${m.name}: ${dir} → now #${m.rank} (${m.record})`;
   }).join('\n');
   return `Write "Movers and Shakers" about standings movement. 1-2 paragraphs.\n\nStandings changes:\n${data}`;
-}
-
-function promptWaiverMisses(misses) {
-  if (!misses.length) return null;
-  const data = misses.map(p => {
-    const statLine = Object.entries(p.stats).filter(([k, v]) => !isNaN(v) && v !== 0).map(([k, v]) => fmtStat(k, v)).join(', ');
-    return `${p.name} (${p.position}, ${p.team}) — ${p.ownership}% owned, rostered by ${p.fantasyTeam}\n  Stats: ${statLine}`;
-  }).join('\n\n');
-  return `Write "Ones That Got Away" about low-ownership players who had great weeks. 1-2 paragraphs.\n\nLow-owned performers:\n${data}`;
 }
 
 function promptRoasts(segment) {
@@ -730,10 +720,6 @@ async function narrate(week, { only, except } = {}) {
   const insiderP = promptInsiderReport(rumours, segments.powerRankings, segments.transactionDesk);
   const insiderSeg = insiderP ? { title: 'The Insider Report', prompt: insiderP, fallback: '*Our insider is currently unreachable. Check back next week.*' } : null;
 
-  // Individual: Waiver Misses (self-contained)
-  const missesP = promptWaiverMisses(segments.waiverMisses);
-  const missesSeg = missesP ? { title: 'Ones That Got Away', prompt: missesP, fallback: () => fallbackSimple('sleepers', segments.waiverMisses) } : null;
-
   // Individual: Mad Dog (isolation is the point)
   const maddogP = promptMadDogHotTakes(segments.powerRankings, segments.matchups);
   const maddogSeg = maddogP ? { title: "Mad Dog's Hot Takes", prompt: maddogP, fallback: '*Mad Dog was unavailable for comment this week.*' } : null;
@@ -755,7 +741,6 @@ async function narrate(week, { only, except } = {}) {
     ['rankings', prSeg, 'chuck', 'Power Rankings'],
     ['movers', moversSeg, 'chuck', 'Movers and Shakers'],
     ['insider', insiderSeg, 'insider', 'The Insider Report'],
-    ['misses', missesSeg, 'chuck', 'Ones That Got Away'],
     ['maddog', maddogSeg, 'maddog', "Mad Dog's Hot Takes"],
     ['numbers', geraldSeg, 'gerald', "The Numbers Don't Lie"],
   ];
@@ -908,7 +893,6 @@ async function narrate(week, { only, except } = {}) {
   generateSingle('chuck', moversSeg, 'Movers and Shakers');
   generateBatch('chuck', txBatch, 'Transactions');
   generateSingle('insider', insiderSeg, 'The Insider Report');
-  generateSingle('chuck', missesSeg, 'Waiver Misses');
   generateSingle('maddog', maddogSeg, "Mad Dog's Hot Takes");
   generateSingle('gerald', geraldSeg, "The Numbers Don't Lie");
 
