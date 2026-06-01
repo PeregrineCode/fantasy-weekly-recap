@@ -3,7 +3,7 @@
  *
  * Usage: node daily-positions.js
  *
- * Run nightly at 11 PM ET when all lineups are locked for the day.
+ * Run nightly at 10:30 PM ET when all lineups are locked for the day.
  * Captures TODAY's positions (not yesterday's), since games are still in progress.
  * The companion daily-collect.js (7 AM next morning) merges these positions
  * with finalized stats to produce accurate daily snapshots.
@@ -89,12 +89,13 @@ async function dailyPositions() {
   const meta = await client.get(`/league/${leagueKey}/metadata`);
   const week = parseInt(meta.fantasy_content.league[0].current_week) || 1;
 
-  // Capture TODAY's positions (lineups are locked by 11 PM ET).
-  // Cron fires at 03:00 UTC (11 PM ET prev day in EDT) — the intended moment —
+  // Capture TODAY's positions (lineups are locked by 10:30 PM ET).
+  // Cron fires at 02:30 UTC (10:30 PM ET prev day in EDT) — the intended moment —
   // but GitHub Actions delays scheduled runs by 1-2+ hours, pushing actual run
-  // time into 1-3 AM ET of the NEXT calendar day. Subtract 3 hours from "now"
-  // before computing the ET date so both on-time and delayed runs land on the
-  // same target day (the day whose games just completed).
+  // time into the small hours of the NEXT calendar day. Subtract 3 hours from
+  // "now" before computing the ET date — this aligns with Yahoo's ~3 AM ET
+  // fantasy-day rollover, so both on-time and delayed runs (up to the rollover)
+  // land on the same target day (the day whose games just completed).
   const targetMs = Date.now() - 3 * 60 * 60 * 1000;
   const today = new Date(targetMs).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 

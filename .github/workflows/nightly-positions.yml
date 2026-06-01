@@ -2,10 +2,13 @@ name: Nightly Roster Position Capture
 
 on:
   schedule:
-    # Run at 11pm ET (03:00 UTC next day) every day during MLB season.
-    # All lineups are locked by this time, so positions reflect
-    # the actual game-day roster (not next-morning changes).
-    - cron: '0 3 * * *'
+    # Run at 10:30pm ET (02:30 UTC next day, EDT) every day during MLB season.
+    # The latest West Coast game starts before 10:30pm ET, so all lineups are
+    # locked by this time and positions reflect the actual game-day roster.
+    # Earlier than the old 11pm slot to buy more buffer against GitHub's
+    # scheduling delays before Yahoo's ~3am ET fantasy-day rollover (a run that
+    # slips past the rollover captures the NEXT day's roster instead).
+    - cron: '30 2 * * *'
   workflow_dispatch: # Allow manual trigger
 
 jobs:
