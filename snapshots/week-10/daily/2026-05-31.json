@@ -1,8 +1,8 @@
 {
   "date": "2026-05-31",
-  "collectedAt": "2026-06-01T13:28:44.836Z",
+  "collectedAt": "2026-06-01T16:08:06.105Z",
   "week": 10,
-  "positionsSource": "nightly",
+  "positionsSource": "api",
   "matchups": [
     {
       "team1": {
@@ -1189,7 +1189,7 @@
         {
           "playerKey": "469.p.11370",
           "name": "Oneil Cruz",
-          "selectedPosition": "OF",
+          "selectedPosition": "BN",
           "stats": {
             "H/AB": 0,
             "R": 2,
@@ -1227,7 +1227,7 @@
         {
           "playerKey": "469.p.10574",
           "name": "Adrian Morejon",
-          "selectedPosition": "P",
+          "selectedPosition": "RP",
           "stats": {
             "IP": 0.2,
             "K": 0,
@@ -1246,19 +1246,19 @@
         {
           "playerKey": "469.p.9007",
           "name": "Nathan Eovaldi",
-          "selectedPosition": "BN",
+          "selectedPosition": "P",
           "stats": {}
         },
         {
           "playerKey": "469.p.10148",
           "name": "Blake Snell",
-          "selectedPosition": "BN",
+          "selectedPosition": "P",
           "stats": {}
         },
         {
           "playerKey": "469.p.12540",
           "name": "Bryce Miller",
-          "selectedPosition": "BN",
+          "selectedPosition": "P",
           "stats": {
             "IP": 5,
             "K": 6,
@@ -2399,7 +2399,7 @@
         {
           "playerKey": "469.p.66369",
           "name": "Munetaka Murakami",
-          "selectedPosition": "BN",
+          "selectedPosition": "1B",
           "stats": {}
         },
         {
@@ -2433,7 +2433,7 @@
         {
           "playerKey": "469.p.12413",
           "name": "Colson Montgomery",
-          "selectedPosition": "Util",
+          "selectedPosition": "SS",
           "stats": {
             "H/AB": 1,
             "R": 1,
@@ -2475,7 +2475,7 @@
         {
           "playerKey": "469.p.11733",
           "name": "Kyle Stowers",
-          "selectedPosition": "BN",
+          "selectedPosition": "OF",
           "stats": {
             "H/AB": 1,
             "R": 0,
@@ -2503,7 +2503,7 @@
         {
           "playerKey": "469.p.10893",
           "name": "Jo Adell",
-          "selectedPosition": "BN",
+          "selectedPosition": "Util",
           "stats": {
             "H/AB": 1,
             "R": 0,
@@ -2517,7 +2517,7 @@
         {
           "playerKey": "469.p.10918",
           "name": "Pete Alonso",
-          "selectedPosition": "1B",
+          "selectedPosition": "BN",
           "stats": {
             "H/AB": 2,
             "R": 2,
@@ -2531,7 +2531,7 @@
         {
           "playerKey": "469.p.11892",
           "name": "Ernie Clement",
-          "selectedPosition": "SS",
+          "selectedPosition": "BN",
           "stats": {
             "H/AB": 2,
             "R": 2,
@@ -2545,7 +2545,7 @@
         {
           "playerKey": "469.p.10440",
           "name": "Ian Happ",
-          "selectedPosition": "OF",
+          "selectedPosition": "BN",
           "stats": {
             "H/AB": 0,
             "R": 0,
@@ -2629,7 +2629,7 @@
         {
           "playerKey": "469.p.9620",
           "name": "Max Fried",
-          "selectedPosition": "BN",
+          "selectedPosition": "P",
           "stats": {}
         },
         {
@@ -2757,7 +2757,7 @@
         {
           "playerKey": "469.p.12336",
           "name": "Maikel Garcia",
-          "selectedPosition": "BN",
+          "selectedPosition": "OF",
           "stats": {}
         },
         {
@@ -2791,7 +2791,7 @@
         {
           "playerKey": "469.p.10504",
           "name": "Cody Bellinger",
-          "selectedPosition": "OF",
+          "selectedPosition": "BN",
           "stats": {
             "H/AB": 2,
             "R": 1,
@@ -2884,19 +2884,19 @@
         {
           "playerKey": "469.p.11014",
           "name": "Freddy Peralta",
-          "selectedPosition": "BN",
+          "selectedPosition": "P",
           "stats": {}
         },
         {
           "playerKey": "469.p.11319",
           "name": "Kris Bubic",
-          "selectedPosition": "BN",
+          "selectedPosition": "P",
           "stats": {}
         },
         {
           "playerKey": "469.p.9902",
           "name": "Raisel Iglesias",
-          "selectedPosition": "P",
+          "selectedPosition": "BN",
           "stats": {}
         },
         {

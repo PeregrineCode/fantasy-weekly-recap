@@ -1,7 +1,7 @@
 {
-  "date": "2026-05-31",
+  "date": "2026-06-01",
   "collectedAt": "2026-06-01T08:17:35.672Z",
-  "week": 10,
+  "week": 11,
   "positions": {
     "469.l.75479.t.1": {
       "teamKey": "469.l.75479.t.1",
@@ -1313,6 +1313,5 @@
         }
       ]
     }
-  },
-  "recoveredFrom": "positions-2026-06-01.json (nightly run delayed to 08:17 UTC, misdated past 3h buffer)"
+  }
 }

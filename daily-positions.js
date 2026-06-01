@@ -26,28 +26,6 @@ const { auth, client } = createClient({
 });
 
 /**
- * Which fantasy week does an ET date fall in? Mirrors collect.js's Mon-Sun
- * boundary logic, derived from the season start date. Anchored at 04:00 UTC
- * (= midnight ET) so the UTC calendar date equals the ET date and boundaries
- * are timezone-independent. Used instead of the live current_week so a delayed
- * Sunday-night capture isn't misfiled when Yahoo rolls the week over early Monday.
- */
-function weekForDate(dateStr, seasonStartStr) {
-  const date = new Date(dateStr + 'T04:00:00Z');
-  const start = new Date(seasonStartStr + 'T04:00:00Z');
-  // End of week 1 = first Sunday on/after the season start.
-  const firstSunday = new Date(start);
-  const dow = firstSunday.getUTCDay(); // 0 = Sunday
-  firstSunday.setUTCDate(firstSunday.getUTCDate() + (dow === 0 ? 0 : 7 - dow));
-  if (date <= firstSunday) return 1;
-  // Week 2 begins the Monday after week 1's Sunday; every week after is 7 days.
-  const mondayWeek2 = new Date(firstSunday);
-  mondayWeek2.setUTCDate(mondayWeek2.getUTCDate() + 1);
-  const days = Math.floor((date - mondayWeek2) / 86400000);
-  return 2 + Math.floor(days / 7);
-}
-
-/**
  * Fetch all rosters with positions only (no stats).
  * Returns { teamKey: { name, players: [{ playerKey, name, selectedPosition }] } }
  */
@@ -107,32 +85,18 @@ async function dailyPositions() {
   const gameKey = await client.resolveGameKey('mlb');
   const leagueKey = client.leagueKey(gameKey, LEAGUE_ID);
 
-  // Get league metadata (season start drives the week-from-date math below).
+  // Get current week
   const meta = await client.get(`/league/${leagueKey}/metadata`);
-  const seasonStart = meta.fantasy_content.league[0].start_date;
+  const week = parseInt(meta.fantasy_content.league[0].current_week) || 1;
 
-  // Capture the just-completed day's positions (lineups are locked by 11 PM ET).
+  // Capture TODAY's positions (lineups are locked by 11 PM ET).
   // Cron fires at 03:00 UTC (11 PM ET prev day in EDT) — the intended moment —
-  // but GitHub Actions delays scheduled runs unpredictably, pushing actual run
-  // time anywhere from ~03:30 UTC to several hours later (observed up to 08:17
-  // UTC). A fixed "subtract N hours" buffer is fragile: a 3h buffer caught the
-  // routine ~3.5h slip but a ~5.3h delay once blew past it, misdating the file
-  // a day forward (see week 10 / 2026-05-31).
-  //
-  // Robust rule: the target ET day is always one calendar day before the run's
-  // UTC date. The cron fires at 03:00 UTC, which is already the UTC day AFTER
-  // the ET day whose games just finished; any same-night delay (up to ~20h)
-  // stays within that same UTC day, so "(UTC date of now) − 1 day" is stable
-  // across the full plausible delay window.
-  const nowUtc = new Date();
-  const target = new Date(Date.UTC(nowUtc.getUTCFullYear(), nowUtc.getUTCMonth(), nowUtc.getUTCDate() - 1));
-  const today = target.toISOString().slice(0, 10);
-
-  // Derive the week from the captured date, NOT the live current_week. Yahoo
-  // rolls current_week over sometime in the early hours of Monday ET; a Sunday
-  // capture delayed past that rollover would otherwise read the NEXT week and
-  // be filed into the wrong week folder (see week 10 / 2026-05-31).
-  const week = weekForDate(today, seasonStart);
+  // but GitHub Actions delays scheduled runs by 1-2+ hours, pushing actual run
+  // time into 1-3 AM ET of the NEXT calendar day. Subtract 3 hours from "now"
+  // before computing the ET date so both on-time and delayed runs land on the
+  // same target day (the day whose games just completed).
+  const targetMs = Date.now() - 3 * 60 * 60 * 1000;
+  const today = new Date(targetMs).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 
   console.log(`Position capture: Week ${week}, date ${today}`);
 
@@ -166,4 +130,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { dailyPositions, weekForDate };
+module.exports = { dailyPositions };
