@@ -1,5 +1,6 @@
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
+const { weekForDate } = require('../daily-positions.js');
 
 /**
  * Week boundary calculation — Yahoo fantasy weeks are Mon-Sun,
@@ -85,5 +86,47 @@ describe('week boundary calculation', () => {
     assert.equal(w1.end, '2025-03-30'); // same day
     const w2 = weekRange('2025-03-30', 2);
     assert.equal(w2.start, '2025-03-31'); // Monday
+  });
+});
+
+/**
+ * Inverse mapping used by daily-positions.js: given a captured ET date, which
+ * week does it belong to? This must be derived from the season start, NOT the
+ * live current_week — Yahoo rolls current_week over in the early hours of Monday
+ * ET, so a Sunday-night capture delayed past that rollover would read the next
+ * week and be filed into the wrong folder. Regression: week 10 / 2026-05-31,
+ * whose nightly run slipped to 08:17 UTC and misdated/misfiled itself as week 11.
+ */
+describe('weekForDate (date → week)', () => {
+  const SEASON_START = '2026-03-25'; // Wednesday
+
+  it('maps a mid-week day to its week', () => {
+    assert.equal(weekForDate('2026-05-27', SEASON_START), 10); // Wed of week 10
+  });
+
+  it('maps the Monday start of a week', () => {
+    assert.equal(weekForDate('2026-05-25', SEASON_START), 10);
+  });
+
+  it('maps the Sunday end of a week to that same week, not the next', () => {
+    assert.equal(weekForDate('2026-05-31', SEASON_START), 10); // the regression case
+    assert.equal(weekForDate('2026-05-24', SEASON_START), 9);
+  });
+
+  it('rolls to the next week on Monday', () => {
+    assert.equal(weekForDate('2026-06-01', SEASON_START), 11);
+  });
+
+  it('maps season-start week and its boundary to week 1', () => {
+    assert.equal(weekForDate('2026-03-25', SEASON_START), 1);
+    assert.equal(weekForDate('2026-03-29', SEASON_START), 1); // first Sunday
+    assert.equal(weekForDate('2026-03-30', SEASON_START), 2); // next Monday
+  });
+
+  it('is independent of the exact start day within week 1', () => {
+    for (const start of ['2026-03-23', '2026-03-26', '2026-03-29']) {
+      assert.equal(weekForDate('2026-05-31', start), 10);
+      assert.equal(weekForDate('2026-06-01', start), 11);
+    }
   });
 });
