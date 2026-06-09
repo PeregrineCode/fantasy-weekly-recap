@@ -301,3 +301,92 @@ describe('tx group expansion', () => {
     }
   });
 });
+
+// --- findToughLuckLosses ---
+
+const { findToughLuckLosses } = require('../narrate');
+
+describe('findToughLuckLosses', () => {
+  // Helper: build a scoreboard from team stat maps + per-matchup category winners.
+  const mk = (teamKey, name, stats) => ({ teamKey, name, stats });
+
+  it('flags a sole 2nd-best total that lost its category', () => {
+    // K: A=73 (leader), B=62 (sole 2nd), C=60, D=10. B faces A and loses K.
+    const sb = [
+      { team1: mk('a', 'A', { K: 73 }), team2: mk('b', 'B', { K: 62 }),
+        statWinners: [{ stat: 'K', winnerTeamKey: 'a', isTied: false }] },
+      { team1: mk('c', 'C', { K: 60 }), team2: mk('d', 'D', { K: 10 }),
+        statWinners: [{ stat: 'K', winnerTeamKey: 'c', isTied: false }] },
+    ];
+    const r = findToughLuckLosses(sb, new Set(), { K: 'Strikeouts' });
+    assert.equal(r.length, 1);
+    assert.equal(r[0].team, 'B');
+    assert.equal(r[0].opponent, 'A');
+    assert.equal(r[0].soleSecond, true);
+    assert.equal(r[0].tiedWith, 0);
+  });
+
+  it('labels a tied-for-2nd loss without claiming sole second', () => {
+    // HR: A=14 (leader), B=12, C=12 (B and C tied for 2nd). B faces A and loses HR.
+    const sb = [
+      { team1: mk('a', 'A', { HR: 14 }), team2: mk('b', 'B', { HR: 12 }),
+        statWinners: [{ stat: 'HR', winnerTeamKey: 'a', isTied: false }] },
+      { team1: mk('c', 'C', { HR: 12 }), team2: mk('d', 'D', { HR: 3 }),
+        statWinners: [{ stat: 'HR', winnerTeamKey: 'c', isTied: false }] },
+    ];
+    const r = findToughLuckLosses(sb, new Set(), { HR: 'Home Runs' });
+    assert.equal(r.length, 1);
+    assert.equal(r[0].team, 'B');
+    assert.equal(r[0].soleSecond, false);
+    assert.equal(r[0].tiedWith, 1);
+  });
+
+  it('respects inverted stats (lower is better)', () => {
+    // ERA: A=2.00 (best), B=2.50 (2nd best), C=3.00, D=9.00. B faces A and loses ERA.
+    const sb = [
+      { team1: mk('a', 'A', { ERA: 2.0 }), team2: mk('b', 'B', { ERA: 2.5 }),
+        statWinners: [{ stat: 'ERA', winnerTeamKey: 'a', isTied: false }] },
+      { team1: mk('c', 'C', { ERA: 3.0 }), team2: mk('d', 'D', { ERA: 9.0 }),
+        statWinners: [{ stat: 'ERA', winnerTeamKey: 'c', isTied: false }] },
+    ];
+    const r = findToughLuckLosses(sb, new Set(['ERA']), { ERA: 'ERA' });
+    assert.equal(r.length, 1);
+    assert.equal(r[0].team, 'B');
+    assert.equal(r[0].soleSecond, true);
+  });
+
+  it('does not flag a 2nd-best total that won its category', () => {
+    // R: A=100, B=90 (2nd). B faces C (R=50) and WINS R, so no tough-luck loss.
+    const sb = [
+      { team1: mk('b', 'B', { R: 90 }), team2: mk('c', 'C', { R: 50 }),
+        statWinners: [{ stat: 'R', winnerTeamKey: 'b', isTied: false }] },
+      { team1: mk('a', 'A', { R: 100 }), team2: mk('d', 'D', { R: 40 }),
+        statWinners: [{ stat: 'R', winnerTeamKey: 'a', isTied: false }] },
+    ];
+    const r = findToughLuckLosses(sb, new Set(), { R: 'Runs' });
+    assert.equal(r.length, 0);
+  });
+
+  it('does not flag a 3rd-best total (two teams better)', () => {
+    // R: A=100, B=90, C=80 (3rd). C faces A and loses R — but two teams beat C.
+    const sb = [
+      { team1: mk('a', 'A', { R: 100 }), team2: mk('c', 'C', { R: 80 }),
+        statWinners: [{ stat: 'R', winnerTeamKey: 'a', isTied: false }] },
+      { team1: mk('b', 'B', { R: 90 }), team2: mk('d', 'D', { R: 40 }),
+        statWinners: [{ stat: 'R', winnerTeamKey: 'b', isTied: false }] },
+    ];
+    const r = findToughLuckLosses(sb, new Set(), { R: 'Runs' });
+    assert.equal(r.length, 0);
+  });
+
+  it('ignores tied categories (no loser)', () => {
+    const sb = [
+      { team1: mk('a', 'A', { SB: 10 }), team2: mk('b', 'B', { SB: 8 }),
+        statWinners: [{ stat: 'SB', winnerTeamKey: null, isTied: true }] },
+      { team1: mk('c', 'C', { SB: 5 }), team2: mk('d', 'D', { SB: 3 }),
+        statWinners: [{ stat: 'SB', winnerTeamKey: 'c', isTied: false }] },
+    ];
+    const r = findToughLuckLosses(sb, new Set(), { SB: 'Stolen Bases' });
+    assert.equal(r.length, 0);
+  });
+});

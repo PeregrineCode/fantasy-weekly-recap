@@ -17,6 +17,14 @@ const { BATTING_CATS, PITCHING_CATS } = require('./lib/stat-categories');
 const SYSTEM_PROMPT = fs.readFileSync(path.join(__dirname, 'prompts', 'system.txt'), 'utf-8');
 const REFERENCE = fs.readFileSync(path.join(__dirname, 'prompts', 'reference.md'), 'utf-8');
 
+// Parse the team key → manager mapping out of the reference table (rows like
+// "| t.9 | Jordan | ... |"). Used to pin each current team name to its manager in
+// the prompt so writers can't attribute a team's week to the wrong manager.
+const MANAGER_BY_KEY = {};
+for (const m of REFERENCE.matchAll(/^\|\s*(t\.\d+)\s*\|\s*([^|]+?)\s*\|/gm)) {
+  MANAGER_BY_KEY[m[1]] = m[2].trim();
+}
+
 // Set before narration starts with current team key → name mapping
 let teamNameBlock = '';
 
@@ -120,20 +128,29 @@ const fmtStat = (k, v) => {
   return `${k}: ${v.toFixed(2)}`;
 };
 
+// Serialize a team's weekly stats for a prompt. Yahoo sometimes emits a bare numeric
+// `H/AB` at the team level (the hits count with the at-bats half dropped), which the
+// writers read as a phantom "hits" category — hits is not a scoring category, so drop
+// it. (Player-level H/AB is a "9/21" string and is already removed by the isNaN check.)
+const teamStatLine = (stats) => Object.entries(stats)
+  .filter(([k, v]) => k !== 'H/AB' && !isNaN(v))
+  .map(([k, v]) => fmtStat(k, v))
+  .join(', ');
+
 function promptMatchupRecaps(matchups, storylines) {
   if (!matchups.length) return null;
 
   const data = matchups.map(m => {
     if (m.isTie) {
-      const t1Stats = Object.entries(m.team1.stats).filter(([k, v]) => !isNaN(v)).map(([k, v]) => fmtStat(k, v)).join(', ');
-      const t2Stats = Object.entries(m.team2.stats).filter(([k, v]) => !isNaN(v)).map(([k, v]) => fmtStat(k, v)).join(', ');
+      const t1Stats = teamStatLine(m.team1.stats);
+      const t2Stats = teamStatLine(m.team2.stats);
       return `RESULT: ${m.team1.name} TIED ${m.team2.name} ${m.score} (this is a TIE — neither team won)` +
         (m.closest ? ` — closest cat: ${m.closest.stat} (margin: ${m.closest.margin.toFixed(3)})` : '') +
         `\n  ${m.team1.name} stats: ${t1Stats}` +
         `\n  ${m.team2.name} stats: ${t2Stats}`;
     }
-    const winnerStats = Object.entries(m.winner.stats).filter(([k, v]) => !isNaN(v)).map(([k, v]) => fmtStat(k, v)).join(', ');
-    const loserStats = Object.entries(m.loser.stats).filter(([k, v]) => !isNaN(v)).map(([k, v]) => fmtStat(k, v)).join(', ');
+    const winnerStats = teamStatLine(m.winner.stats);
+    const loserStats = teamStatLine(m.loser.stats);
     const ipWarnings = [];
     for (const [team, opp] of [[m.winner, m.loser], [m.loser, m.winner]]) {
       if (!team.belowIPMinimum) continue;
@@ -332,6 +349,55 @@ function promptMadDogHotTakes(powerRankings, matchups) {
   return `Write "Mad Dog's Hot Takes". Cover 2-3 of: declare a team DONE, crown a dynasty, make a bold prediction for next week, call out something that has you furious. Overreact wildly. 3-4 paragraphs.\n\nStandings:\n${rankData}\n\nResults:\n${matchupData}`;
 }
 
+/**
+ * Find category losses where the loser still posted the 2nd-highest total in the
+ * entire league for that stat — only one team beat them league-wide, and that one
+ * team was necessarily their matchup opponent. Pure tough-luck losses: an elite,
+ * near-best line that drew the one team capable of topping it.
+ */
+function findToughLuckLosses(scoreboard, invertedStats, catDisplay) {
+  const teams = [];
+  for (const m of scoreboard) teams.push(m.team1, m.team2);
+
+  const losses = [];
+  for (const m of scoreboard) {
+    for (const sw of m.statWinners) {
+      if (sw.isTied || !sw.winnerTeamKey) continue;
+      const winnerTeam = sw.winnerTeamKey === m.team1.teamKey ? m.team1 : m.team2;
+      const loserTeam = sw.winnerTeamKey === m.team1.teamKey ? m.team2 : m.team1;
+      const loserVal = loserTeam.stats[sw.stat];
+      if (loserVal == null || isNaN(loserVal)) continue;
+      // Count teams league-wide with a strictly better value than the loser.
+      const better = teams.filter(t => {
+        const v = t.stats[sw.stat];
+        if (v == null || isNaN(v)) return false;
+        return invertedStats.has(sw.stat) ? v < loserVal : v > loserVal;
+      }).length;
+      // Exactly one better → loser had the 2nd-best value league-wide, and that
+      // one better team is necessarily the opponent who beat them in the category.
+      if (better === 1) {
+        // How many OTHER teams matched the loser's mark? 0 → sole 2nd; >0 → tied for 2nd.
+        const tiedWith = teams.filter(t => {
+          if (t === loserTeam) return false;
+          const v = t.stats[sw.stat];
+          return v != null && !isNaN(v) && v === loserVal;
+        }).length;
+        losses.push({
+          team: loserTeam.name,
+          opponent: winnerTeam.name,
+          cat: catDisplay[sw.stat] || sw.stat,
+          stat: sw.stat,
+          loserVal,
+          winnerVal: winnerTeam.stats[sw.stat],
+          soleSecond: tiedWith === 0,
+          tiedWith,
+        });
+      }
+    }
+  }
+  return losses;
+}
+
 function promptNumbersDontLie(matchups, powerRankings, scoreboard) {
   if (!powerRankings.length) return null;
 
@@ -343,7 +409,8 @@ function promptNumbersDontLie(matchups, powerRankings, scoreboard) {
   }
 
   const invertedStats = new Set([...BATTING_CATS, ...PITCHING_CATS].filter(c => c.inverted).map(c => c.name));
-  const cats = Object.keys(Object.values(allTeamStats)[0] || {});
+  const catDisplay = Object.fromEntries([...BATTING_CATS, ...PITCHING_CATS].map(c => [c.name, c.display || c.name]));
+  const cats = Object.keys(Object.values(allTeamStats)[0] || {}).filter(k => k !== 'H/AB');
   const leagueContext = [];
   for (const cat of cats) {
     const vals = Object.entries(allTeamStats).map(([name, stats]) => ({ name, val: stats[cat] })).filter(e => !isNaN(e.val)).sort((a, b) => b.val - a.val);
@@ -356,16 +423,21 @@ function promptNumbersDontLie(matchups, powerRankings, scoreboard) {
 
   const matchupData = matchups.map(m => {
     if (m.isTie) {
-      const t1Stats = Object.entries(m.team1.stats).filter(([k, v]) => !isNaN(v)).map(([k, v]) => fmtStat(k, v)).join(', ');
-      const t2Stats = Object.entries(m.team2.stats).filter(([k, v]) => !isNaN(v)).map(([k, v]) => fmtStat(k, v)).join(', ');
+      const t1Stats = teamStatLine(m.team1.stats);
+      const t2Stats = teamStatLine(m.team2.stats);
       return `${m.team1.name} TIED ${m.team2.name} (${m.score})\n  ${m.team1.name}: ${t1Stats}\n  ${m.team2.name}: ${t2Stats}`;
     }
-    const winStats = Object.entries(m.winner.stats).filter(([k, v]) => !isNaN(v)).map(([k, v]) => fmtStat(k, v)).join(', ');
-    const loseStats = Object.entries(m.loser.stats).filter(([k, v]) => !isNaN(v)).map(([k, v]) => fmtStat(k, v)).join(', ');
+    const winStats = teamStatLine(m.winner.stats);
+    const loseStats = teamStatLine(m.loser.stats);
     return `${m.winner.name} (${m.score}) vs ${m.loser.name}\n  ${m.winner.name}: ${winStats}\n  ${m.loser.name}: ${loseStats}`;
   }).join('\n\n');
 
-  return `Write "The Numbers Don't Lie". Find 2-3 interesting statistical stories: teams that led the league in a stat but lost, record performances, matchup luck, unsustainable lines. Compare against league averages. 3-4 paragraphs.\n\nLeague-wide category leaders:\n${leagueContext.join('\n')}\n\nMatchup details:\n${matchupData}`;
+  const toughLuck = findToughLuckLosses(sb, invertedStats, catDisplay);
+  const toughLuckBlock = toughLuck.length
+    ? `\n\nTough-luck category losses — pre-verified, state exactly as described (do NOT upgrade the ranking): in each case the ONLY team in the entire league with a better mark this week was the team's own matchup opponent, yet they still lost the category. Phrase a "sole 2nd" entry as the outright second-highest total in the league; phrase a "tied for 2nd" entry as tied for the second-best mark (N other team(s) matched it) — never as the sole second-highest:\n${toughLuck.map(t => `  ${t.team} lost ${t.cat} to ${t.opponent}: ${t.team} ${fmtStat(t.stat, t.loserVal)} vs ${t.opponent} ${fmtStat(t.stat, t.winnerVal)} — ${t.soleSecond ? 'sole 2nd in the league; only the opponent beat them' : `tied for 2nd in the league (${t.tiedWith} other team${t.tiedWith === 1 ? '' : 's'} also at ${fmtStat(t.stat, t.loserVal).split(': ')[1]}); only the opponent beat them`}`).join('\n')}`
+    : '';
+
+  return `Write "The Numbers Don't Lie". Find 2-3 interesting statistical stories: teams that led the league in a stat but lost, record performances, matchup luck, unsustainable lines. Compare against league averages. 3-4 paragraphs.\n\nLeague-wide category leaders:\n${leagueContext.join('\n')}${toughLuckBlock}\n\nMatchup details:\n${matchupData}`;
 }
 
 // --- Rumours ---
@@ -661,9 +733,10 @@ async function narrate(week, { only, except } = {}) {
     const rosters = JSON.parse(fs.readFileSync(rostersPath, 'utf-8'));
     const lines = Object.values(rosters).map(t => {
       const shortKey = 't.' + t.teamKey.replace(/.*\./, '');
-      return `${shortKey} = ${t.name}`;
+      const mgr = MANAGER_BY_KEY[shortKey];
+      return mgr ? `${shortKey} = ${t.name} (manager: ${mgr})` : `${shortKey} = ${t.name}`;
     });
-    teamNameBlock = `\n\n# Current Team Names\n${lines.join('\n')}\n`;
+    teamNameBlock = `\n\n# Current Team Names\nAttribute each team's performance only to its own manager listed here — never credit a team to a different team's manager.\n${lines.join('\n')}\n`;
   }
 
   // Fetch trade rumours from the API and filter out any already consumed
@@ -975,4 +1048,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { narrate, SEGMENT_REGISTRY, parseArticleSections, matchSectionsToRegistry, spliceArticle };
+module.exports = { narrate, SEGMENT_REGISTRY, parseArticleSections, matchSectionsToRegistry, spliceArticle, findToughLuckLosses };
