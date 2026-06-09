@@ -2,7 +2,7 @@
   "date": "2026-06-02",
   "collectedAt": "2026-06-03T15:25:58.277Z",
   "week": 11,
-  "positionsSource": "nightly",
+  "positionsSource": "nightly-premature",
   "matchups": [
     {
       "team1": {
@@ -3160,5 +3160,6 @@
         }
       ]
     }
-  }
+  },
+  "positionsCapturedAt": "2026-06-02T07:10:06.496Z"
 }

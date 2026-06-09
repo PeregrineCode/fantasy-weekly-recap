@@ -27,6 +27,40 @@ const { auth, client } = createClient({
   log: (type, msg) => console.log(`  [${type}] ${msg}`),
 });
 
+/** Add `days` to a YYYY-MM-DD string (UTC math, returns YYYY-MM-DD). */
+function addDaysISO(dateStr, days) {
+  const d = new Date(`${dateStr}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().split('T')[0];
+}
+
+/**
+ * Is a nightly position capture trustworthy for fantasy date X?
+ *
+ * The capture is meant to run ~10:30 PM ET on X, after all of X's games (incl. West
+ * Coast) have started — lineups are locked, so positions reflect X's actual game-day
+ * roster. But GitHub Actions routinely delays scheduled runs by hours. A run that
+ * slips past Yahoo's ~3 AM ET fantasy-day rollover instead reads the NEXT day's
+ * not-yet-finalized lineup, producing phantom "benched" players the manager actually
+ * started once they set their real lineup. Trust a capture only if it landed in X's
+ * locked window: the evening of X (>= 9 PM ET) or the small hours of X+1 before the
+ * 3 AM rollover. Anything else (e.g. an early-morning-of-X run) is premature.
+ */
+function isNightlyCaptureTrustworthy(collectedAtISO, fantasyDate) {
+  if (!collectedAtISO) return false;
+  const et = new Date(collectedAtISO).toLocaleString('en-CA', {
+    timeZone: 'America/New_York', hour12: false,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  });
+  const [etDate, etTime] = et.split(/,?\s+/);
+  const etHour = parseInt(etTime.split(':')[0], 10) % 24; // normalize a "24:00" midnight
+  const nextDate = addDaysISO(fantasyDate, 1);
+  if (etDate === fantasyDate && etHour >= 21) return true; // on-time evening capture
+  if (etDate === nextDate && etHour < 3) return true;      // delayed but pre-rollover
+  return false;
+}
+
 
 /**
  * Fetch all rosters with player positions and single-day stats.
@@ -155,9 +189,11 @@ async function dailyCollect() {
   // so it reflects the actual game-day positions (not next-morning positions).
   const positionsFile = path.join(dailyDir, `positions-${statsDate}.json`);
   let positionsSource = 'api';
+  let positionsCapturedAt = null;
   if (fs.existsSync(positionsFile)) {
     try {
       const posData = JSON.parse(fs.readFileSync(positionsFile, 'utf8'));
+      positionsCapturedAt = posData.collectedAt || null;
       // Build lookup: teamKey → { playerKey → selectedPosition }
       const posLookup = {};
       for (const [teamKey, team] of Object.entries(posData.positions)) {
@@ -175,8 +211,16 @@ async function dailyCollect() {
           }
         }
       }
-      positionsSource = 'nightly';
-      console.log(`  Merged positions from nightly capture (${statsDate})`);
+      // Only label the capture "nightly" (trusted by bench detection) if it actually
+      // landed in the locked window. A delayed run that slipped past Yahoo's 3 AM
+      // rollover captured the next day's premature lineup — mark it so analyze skips it.
+      if (isNightlyCaptureTrustworthy(positionsCapturedAt, statsDate)) {
+        positionsSource = 'nightly';
+        console.log(`  Merged positions from nightly capture (${statsDate}, captured ${positionsCapturedAt})`);
+      } else {
+        positionsSource = 'nightly-premature';
+        console.log(`  WARNING: nightly capture for ${statsDate} landed outside the locked window (captured ${positionsCapturedAt}) — likely a post-rollover/premature lineup. Marking 'nightly-premature' so bench detection skips it.`);
+      }
     } catch (e) {
       console.log(`  Warning: failed to read positions file, using API positions: ${e.message}`);
     }
@@ -184,11 +228,17 @@ async function dailyCollect() {
     console.log(`  No nightly positions file for ${statsDate} — using API positions (may be stale)`);
   }
 
+  // NOTE: do not re-run this for a past date to "repair" a snapshot. Yahoo only serves
+  // *current* cumulative stats and the *current* roster composition, so a re-collection
+  // overwrites the matchups (end-of-week totals instead of cumulative-as-of-day) and the
+  // roster membership (today's roster, not who was rostered that day). To re-evaluate
+  // positionsSource on existing snapshots without re-fetching, use revalidate-positions.js.
   const snapshot = {
     date: statsDate,
     collectedAt: new Date().toISOString(),
     week: week,
     positionsSource,
+    positionsCapturedAt,
     matchups: scoreboard,
     rosters: rosterStats,
   };
@@ -205,4 +255,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { dailyCollect };
+module.exports = { dailyCollect, isNightlyCaptureTrustworthy, addDaysISO };

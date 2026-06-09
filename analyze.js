@@ -822,9 +822,13 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
         .map(([k, v]) => `${k}: ${typeof v === 'number' && v % 1 !== 0 ? v.toFixed(3) : v}`)
         .join(', ');
 
-      // "Entire week" only when the player was on the roster every nightly-snapshot day
-      // AND was benched on all of them. Otherwise describe by benched-with-stats days.
-      const benchDesc = (info.totalDays === nightlySnapshotCount && info.daysOnBench === nightlySnapshotCount)
+      // "Entire week" only when we have trustworthy positions for EVERY day of the week
+      // (no days dropped as premature/stale) AND the player was on the roster all of them
+      // AND benched all of them. If some days were excluded, the trusted days are only a
+      // slice of the week — claiming "the entire week" would overstate what we observed
+      // (the player may have been started on an excluded day), so describe by day count.
+      const fullWeekCoverage = dailySnapshots.length > 0 && nightlySnapshotCount === dailySnapshots.length;
+      const benchDesc = (fullWeekCoverage && info.totalDays === nightlySnapshotCount && info.daysOnBench === nightlySnapshotCount)
         ? 'the entire week'
         : `${info.benchedWithStats} day(s) he had stats`;
 
