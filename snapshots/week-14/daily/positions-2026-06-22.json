@@ -1,6 +1,6 @@
 {
   "date": "2026-06-22",
-  "collectedAt": "2026-06-22T08:41:12.212Z",
+  "collectedAt": "2026-06-23T06:32:57.132Z",
   "week": 14,
   "positions": {
     "469.l.75479.t.1": {
@@ -18,8 +18,8 @@
           "selectedPosition": "1B"
         },
         {
-          "playerKey": "469.p.11375",
-          "name": "Xavier Edwards",
+          "playerKey": "469.p.11284",
+          "name": "Nico Hoerner",
           "selectedPosition": "2B"
         },
         {
@@ -48,18 +48,18 @@
           "selectedPosition": "OF"
         },
         {
-          "playerKey": "469.p.64314",
-          "name": "Braden Montgomery",
-          "selectedPosition": "Util"
-        },
-        {
-          "playerKey": "469.p.11284",
-          "name": "Nico Hoerner",
+          "playerKey": "469.p.11375",
+          "name": "Xavier Edwards",
           "selectedPosition": "Util"
         },
         {
           "playerKey": "469.p.10600",
           "name": "Jake Bauers",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "469.p.64314",
+          "name": "Braden Montgomery",
           "selectedPosition": "BN"
         },
         {
@@ -194,8 +194,8 @@
           "selectedPosition": "SP"
         },
         {
-          "playerKey": "469.p.60223",
-          "name": "Walbert Ureña",
+          "playerKey": "469.p.11661",
+          "name": "Michael King",
           "selectedPosition": "SP"
         },
         {
@@ -229,6 +229,11 @@
           "selectedPosition": "P"
         },
         {
+          "playerKey": "469.p.60223",
+          "name": "Walbert Ureña",
+          "selectedPosition": "BN"
+        },
+        {
           "playerKey": "469.p.60584",
           "name": "Bryan Woo",
           "selectedPosition": "BN"
@@ -236,11 +241,6 @@
         {
           "playerKey": "469.p.11372",
           "name": "Braxton Ashcraft",
-          "selectedPosition": "BN"
-        },
-        {
-          "playerKey": "469.p.11661",
-          "name": "Michael King",
           "selectedPosition": "BN"
         },
         {
@@ -547,8 +547,8 @@
           "selectedPosition": "3B"
         },
         {
-          "playerKey": "469.p.62504",
-          "name": "Chase Meidroth",
+          "playerKey": "469.p.11771",
+          "name": "Bobby Witt Jr.",
           "selectedPosition": "SS"
         },
         {
@@ -557,13 +557,13 @@
           "selectedPosition": "OF"
         },
         {
-          "playerKey": "469.p.10485",
-          "name": "Ryan O'Hearn",
+          "playerKey": "469.p.12588",
+          "name": "Seiya Suzuki",
           "selectedPosition": "OF"
         },
         {
-          "playerKey": "469.p.12588",
-          "name": "Seiya Suzuki",
+          "playerKey": "469.p.12688",
+          "name": "Spencer Steer",
           "selectedPosition": "OF"
         },
         {
@@ -572,18 +572,18 @@
           "selectedPosition": "Util"
         },
         {
-          "playerKey": "469.p.11125",
-          "name": "Brandon Lowe",
+          "playerKey": "469.p.62504",
+          "name": "Chase Meidroth",
           "selectedPosition": "Util"
         },
         {
-          "playerKey": "469.p.12688",
-          "name": "Spencer Steer",
+          "playerKey": "469.p.11125",
+          "name": "Brandon Lowe",
           "selectedPosition": "BN"
         },
         {
-          "playerKey": "469.p.11771",
-          "name": "Bobby Witt Jr.",
+          "playerKey": "469.p.10485",
+          "name": "Ryan O'Hearn",
           "selectedPosition": "BN"
         },
         {
@@ -612,18 +612,18 @@
           "selectedPosition": "P"
         },
         {
-          "playerKey": "469.p.12120",
-          "name": "Bryce Elder",
-          "selectedPosition": "P"
-        },
-        {
-          "playerKey": "469.p.60645",
-          "name": "Stephen Kolek",
-          "selectedPosition": "P"
-        },
-        {
           "playerKey": "469.p.12617",
           "name": "Davis Martin",
+          "selectedPosition": "P"
+        },
+        {
+          "playerKey": "469.p.63581",
+          "name": "Justin Wrobleski",
+          "selectedPosition": "P"
+        },
+        {
+          "playerKey": "469.p.63601",
+          "name": "Zebby Matthews",
           "selectedPosition": "P"
         },
         {
@@ -728,6 +728,11 @@
           "selectedPosition": "SP"
         },
         {
+          "playerKey": "469.p.11789",
+          "name": "Drew Rasmussen",
+          "selectedPosition": "SP"
+        },
+        {
           "playerKey": "469.p.9651",
           "name": "Nick Martinez",
           "selectedPosition": "RP"
@@ -736,11 +741,6 @@
           "playerKey": "469.p.12505",
           "name": "Mason Miller",
           "selectedPosition": "RP"
-        },
-        {
-          "playerKey": "469.p.11988",
-          "name": "Emerson Hancock",
-          "selectedPosition": "P"
         },
         {
           "playerKey": "469.p.63640",
@@ -758,18 +758,18 @@
           "selectedPosition": "P"
         },
         {
-          "playerKey": "469.p.9124",
-          "name": "Zack Wheeler",
-          "selectedPosition": "BN"
-        },
-        {
           "playerKey": "469.p.9701",
           "name": "Jacob deGrom",
+          "selectedPosition": "P"
+        },
+        {
+          "playerKey": "469.p.11988",
+          "name": "Emerson Hancock",
           "selectedPosition": "BN"
         },
         {
-          "playerKey": "469.p.11789",
-          "name": "Drew Rasmussen",
+          "playerKey": "469.p.9124",
+          "name": "Zack Wheeler",
           "selectedPosition": "BN"
         },
         {
@@ -950,14 +950,14 @@
           "selectedPosition": "OF"
         },
         {
-          "playerKey": "469.p.11384",
-          "name": "Julio Rodríguez",
+          "playerKey": "469.p.9876",
+          "name": "Brandon Nimmo",
           "selectedPosition": "OF"
         },
         {
-          "playerKey": "469.p.11531",
-          "name": "Cal Raleigh",
-          "selectedPosition": "Util"
+          "playerKey": "469.p.10893",
+          "name": "Jo Adell",
+          "selectedPosition": "OF"
         },
         {
           "playerKey": "469.p.1000001",
@@ -965,18 +965,18 @@
           "selectedPosition": "Util"
         },
         {
-          "playerKey": "469.p.9876",
-          "name": "Brandon Nimmo",
-          "selectedPosition": "BN"
-        },
-        {
-          "playerKey": "469.p.10893",
-          "name": "Jo Adell",
-          "selectedPosition": "BN"
-        },
-        {
           "playerKey": "469.p.11892",
           "name": "Ernie Clement",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "469.p.11384",
+          "name": "Julio Rodríguez",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "469.p.11531",
+          "name": "Cal Raleigh",
           "selectedPosition": "BN"
         },
         {
@@ -1106,13 +1106,13 @@
           "selectedPosition": "BN"
         },
         {
-          "playerKey": "469.p.9459",
-          "name": "Sonny Gray",
+          "playerKey": "469.p.10730",
+          "name": "Brandon Woodruff",
           "selectedPosition": "SP"
         },
         {
-          "playerKey": "469.p.12549",
-          "name": "Michael McGreevy",
+          "playerKey": "469.p.12591",
+          "name": "Andre Pallante",
           "selectedPosition": "SP"
         },
         {
@@ -1141,9 +1141,14 @@
           "selectedPosition": "P"
         },
         {
-          "playerKey": "469.p.63428",
-          "name": "Keider Montero",
+          "playerKey": "469.p.9459",
+          "name": "Sonny Gray",
           "selectedPosition": "P"
+        },
+        {
+          "playerKey": "469.p.12549",
+          "name": "Michael McGreevy",
+          "selectedPosition": "BN"
         },
         {
           "playerKey": "469.p.11319",
@@ -1158,11 +1163,6 @@
         {
           "playerKey": "469.p.10597",
           "name": "Sandy Alcantara",
-          "selectedPosition": "BN"
-        },
-        {
-          "playerKey": "469.p.10730",
-          "name": "Brandon Woodruff",
           "selectedPosition": "BN"
         },
         {
@@ -1182,8 +1182,8 @@
       "name": "The Bryce Is Right",
       "players": [
         {
-          "playerKey": "469.p.11728",
-          "name": "Shea Langeliers",
+          "playerKey": "469.p.12409",
+          "name": "Hunter Goodman",
           "selectedPosition": "C"
         },
         {
@@ -1227,18 +1227,18 @@
           "selectedPosition": "Util"
         },
         {
-          "playerKey": "469.p.12409",
-          "name": "Hunter Goodman",
+          "playerKey": "469.p.9846",
+          "name": "Christian Walker",
           "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "469.p.11728",
+          "name": "Shea Langeliers",
+          "selectedPosition": "BN"
         },
         {
           "playerKey": "469.p.11760",
           "name": "Riley Greene",
-          "selectedPosition": "BN"
-        },
-        {
-          "playerKey": "469.p.9846",
-          "name": "Christian Walker",
           "selectedPosition": "BN"
         },
         {
@@ -1247,13 +1247,13 @@
           "selectedPosition": "BN"
         },
         {
-          "playerKey": "469.p.12748",
-          "name": "Ben Brown",
+          "playerKey": "469.p.10898",
+          "name": "Dustin May",
           "selectedPosition": "SP"
         },
         {
-          "playerKey": "469.p.10898",
-          "name": "Dustin May",
+          "playerKey": "469.p.11138",
+          "name": "Framber Valdez",
           "selectedPosition": "SP"
         },
         {
@@ -1287,13 +1287,13 @@
           "selectedPosition": "P"
         },
         {
-          "playerKey": "469.p.8780",
-          "name": "Chris Sale",
+          "playerKey": "469.p.12748",
+          "name": "Ben Brown",
           "selectedPosition": "BN"
         },
         {
-          "playerKey": "469.p.11138",
-          "name": "Framber Valdez",
+          "playerKey": "469.p.8780",
+          "name": "Chris Sale",
           "selectedPosition": "BN"
         },
         {
