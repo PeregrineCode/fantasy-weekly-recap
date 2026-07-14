@@ -505,13 +505,13 @@ function analyzePowerRankings(standings, scoreboard, teamNames) {
   const weeklyPerf = {};
   for (const m of scoreboard) {
     const isTie = m.team1Wins === m.team2Wins;
-    weeklyPerf[m.team1.teamKey] = { wins: m.team1Wins > m.team2Wins ? 1 : isTie ? 0.5 : 0, catWins: m.team1Wins, catLosses: m.team2Wins, isTie };
-    weeklyPerf[m.team2.teamKey] = { wins: m.team2Wins > m.team1Wins ? 1 : isTie ? 0.5 : 0, catWins: m.team2Wins, catLosses: m.team1Wins, isTie };
+    weeklyPerf[m.team1.teamKey] = { wins: m.team1Wins > m.team2Wins ? 1 : isTie ? 0.5 : 0, catWins: m.team1Wins, catLosses: m.team2Wins, catTies: m.ties || 0, isTie };
+    weeklyPerf[m.team2.teamKey] = { wins: m.team2Wins > m.team1Wins ? 1 : isTie ? 0.5 : 0, catWins: m.team2Wins, catLosses: m.team1Wins, catTies: m.ties || 0, isTie };
   }
 
   const ranked = standings
     .map(team => {
-      const weekly = weeklyPerf[team.teamKey] || { wins: 0, catWins: 0, catLosses: 0 };
+      const weekly = weeklyPerf[team.teamKey] || { wins: 0, catWins: 0, catLosses: 0, catTies: 0 };
       // Composite score: win% * 0.85 + weekly cat win rate * 0.15.
       // The weekly term nudges for hot/cold form without letting one matchup
       // overwhelm a team's season body of work — a 2-10 week shouldn't move
@@ -527,7 +527,7 @@ function analyzePowerRankings(standings, scoreboard, teamNames) {
         record: `${team.wins}-${team.losses}-${team.ties}`,
         pct: team.pct,
         weeklyResult: weekly.wins === 1 ? 'W' : weekly.isTie ? 'T' : 'L',
-        weeklyCatScore: `${weekly.catWins}-${weekly.catLosses}`,
+        weeklyCatScore: `${weekly.catWins}-${weekly.catLosses}-${weekly.catTies}`,
         composite,
       };
     })

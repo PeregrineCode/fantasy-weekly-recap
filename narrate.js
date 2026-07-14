@@ -101,19 +101,23 @@ function buildBatchPrompt(segmentPrompts) {
     `=== SEGMENT ${i + 1}: ${sp.title} ===\n\n${sp.prompt}`
   );
 
-  return `You have ${segmentPrompts.length} segments to write. Write ALL of them in order. Maintain consistent opinions across all segments — if you praise a player or move in one segment, do not contradict that take in another.\n\nSeparate each segment with exactly this delimiter on its own line:\n---SEGMENT_BREAK---\n\n${parts.join('\n\n')}`;
+  return `You have ${segmentPrompts.length} segments to write. Write ALL of them in order. Maintain consistent opinions across all segments — if you praise a player or move in one segment, do not contradict that take in another.\n\nSeparate each segment with exactly this delimiter on its own line:\n---SEGMENT_BREAK---\n\nBegin your reply with segment 1's text immediately — no preamble, introduction, or commentary before it, and nothing after the final segment. Any text outside the segments will corrupt the article.\n\n${parts.join('\n\n')}`;
 }
 
 /**
  * Parse batched output into individual segment texts.
  */
 function parseBatchOutput(output, expectedCount) {
-  const segments = output.split(/---SEGMENT_BREAK---/).map(s => s.trim()).filter(Boolean);
+  let segments = output.split(/---SEGMENT_BREAK---/).map(s => s.trim()).filter(Boolean);
   // If splitting didn't work, try to find segment headers
   if (segments.length < expectedCount) {
     const altSegments = output.split(/===\s*SEGMENT\s+\d+/).map(s => s.trim()).filter(Boolean);
-    if (altSegments.length >= expectedCount) return altSegments;
+    if (altSegments.length >= expectedCount) segments = altSegments;
   }
+  // Models sometimes open with a preamble before the first delimiter ("Here are
+  // all four segments."), which shifts every segment under the wrong heading and
+  // drops the last one. The real segments are the final N chunks.
+  if (segments.length > expectedCount) segments = segments.slice(-expectedCount);
   return segments;
 }
 
@@ -140,14 +144,30 @@ const teamStatLine = (stats) => Object.entries(stats)
 function promptMatchupRecaps(matchups, storylines) {
   if (!matchups.length) return null;
 
+  // The closest category is usually won by the matchup winner — without explicit
+  // attribution, writers assume it was the loser's lone win in a blowout.
+  const closestNote = (m, a, b) => {
+    if (!m.closest) return '';
+    const winner = m.closest.isTied ? null : (m.closest.winnerTeamKey === a.teamKey ? a : b);
+    return ` — closest cat: ${m.closest.stat} (margin: ${m.closest.margin.toFixed(3)}, ${winner ? `won by ${winner.name}` : 'tied'})`;
+  };
+  const categoryWins = (m, a, b) => {
+    if (!m.categories?.length) return '';
+    const wins = t => m.categories.filter(c => !c.isTied && c.winnerTeamKey === t.teamKey).map(c => c.stat).join(', ') || 'none';
+    const tied = m.categories.filter(c => c.isTied).map(c => c.stat);
+    return `\n  Category wins — ${a.name}: ${wins(a)} | ${b.name}: ${wins(b)}` +
+      (tied.length ? ` | tied: ${tied.join(', ')}` : '');
+  };
+
   const data = matchups.map(m => {
     if (m.isTie) {
       const t1Stats = teamStatLine(m.team1.stats);
       const t2Stats = teamStatLine(m.team2.stats);
       return `RESULT: ${m.team1.name} TIED ${m.team2.name} ${m.score} (this is a TIE — neither team won)` +
-        (m.closest ? ` — closest cat: ${m.closest.stat} (margin: ${m.closest.margin.toFixed(3)})` : '') +
+        closestNote(m, m.team1, m.team2) +
         `\n  ${m.team1.name} stats: ${t1Stats}` +
-        `\n  ${m.team2.name} stats: ${t2Stats}`;
+        `\n  ${m.team2.name} stats: ${t2Stats}` +
+        categoryWins(m, m.team1, m.team2);
     }
     const winnerStats = teamStatLine(m.winner.stats);
     const loserStats = teamStatLine(m.loser.stats);
@@ -169,10 +189,11 @@ function promptMatchupRecaps(matchups, storylines) {
     }
     return `RESULT: ${m.winner.name} beat ${m.loser.name} ${m.score}` +
       (m.isBlowout ? ' (BLOWOUT)' : '') +
-      (m.closest ? ` — closest cat: ${m.closest.stat} (margin: ${m.closest.margin.toFixed(3)})` : '') +
+      closestNote(m, m.winner, m.loser) +
       (ipWarnings.length ? `\n  ⚠️ ${ipWarnings.join('; ')}` : '') +
       `\n  ${m.winner.name} stats: ${winnerStats}` +
-      `\n  ${m.loser.name} stats: ${loserStats}`;
+      `\n  ${m.loser.name} stats: ${loserStats}` +
+      categoryWins(m, m.winner, m.loser);
   }).join('\n\n');
 
   // Attach mid-week storyline arcs to the prompt if available
@@ -230,7 +251,7 @@ function promptPowerRankings(rankings) {
   const data = rankings.map((t, i) =>
     `${i + 1}. ${t.name} [${t.tier}] — ${t.record} (${t.pct.toFixed(3)}) — This week: ${t.weeklyResult} (${t.weeklyCatScore})`
   ).join('\n');
-  return `Write the "Power Rankings". Rank every team explicitly #1 through #${rankings.length}. Give each team a 1-2 sentence take. Group by tier (Contenders, Solid, Mediocre, Rebuilding) with a brief intro per tier.\n\nRankings:\n${data}`;
+  return `Write the "Power Rankings". Rank every team explicitly #1 through #${rankings.length}, grouped by tier (Contenders, Solid, Mediocre, Rebuilding) with a brief intro per tier.\n\nFormat each team as its own entry: a bold header line, then the take. The header line must be exactly:\n**#N Team Name** — record (pct) — W/L/T, weekly category score\nExample: **#4 Big Bats** — 88-63-5 (.580) — W, 7-5-0\nUse the records and weekly scores exactly as provided. Follow each header with a 1-2 sentence take as its own paragraph.\n\nRankings:\n${data}`;
 }
 
 function promptBestPickup(segment) {
@@ -513,8 +534,10 @@ function promptInsiderReport(rumours, powerRankings, transactions) {
   let context = '';
 
   if (powerRankings?.length) {
-    const standingsData = powerRankings.map((t, i) =>
-      `${i + 1}. ${t.name} — ${t.record} (${t.pct.toFixed(3)}) [${t.tier}]`
+    // powerRankings is ordered by composite power rank — for a list labeled
+    // "STANDINGS", use the official standings rank or writers quote wrong positions.
+    const standingsData = [...powerRankings].sort((a, b) => a.rank - b.rank).map(t =>
+      `${t.rank}. ${t.name} — ${t.record} (${t.pct.toFixed(3)}) [${t.tier}]`
     ).join('\n');
     context += `\nCURRENT STANDINGS (for context):\n${standingsData}\n`;
   }
