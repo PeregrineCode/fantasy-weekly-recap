@@ -30,7 +30,16 @@ const { auth, client } = createClient({
 async function fetchScoreboard(leagueKey, week) {
   const data = await client.get(`/league/${leagueKey}/scoreboard;week=${week}`);
   try {
-    return parseScoreboardResponse(data);
+    const matchups = parseScoreboardResponse(data);
+    // Yahoo reports the true week boundaries per matchup. These can differ from
+    // a simple Mon-Sun calendar week (e.g. the All-Star break week spans two
+    // calendar weeks), so downstream date logic must use these, not arithmetic.
+    const firstMatchup = data.fantasy_content.league[1].scoreboard['0'].matchups['0']?.matchup;
+    return {
+      matchups,
+      weekStart: firstMatchup?.week_start || null,
+      weekEnd: firstMatchup?.week_end || null,
+    };
   } catch (e) {
     throw new Error(`Failed to parse scoreboard: ${e.message}`);
   }
@@ -216,27 +225,40 @@ async function collect(targetWeek) {
   const week = targetWeek || Math.max(1, meta.currentWeek - 1);
   console.log(`\nCollecting data for Week ${week} (current week: ${meta.currentWeek})`);
 
-  // Compute week date range (Yahoo weeks are Mon-Sun, week 1 can be a partial week)
-  // Use start of day ET (04:00 UTC) for consistent boundaries regardless of server timezone
-  const startDate = new Date(meta.startDate + 'T04:00:00Z');
+  // Fetch scoreboard first — it carries Yahoo's true week boundaries, which
+  // can span more than 7 days (e.g. the All-Star break week covers two
+  // calendar weeks).
+  console.log('\nFetching scoreboard...');
+  const { matchups: scoreboard, weekStart: sbStart, weekEnd: sbEnd } = await fetchScoreboard(leagueKey, week);
+
   let weekStart, weekEnd;
-  if (week === 1) {
-    // Week 1 starts on the season start date and ends on the first Sunday
-    weekStart = new Date(startDate);
-    weekEnd = new Date(startDate);
-    const dayOfWeek = weekEnd.getDay(); // 0=Sun, 1=Mon, ...
-    const daysToSun = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
-    weekEnd.setDate(weekEnd.getDate() + daysToSun);
+  if (sbStart && sbEnd) {
+    // Anchor at 04:00 UTC (start of day ET) to match the arithmetic fallback
+    weekStart = new Date(sbStart + 'T04:00:00Z');
+    weekEnd = new Date(sbEnd + 'T04:00:00Z');
   } else {
-    // Week 2+ are full Mon-Sun weeks
-    // First, find the Monday after week 1's Sunday
-    const firstSunday = new Date(startDate);
-    const dayOfWeek = firstSunday.getDay();
-    firstSunday.setDate(firstSunday.getDate() + (dayOfWeek === 0 ? 0 : 7 - dayOfWeek));
-    weekStart = new Date(firstSunday);
-    weekStart.setDate(weekStart.getDate() + 1 + (week - 2) * 7); // Monday of week N
-    weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekEnd.getDate() + 6); // Sunday
+    // Fallback: compute a Mon-Sun range (week 1 can be a partial week).
+    // Use start of day ET (04:00 UTC) for consistent boundaries regardless of server timezone
+    const startDate = new Date(meta.startDate + 'T04:00:00Z');
+    if (week === 1) {
+      // Week 1 starts on the season start date and ends on the first Sunday
+      weekStart = new Date(startDate);
+      weekEnd = new Date(startDate);
+      const dayOfWeek = weekEnd.getDay(); // 0=Sun, 1=Mon, ...
+      const daysToSun = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
+      weekEnd.setDate(weekEnd.getDate() + daysToSun);
+    } else {
+      // Week 2+ are full Mon-Sun weeks
+      // First, find the Monday after week 1's Sunday
+      const firstSunday = new Date(startDate);
+      const dayOfWeek = firstSunday.getDay();
+      firstSunday.setDate(firstSunday.getDate() + (dayOfWeek === 0 ? 0 : 7 - dayOfWeek));
+      weekStart = new Date(firstSunday);
+      weekStart.setDate(weekStart.getDate() + 1 + (week - 2) * 7); // Monday of week N
+      weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6); // Sunday
+    }
+    console.log(`  Warning: scoreboard did not include week_start/week_end; using computed ${weekStart.toISOString().split('T')[0]} – ${weekEnd.toISOString().split('T')[0]}`);
   }
 
   const snapshotDir = path.join(__dirname, 'snapshots', `week-${String(week).padStart(2, '0')}`);
@@ -256,9 +278,6 @@ async function collect(targetWeek) {
   fs.writeFileSync(path.join(snapshotDir, 'meta.json'), JSON.stringify(metaFile, null, 2));
   console.log(`  Saved meta.json`);
 
-  // Fetch scoreboard
-  console.log('\nFetching scoreboard...');
-  const scoreboard = await fetchScoreboard(leagueKey, week);
   fs.writeFileSync(path.join(snapshotDir, 'scoreboard.json'), JSON.stringify(scoreboard, null, 2));
   console.log(`  Saved scoreboard.json (${scoreboard.length} matchups)`);
 
