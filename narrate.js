@@ -121,6 +121,21 @@ function parseBatchOutput(output, expectedCount) {
   return segments;
 }
 
+/**
+ * Writers sometimes open a segment by echoing its title as the first line
+ * (plain, markdown-heading, or bold). The title is added at assembly time,
+ * so an echoed copy duplicates it in the article — strip it.
+ */
+function stripEchoedTitle(text, title) {
+  if (!text || !title) return text;
+  const lines = text.split('\n');
+  const first = lines[0].trim().replace(/^#+\s*/, '').replace(/^\*\*(.*)\*\*$/, '$1').trim();
+  if (first.toLowerCase() === title.toLowerCase()) {
+    return lines.slice(1).join('\n').trim();
+  }
+  return text;
+}
+
 // --- Segment prompts (same as before, just return the prompt text) ---
 
 const THREE_DECIMAL_STATS = new Set(['AVG', 'OBP']);
@@ -899,7 +914,7 @@ async function narrate(week, { only, except } = {}) {
           const writer = WRITERS[writerKey];
           console.log(`  Regenerating ${label} (${writer.name})...`);
           const text = callClaude(seg.prompt, writerKey) || (typeof seg.fallback === 'function' ? seg.fallback() : seg.fallback);
-          newSections.push({ registryKey: key, content: text });
+          newSections.push({ registryKey: key, content: stripEchoedTitle(text, seg.title) });
         }
 
         // Tx batch (if any tx key targeted)
@@ -911,7 +926,7 @@ async function narrate(week, { only, except } = {}) {
             const seg = txBatch[0];
             const text = callClaude(seg.prompt, 'chuck') || (typeof seg.fallback === 'function' ? seg.fallback() : seg.fallback);
             const rKey = txTitleToKey[seg.title];
-            if (rKey) newSections.push({ registryKey: rKey, content: text });
+            if (rKey) newSections.push({ registryKey: rKey, content: stripEchoedTitle(text, seg.title) });
           } else {
             const batchPrompt = buildBatchPrompt(txBatch);
             const output = callClaude(batchPrompt, 'chuck');
@@ -921,7 +936,7 @@ async function narrate(week, { only, except } = {}) {
               for (let i = 0; i < txBatch.length; i++) {
                 const text = batchParsed[i] || (typeof txBatch[i].fallback === 'function' ? txBatch[i].fallback() : txBatch[i].fallback);
                 const rKey = txTitleToKey[txBatch[i].title];
-                if (rKey) newSections.push({ registryKey: rKey, content: text });
+                if (rKey) newSections.push({ registryKey: rKey, content: stripEchoedTitle(text, txBatch[i].title) });
               }
             } else {
               for (const seg of txBatch) {
@@ -954,7 +969,7 @@ async function narrate(week, { only, except } = {}) {
     if (batch.length === 1) {
       const seg = batch[0];
       const text = callClaude(seg.prompt, writerKey) || (typeof seg.fallback === 'function' ? seg.fallback() : seg.fallback);
-      sections.push({ title: seg.title, content: text, byline: writer.name });
+      sections.push({ title: seg.title, content: stripEchoedTitle(text, seg.title), byline: writer.name });
       return;
     }
 
@@ -965,7 +980,7 @@ async function narrate(week, { only, except } = {}) {
       const parsed = parseBatchOutput(output, batch.length);
       for (let i = 0; i < batch.length; i++) {
         const text = parsed[i] || (typeof batch[i].fallback === 'function' ? batch[i].fallback() : batch[i].fallback);
-        sections.push({ title: batch[i].title, content: text, byline: writer.name });
+        sections.push({ title: batch[i].title, content: stripEchoedTitle(text, batch[i].title), byline: writer.name });
       }
     } else {
       for (const seg of batch) {
@@ -980,7 +995,7 @@ async function narrate(week, { only, except } = {}) {
     const writer = WRITERS[writerKey];
     console.log(`  Generating ${label} (${writer.name})...`);
     const text = callClaude(seg.prompt, writerKey) || (typeof seg.fallback === 'function' ? seg.fallback() : seg.fallback);
-    sections.push({ title: seg.title, content: text, byline: writer.name });
+    sections.push({ title: seg.title, content: stripEchoedTitle(text, seg.title), byline: writer.name });
   }
 
   generateSingle('chuck', matchupSeg, 'Matchup Recaps');

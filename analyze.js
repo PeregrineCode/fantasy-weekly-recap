@@ -786,10 +786,17 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
       delete benchStats['ERA'];
       delete benchStats['WHIP'];
       delete benchStats['K/BB'];
+      // Daily H/AB parses to a bare hits count (the AB half is dropped), so the
+      // sum is just hits. Label it H — "H/AB: 5" reads as a ratio and tempts
+      // writers to invent an at-bat denominator.
+      if (benchStats['H/AB'] != null) {
+        benchStats['H'] = benchStats['H/AB'];
+        delete benchStats['H/AB'];
+      }
 
       // Use counting-stat thresholds instead of z-scores (which are calibrated for
       // full-week totals and would filter out every single-day bench blunder).
-      const isBatter = (benchStats['H/AB'] != null || benchStats['R'] != null);
+      const isBatter = (benchStats['H'] != null || benchStats['R'] != null);
       const isPitcher = (benchStats['IP'] != null || benchStats['K'] != null);
       let notable = false;
       if (isBatter) {
