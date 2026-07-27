@@ -9,6 +9,14 @@ const fs = require('fs');
 const path = require('path');
 const { BATTING_CATS, PITCHING_CATS } = require('./lib/stat-categories');
 
+// Nate left the league in July 2026; his team (t.7, Risky Bettiness) is unmanaged.
+// It stays in league-wide segments (matchups, standings, power rankings, movers)
+// but is excluded from editorial features (players of the week, pickups, streams,
+// bench blunders) — there's no manager to credit or roast.
+const ABANDONED_TEAM_SUFFIXES = ['.t.7'];
+const isAbandonedTeam = key =>
+  typeof key === 'string' && ABANDONED_TEAM_SUFFIXES.some(s => key.endsWith(s));
+
 /**
  * Fetch MLB game start times for a date range.
  * Returns a Map: "TEAM_ABBREV|YYYY-MM-DD" → game start timestamp (Unix seconds).
@@ -289,6 +297,7 @@ function findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd
   for (const tx of adds) {
     const addedPlayers = tx.players.filter(p => p.type === 'add');
     for (const added of addedPlayers) {
+      if (isAbandonedTeam(added.destTeam)) continue;
       // Skip if this player was also dropped by the same team this week
       if (droppedByTeam.has(`${added.playerKey}|${added.destTeam}`)) continue;
 
@@ -576,7 +585,8 @@ function analyzePlayersOfTheWeek(weeklyRosters) {
   const batters = [];
   const pitchers = [];
 
-  for (const roster of Object.values(weeklyRosters)) {
+  for (const [teamKey, roster] of Object.entries(weeklyRosters)) {
+    if (isAbandonedTeam(teamKey)) continue;
     for (const player of roster.players) {
       // Skip bench and IL players — only count active lineup contributions
       if (['BN', 'IL', 'IL+'].includes(player.selectedPosition)) continue;
@@ -767,6 +777,7 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
 
     // Find players who were benched on at least 1 day they had stats
     for (const info of Object.values(benchDays)) {
+      if (isAbandonedTeam(info.teamKey)) continue;
       if (info.benchedWithStats === 0) continue;
       // Skip players who were only on the roster for a single day — a late-week
       // pickup who didn't start is a timing slip, not a "front office failure."
