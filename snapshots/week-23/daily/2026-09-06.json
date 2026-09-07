@@ -1,0 +1,3134 @@
+{
+  "date": "2026-09-06",
+  "collectedAt": "2026-09-07T23:58:56.647Z",
+  "week": 23,
+  "positionsSource": "api",
+  "positionsCapturedAt": null,
+  "matchups": [
+    {
+      "team1": {
+        "teamKey": "469.l.75479.t.1",
+        "name": "Professor McGonigle",
+        "stats": {
+          "H/AB": 67,
+          "R": 30,
+          "HR": 8,
+          "RBI": 36,
+          "SB": 4,
+          "AVG": 0.263,
+          "OBP": 0.321,
+          "IP": 74,
+          "K": 98,
+          "ERA": 2.68,
+          "WHIP": 1.01,
+          "K/BB": 4.9,
+          "QS": 7,
+          "SV+H": 11
+        }
+      },
+      "team2": {
+        "teamKey": "469.l.75479.t.10",
+        "name": "The Bryce Is Right",
+        "stats": {
+          "H/AB": 54,
+          "R": 28,
+          "HR": 9,
+          "RBI": 28,
+          "SB": 2,
+          "AVG": 0.235,
+          "OBP": 0.311,
+          "IP": 80,
+          "K": 83,
+          "ERA": 4.95,
+          "WHIP": 1.35,
+          "K/BB": 2.96,
+          "QS": 5,
+          "SV+H": 3
+        }
+      },
+      "team1Wins": 11,
+      "team2Wins": 1,
+      "ties": 0,
+      "statWinners": [
+        {
+          "stat": "R",
+          "winnerTeamKey": "469.l.75479.t.1",
+          "isTied": false
+        },
+        {
+          "stat": "HR",
+          "winnerTeamKey": "469.l.75479.t.10",
+          "isTied": false
+        },
+        {
+          "stat": "RBI",
+          "winnerTeamKey": "469.l.75479.t.1",
+          "isTied": false
+        },
+        {
+          "stat": "SB",
+          "winnerTeamKey": "469.l.75479.t.1",
+          "isTied": false
+        },
+        {
+          "stat": "AVG",
+          "winnerTeamKey": "469.l.75479.t.1",
+          "isTied": false
+        },
+        {
+          "stat": "OBP",
+          "winnerTeamKey": "469.l.75479.t.1",
+          "isTied": false
+        },
+        {
+          "stat": "K",
+          "winnerTeamKey": "469.l.75479.t.1",
+          "isTied": false
+        },
+        {
+          "stat": "ERA",
+          "winnerTeamKey": "469.l.75479.t.1",
+          "isTied": false
+        },
+        {
+          "stat": "WHIP",
+          "winnerTeamKey": "469.l.75479.t.1",
+          "isTied": false
+        },
+        {
+          "stat": "K/BB",
+          "winnerTeamKey": "469.l.75479.t.1",
+          "isTied": false
+        },
+        {
+          "stat": "QS",
+          "winnerTeamKey": "469.l.75479.t.1",
+          "isTied": false
+        },
+        {
+          "stat": "SV+H",
+          "winnerTeamKey": "469.l.75479.t.1",
+          "isTied": false
+        }
+      ],
+      "winnerTeamKey": "469.l.75479.t.1"
+    },
+    {
+      "team1": {
+        "teamKey": "469.l.75479.t.2",
+        "name": "Cease and Desist",
+        "stats": {
+          "H/AB": 54,
+          "R": 31,
+          "HR": 7,
+          "RBI": 26,
+          "SB": 3,
+          "AVG": 0.258,
+          "OBP": 0.33,
+          "IP": 35,
+          "K": 46,
+          "ERA": 2.06,
+          "WHIP": 0.74,
+          "K/BB": 5.75,
+          "QS": 2,
+          "SV+H": 6
+        }
+      },
+      "team2": {
+        "teamKey": "469.l.75479.t.7",
+        "name": "Risky Bettiness",
+        "stats": {
+          "H/AB": 57,
+          "R": 27,
+          "HR": 6,
+          "RBI": 34,
+          "SB": 2,
+          "AVG": 0.275,
+          "OBP": 0.335,
+          "IP": 29,
+          "K": 21,
+          "ERA": 4.97,
+          "WHIP": 1.48,
+          "K/BB": 2.1,
+          "QS": 0,
+          "SV+H": 1
+        }
+      },
+      "team1Wins": 9,
+      "team2Wins": 3,
+      "ties": 0,
+      "statWinners": [
+        {
+          "stat": "R",
+          "winnerTeamKey": "469.l.75479.t.2",
+          "isTied": false
+        },
+        {
+          "stat": "HR",
+          "winnerTeamKey": "469.l.75479.t.2",
+          "isTied": false
+        },
+        {
+          "stat": "RBI",
+          "winnerTeamKey": "469.l.75479.t.7",
+          "isTied": false
+        },
+        {
+          "stat": "SB",
+          "winnerTeamKey": "469.l.75479.t.2",
+          "isTied": false
+        },
+        {
+          "stat": "AVG",
+          "winnerTeamKey": "469.l.75479.t.7",
+          "isTied": false
+        },
+        {
+          "stat": "OBP",
+          "winnerTeamKey": "469.l.75479.t.7",
+          "isTied": false
+        },
+        {
+          "stat": "K",
+          "winnerTeamKey": "469.l.75479.t.2",
+          "isTied": false
+        },
+        {
+          "stat": "ERA",
+          "winnerTeamKey": "469.l.75479.t.2",
+          "isTied": false
+        },
+        {
+          "stat": "WHIP",
+          "winnerTeamKey": "469.l.75479.t.2",
+          "isTied": false
+        },
+        {
+          "stat": "K/BB",
+          "winnerTeamKey": "469.l.75479.t.2",
+          "isTied": false
+        },
+        {
+          "stat": "QS",
+          "winnerTeamKey": "469.l.75479.t.2",
+          "isTied": false
+        },
+        {
+          "stat": "SV+H",
+          "winnerTeamKey": "469.l.75479.t.2",
+          "isTied": false
+        }
+      ],
+      "winnerTeamKey": "469.l.75479.t.2"
+    },
+    {
+      "team1": {
+        "teamKey": "469.l.75479.t.3",
+        "name": "Schlittler’s List",
+        "stats": {
+          "H/AB": 61,
+          "R": 36,
+          "HR": 9,
+          "RBI": 34,
+          "SB": 6,
+          "AVG": 0.241,
+          "OBP": 0.328,
+          "IP": 90.1,
+          "K": 96,
+          "ERA": 5.78,
+          "WHIP": 1.41,
+          "K/BB": 4,
+          "QS": 7,
+          "SV+H": 3
+        }
+      },
+      "team2": {
+        "teamKey": "469.l.75479.t.4",
+        "name": "Ep-Skenes Files",
+        "stats": {
+          "H/AB": 65,
+          "R": 44,
+          "HR": 15,
+          "RBI": 39,
+          "SB": 7,
+          "AVG": 0.274,
+          "OBP": 0.372,
+          "IP": 84.1,
+          "K": 87,
+          "ERA": 4.27,
+          "WHIP": 1.19,
+          "K/BB": 3.35,
+          "QS": 4,
+          "SV+H": 6
+        }
+      },
+      "team1Wins": 3,
+      "team2Wins": 9,
+      "ties": 0,
+      "statWinners": [
+        {
+          "stat": "R",
+          "winnerTeamKey": "469.l.75479.t.4",
+          "isTied": false
+        },
+        {
+          "stat": "HR",
+          "winnerTeamKey": "469.l.75479.t.4",
+          "isTied": false
+        },
+        {
+          "stat": "RBI",
+          "winnerTeamKey": "469.l.75479.t.4",
+          "isTied": false
+        },
+        {
+          "stat": "SB",
+          "winnerTeamKey": "469.l.75479.t.4",
+          "isTied": false
+        },
+        {
+          "stat": "AVG",
+          "winnerTeamKey": "469.l.75479.t.4",
+          "isTied": false
+        },
+        {
+          "stat": "OBP",
+          "winnerTeamKey": "469.l.75479.t.4",
+          "isTied": false
+        },
+        {
+          "stat": "K",
+          "winnerTeamKey": "469.l.75479.t.3",
+          "isTied": false
+        },
+        {
+          "stat": "ERA",
+          "winnerTeamKey": "469.l.75479.t.4",
+          "isTied": false
+        },
+        {
+          "stat": "WHIP",
+          "winnerTeamKey": "469.l.75479.t.4",
+          "isTied": false
+        },
+        {
+          "stat": "K/BB",
+          "winnerTeamKey": "469.l.75479.t.3",
+          "isTied": false
+        },
+        {
+          "stat": "QS",
+          "winnerTeamKey": "469.l.75479.t.3",
+          "isTied": false
+        },
+        {
+          "stat": "SV+H",
+          "winnerTeamKey": "469.l.75479.t.4",
+          "isTied": false
+        }
+      ],
+      "winnerTeamKey": "469.l.75479.t.4"
+    },
+    {
+      "team1": {
+        "teamKey": "469.l.75479.t.5",
+        "name": "Jr Jays",
+        "stats": {
+          "H/AB": 58,
+          "R": 28,
+          "HR": 9,
+          "RBI": 23,
+          "SB": 4,
+          "AVG": 0.262,
+          "OBP": 0.35,
+          "IP": 63.1,
+          "K": 59,
+          "ERA": 3.98,
+          "WHIP": 1.36,
+          "K/BB": 2.57,
+          "QS": 5,
+          "SV+H": 7
+        }
+      },
+      "team2": {
+        "teamKey": "469.l.75479.t.9",
+        "name": "Babe Ruthless",
+        "stats": {
+          "H/AB": 59,
+          "R": 28,
+          "HR": 4,
+          "RBI": 25,
+          "SB": 8,
+          "AVG": 0.262,
+          "OBP": 0.325,
+          "IP": 41,
+          "K": 36,
+          "ERA": 4.17,
+          "WHIP": 1.22,
+          "K/BB": 2.77,
+          "QS": 3,
+          "SV+H": 2
+        }
+      },
+      "team1Wins": 7,
+      "team2Wins": 4,
+      "ties": 1,
+      "statWinners": [
+        {
+          "stat": "R",
+          "winnerTeamKey": null,
+          "isTied": true
+        },
+        {
+          "stat": "HR",
+          "winnerTeamKey": "469.l.75479.t.5",
+          "isTied": false
+        },
+        {
+          "stat": "RBI",
+          "winnerTeamKey": "469.l.75479.t.9",
+          "isTied": false
+        },
+        {
+          "stat": "SB",
+          "winnerTeamKey": "469.l.75479.t.9",
+          "isTied": false
+        },
+        {
+          "stat": "AVG",
+          "winnerTeamKey": "469.l.75479.t.5",
+          "isTied": false
+        },
+        {
+          "stat": "OBP",
+          "winnerTeamKey": "469.l.75479.t.5",
+          "isTied": false
+        },
+        {
+          "stat": "K",
+          "winnerTeamKey": "469.l.75479.t.5",
+          "isTied": false
+        },
+        {
+          "stat": "ERA",
+          "winnerTeamKey": "469.l.75479.t.5",
+          "isTied": false
+        },
+        {
+          "stat": "WHIP",
+          "winnerTeamKey": "469.l.75479.t.9",
+          "isTied": false
+        },
+        {
+          "stat": "K/BB",
+          "winnerTeamKey": "469.l.75479.t.9",
+          "isTied": false
+        },
+        {
+          "stat": "QS",
+          "winnerTeamKey": "469.l.75479.t.5",
+          "isTied": false
+        },
+        {
+          "stat": "SV+H",
+          "winnerTeamKey": "469.l.75479.t.5",
+          "isTied": false
+        }
+      ],
+      "winnerTeamKey": "469.l.75479.t.5"
+    },
+    {
+      "team1": {
+        "teamKey": "469.l.75479.t.6",
+        "name": "Juiced Balls",
+        "stats": {
+          "H/AB": 52,
+          "R": 33,
+          "HR": 8,
+          "RBI": 22,
+          "SB": 4,
+          "AVG": 0.248,
+          "OBP": 0.289,
+          "IP": 53,
+          "K": 57,
+          "ERA": 1.87,
+          "WHIP": 0.72,
+          "K/BB": 6.33,
+          "QS": 7,
+          "SV+H": 4
+        }
+      },
+      "team2": {
+        "teamKey": "469.l.75479.t.8",
+        "name": "Eephus",
+        "stats": {
+          "H/AB": 49,
+          "R": 31,
+          "HR": 6,
+          "RBI": 35,
+          "SB": 5,
+          "AVG": 0.221,
+          "OBP": 0.307,
+          "IP": 36,
+          "K": 28,
+          "ERA": 4.25,
+          "WHIP": 1.39,
+          "K/BB": 2,
+          "QS": 2,
+          "SV+H": 2
+        }
+      },
+      "team1Wins": 9,
+      "team2Wins": 3,
+      "ties": 0,
+      "statWinners": [
+        {
+          "stat": "R",
+          "winnerTeamKey": "469.l.75479.t.6",
+          "isTied": false
+        },
+        {
+          "stat": "HR",
+          "winnerTeamKey": "469.l.75479.t.6",
+          "isTied": false
+        },
+        {
+          "stat": "RBI",
+          "winnerTeamKey": "469.l.75479.t.8",
+          "isTied": false
+        },
+        {
+          "stat": "SB",
+          "winnerTeamKey": "469.l.75479.t.8",
+          "isTied": false
+        },
+        {
+          "stat": "AVG",
+          "winnerTeamKey": "469.l.75479.t.6",
+          "isTied": false
+        },
+        {
+          "stat": "OBP",
+          "winnerTeamKey": "469.l.75479.t.8",
+          "isTied": false
+        },
+        {
+          "stat": "K",
+          "winnerTeamKey": "469.l.75479.t.6",
+          "isTied": false
+        },
+        {
+          "stat": "ERA",
+          "winnerTeamKey": "469.l.75479.t.6",
+          "isTied": false
+        },
+        {
+          "stat": "WHIP",
+          "winnerTeamKey": "469.l.75479.t.6",
+          "isTied": false
+        },
+        {
+          "stat": "K/BB",
+          "winnerTeamKey": "469.l.75479.t.6",
+          "isTied": false
+        },
+        {
+          "stat": "QS",
+          "winnerTeamKey": "469.l.75479.t.6",
+          "isTied": false
+        },
+        {
+          "stat": "SV+H",
+          "winnerTeamKey": "469.l.75479.t.6",
+          "isTied": false
+        }
+      ],
+      "winnerTeamKey": "469.l.75479.t.6"
+    }
+  ],
+  "rosters": {
+    "469.l.75479.t.1": {
+      "teamKey": "469.l.75479.t.1",
+      "name": "Professor McGonigle",
+      "players": [
+        {
+          "playerKey": "469.p.11836",
+          "name": "Ivan Herrera",
+          "selectedPosition": "C",
+          "stats": {
+            "H/AB": 3,
+            "R": 2,
+            "HR": 0,
+            "RBI": 2,
+            "SB": 0,
+            "AVG": 0.6,
+            "OBP": 0.6
+          }
+        },
+        {
+          "playerKey": "469.p.12550",
+          "name": "Alec Burleson",
+          "selectedPosition": "1B",
+          "stats": {
+            "H/AB": 3,
+            "R": 1,
+            "HR": 0,
+            "RBI": 1,
+            "SB": 0,
+            "AVG": 0.6,
+            "OBP": 0.6
+          }
+        },
+        {
+          "playerKey": "469.p.11284",
+          "name": "Nico Hoerner",
+          "selectedPosition": "2B",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.333,
+            "OBP": 0.333
+          }
+        },
+        {
+          "playerKey": "469.p.62955",
+          "name": "Kevin McGonigle",
+          "selectedPosition": "3B",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.12393",
+          "name": "Elly De La Cruz",
+          "selectedPosition": "SS",
+          "stats": {
+            "H/AB": 2,
+            "R": 1,
+            "HR": 1,
+            "RBI": 4,
+            "SB": 0,
+            "AVG": 0.5,
+            "OBP": 0.667
+          }
+        },
+        {
+          "playerKey": "469.p.12314",
+          "name": "Steven Kwan",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 2,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.5,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.63494",
+          "name": "Jung Hoo Lee",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 2,
+            "SB": 0,
+            "AVG": 0.25,
+            "OBP": 0.25
+          }
+        },
+        {
+          "playerKey": "469.p.64329",
+          "name": "Carson Benge",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.25,
+            "OBP": 0.25
+          }
+        },
+        {
+          "playerKey": "469.p.60138",
+          "name": "Chase DeLauter",
+          "selectedPosition": "Util",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11822",
+          "name": "CJ Abrams",
+          "selectedPosition": "Util",
+          "stats": {
+            "H/AB": 1,
+            "R": 1,
+            "HR": 1,
+            "RBI": 1,
+            "SB": 0,
+            "AVG": 0.25,
+            "OBP": 0.4
+          }
+        },
+        {
+          "playerKey": "469.p.12309",
+          "name": "Jonathan Aranda",
+          "selectedPosition": "BN",
+          "stats": {
+            "H/AB": 2,
+            "R": 0,
+            "HR": 0,
+            "RBI": 1,
+            "SB": 0,
+            "AVG": 0.5,
+            "OBP": 0.4
+          }
+        },
+        {
+          "playerKey": "469.p.11375",
+          "name": "Xavier Edwards",
+          "selectedPosition": "IL",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.62642",
+          "name": "Jacob Lopez",
+          "selectedPosition": "SP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11495",
+          "name": "Jhoan Duran",
+          "selectedPosition": "RP",
+          "stats": {
+            "IP": 1,
+            "K": 2,
+            "ERA": 9,
+            "WHIP": 2,
+            "QS": 0,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.60016",
+          "name": "Cade Smith",
+          "selectedPosition": "RP",
+          "stats": {
+            "IP": 2,
+            "K": 5,
+            "ERA": 0,
+            "WHIP": 0,
+            "QS": 0,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.8616",
+          "name": "Aroldis Chapman",
+          "selectedPosition": "P",
+          "stats": {
+            "IP": 1,
+            "K": 2,
+            "ERA": 0,
+            "WHIP": 1,
+            "QS": 0,
+            "SV+H": 1
+          }
+        },
+        {
+          "playerKey": "469.p.11358",
+          "name": "Garrett Whitlock",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12746",
+          "name": "Abner Uribe",
+          "selectedPosition": "P",
+          "stats": {
+            "IP": 0.1,
+            "K": 1,
+            "ERA": 0,
+            "WHIP": 0,
+            "QS": 0,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.64394",
+          "name": "Payton Tolle",
+          "selectedPosition": "BN",
+          "stats": {
+            "IP": 6,
+            "K": 12,
+            "ERA": 1.5,
+            "WHIP": 0.67,
+            "QS": 1,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.10455",
+          "name": "Tyler Mahle",
+          "selectedPosition": "BN",
+          "stats": {
+            "IP": 6,
+            "K": 3,
+            "ERA": 0,
+            "WHIP": 0.83,
+            "K/BB": 3,
+            "QS": 1,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.60042",
+          "name": "Parker Messick",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11706",
+          "name": "Cristopher Sánchez",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12141",
+          "name": "Hunter Brown",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.60254",
+          "name": "Jacob Misiorowski",
+          "selectedPosition": "BN",
+          "stats": {}
+        }
+      ]
+    },
+    "469.l.75479.t.2": {
+      "teamKey": "469.l.75479.t.2",
+      "name": "Cease and Desist",
+      "players": [
+        {
+          "playerKey": "469.p.11268",
+          "name": "William Contreras",
+          "selectedPosition": "C",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12449",
+          "name": "Vinnie Pasquantino",
+          "selectedPosition": "1B",
+          "stats": {
+            "H/AB": 1,
+            "R": 2,
+            "HR": 1,
+            "RBI": 3,
+            "SB": 0,
+            "AVG": 0.333,
+            "OBP": 0.6
+          }
+        },
+        {
+          "playerKey": "469.p.10839",
+          "name": "Jazz Chisholm Jr.",
+          "selectedPosition": "2B",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.333,
+            "OBP": 0.333
+          }
+        },
+        {
+          "playerKey": "469.p.66491",
+          "name": "Kazuma Okamoto",
+          "selectedPosition": "3B",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0
+          }
+        },
+        {
+          "playerKey": "469.p.11417",
+          "name": "Geraldo Perdomo",
+          "selectedPosition": "SS",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 1,
+            "OBP": 1
+          }
+        },
+        {
+          "playerKey": "469.p.12731",
+          "name": "Wilyer Abreu",
+          "selectedPosition": "OF",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.63129",
+          "name": "A.J. Ewing",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 2,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.667,
+            "OBP": 0.667
+          }
+        },
+        {
+          "playerKey": "469.p.64312",
+          "name": "Jac Caglianone",
+          "selectedPosition": "OF",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10766",
+          "name": "Bo Bichette",
+          "selectedPosition": "Util",
+          "stats": {
+            "H/AB": 1,
+            "R": 1,
+            "HR": 1,
+            "RBI": 3,
+            "SB": 0,
+            "AVG": 0.25,
+            "OBP": 0.25
+          }
+        },
+        {
+          "playerKey": "469.p.62504",
+          "name": "Chase Meidroth",
+          "selectedPosition": "Util",
+          "stats": {
+            "H/AB": 0,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0.6
+          }
+        },
+        {
+          "playerKey": "469.p.60061",
+          "name": "Dominic Canzone",
+          "selectedPosition": "BN",
+          "stats": {
+            "H/AB": 1,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.25,
+            "OBP": 0.25
+          }
+        },
+        {
+          "playerKey": "469.p.12005",
+          "name": "Tyler Soderstrom",
+          "selectedPosition": "IL",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.9823",
+          "name": "Carlos Rodón",
+          "selectedPosition": "SP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.60584",
+          "name": "Bryan Woo",
+          "selectedPosition": "SP",
+          "stats": {
+            "IP": 8,
+            "K": 9,
+            "ERA": 0,
+            "WHIP": 0.38,
+            "K/BB": 4.5,
+            "QS": 1,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.11526",
+          "name": "Andrés Muñoz",
+          "selectedPosition": "RP",
+          "stats": {
+            "IP": 1,
+            "K": 1,
+            "ERA": 0,
+            "WHIP": 0,
+            "QS": 0,
+            "SV+H": 1
+          }
+        },
+        {
+          "playerKey": "469.p.11920",
+          "name": "Alex Vesia",
+          "selectedPosition": "RP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12768",
+          "name": "Kevin Kelly",
+          "selectedPosition": "P",
+          "stats": {
+            "IP": 0.2,
+            "K": 1,
+            "ERA": 0,
+            "WHIP": 1.5,
+            "QS": 0,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.12086",
+          "name": "Jacob Latz",
+          "selectedPosition": "P",
+          "stats": {
+            "IP": 1,
+            "K": 1,
+            "ERA": 0,
+            "WHIP": 1,
+            "QS": 0,
+            "SV+H": 1
+          }
+        },
+        {
+          "playerKey": "469.p.9896",
+          "name": "Jeff Hoffman",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12687",
+          "name": "Jeremiah Estrada",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10438",
+          "name": "Dylan Cease",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10909",
+          "name": "Trevor Rogers",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11661",
+          "name": "Michael King",
+          "selectedPosition": "BN",
+          "stats": {
+            "IP": 6,
+            "K": 3,
+            "ERA": 0,
+            "WHIP": 1.17,
+            "K/BB": 1,
+            "QS": 1,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.11372",
+          "name": "Braxton Ashcraft",
+          "selectedPosition": "BN",
+          "stats": {}
+        }
+      ]
+    },
+    "469.l.75479.t.3": {
+      "teamKey": "469.l.75479.t.3",
+      "name": "Schlittler’s List",
+      "players": [
+        {
+          "playerKey": "469.p.60077",
+          "name": "Drake Baldwin",
+          "selectedPosition": "C",
+          "stats": {
+            "H/AB": 2,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.4,
+            "OBP": 0.4
+          }
+        },
+        {
+          "playerKey": "469.p.8658",
+          "name": "Freddie Freeman",
+          "selectedPosition": "1B",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.25,
+            "OBP": 0.25
+          }
+        },
+        {
+          "playerKey": "469.p.63023",
+          "name": "Luke Keaschall",
+          "selectedPosition": "2B",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0
+          }
+        },
+        {
+          "playerKey": "469.p.10183",
+          "name": "Alex Bregman",
+          "selectedPosition": "3B",
+          "stats": {
+            "H/AB": 0,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0.333
+          }
+        },
+        {
+          "playerKey": "469.p.64318",
+          "name": "Konnor Griffin",
+          "selectedPosition": "SS",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0
+          }
+        },
+        {
+          "playerKey": "469.p.10883",
+          "name": "Yordan Alvarez",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 1,
+            "R": 1,
+            "HR": 1,
+            "RBI": 1,
+            "SB": 0,
+            "AVG": 0.2,
+            "OBP": 0.2
+          }
+        },
+        {
+          "playerKey": "469.p.60108",
+          "name": "Roman Anthony",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0.2
+          }
+        },
+        {
+          "playerKey": "469.p.11760",
+          "name": "Riley Greene",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 2,
+            "R": 0,
+            "HR": 0,
+            "RBI": 2,
+            "SB": 0,
+            "AVG": 0.5,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.12024",
+          "name": "Jordan Walker",
+          "selectedPosition": "Util",
+          "stats": {
+            "H/AB": 0,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0.2
+          }
+        },
+        {
+          "playerKey": "469.p.12548",
+          "name": "Joshua Báez",
+          "selectedPosition": "Util",
+          "stats": {
+            "H/AB": 2,
+            "R": 1,
+            "HR": 0,
+            "RBI": 1,
+            "SB": 0,
+            "AVG": 0.667,
+            "OBP": 0.75
+          }
+        },
+        {
+          "playerKey": "469.p.11370",
+          "name": "Oneil Cruz",
+          "selectedPosition": "BN",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0
+          }
+        },
+        {
+          "playerKey": "469.p.11235",
+          "name": "Logan Webb",
+          "selectedPosition": "SP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12468",
+          "name": "Eury Pérez",
+          "selectedPosition": "SP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11717",
+          "name": "Trevor Megill",
+          "selectedPosition": "RP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10131",
+          "name": "Josh Hader",
+          "selectedPosition": "RP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10148",
+          "name": "Blake Snell",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12750",
+          "name": "Justin Martinez",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10574",
+          "name": "Adrian Morejon",
+          "selectedPosition": "P",
+          "stats": {
+            "IP": 1,
+            "K": 1,
+            "ERA": 18,
+            "WHIP": 4,
+            "K/BB": 1,
+            "QS": 0,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.10011",
+          "name": "Matthew Boyd",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.60418",
+          "name": "Ian Seymour",
+          "selectedPosition": "BN",
+          "stats": {
+            "IP": 3,
+            "K": 2,
+            "ERA": 9,
+            "WHIP": 2,
+            "K/BB": 2,
+            "QS": 0,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.11826",
+          "name": "George Kirby",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11381",
+          "name": "Logan Gilbert",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.64985",
+          "name": "Cam Schlittler",
+          "selectedPosition": "BN",
+          "stats": {}
+        }
+      ]
+    },
+    "469.l.75479.t.4": {
+      "teamKey": "469.l.75479.t.4",
+      "name": "Ep-Skenes Files",
+      "players": [
+        {
+          "playerKey": "469.p.12451",
+          "name": "Carter Jensen",
+          "selectedPosition": "C",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10235",
+          "name": "Rafael Devers",
+          "selectedPosition": "1B",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.25,
+            "OBP": 0.25
+          }
+        },
+        {
+          "playerKey": "469.p.12100",
+          "name": "Otto Lopez",
+          "selectedPosition": "2B",
+          "stats": {
+            "H/AB": 2,
+            "R": 1,
+            "HR": 0,
+            "RBI": 1,
+            "SB": 1,
+            "AVG": 0.5,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.11781",
+          "name": "Miguel Vargas",
+          "selectedPosition": "3B",
+          "stats": {
+            "H/AB": 2,
+            "R": 0,
+            "HR": 0,
+            "RBI": 1,
+            "SB": 1,
+            "AVG": 0.4,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.9552",
+          "name": "Mookie Betts",
+          "selectedPosition": "SS",
+          "stats": {
+            "H/AB": 1,
+            "R": 1,
+            "HR": 1,
+            "RBI": 4,
+            "SB": 0,
+            "AVG": 0.2,
+            "OBP": 0.2
+          }
+        },
+        {
+          "playerKey": "469.p.12157",
+          "name": "Pete Crow-Armstrong",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 1,
+            "R": 1,
+            "HR": 1,
+            "RBI": 2,
+            "SB": 0,
+            "AVG": 0.333,
+            "OBP": 0.25
+          }
+        },
+        {
+          "playerKey": "469.p.10600",
+          "name": "Jake Bauers",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 1,
+            "R": 3,
+            "HR": 1,
+            "RBI": 2,
+            "SB": 0,
+            "AVG": 0.5,
+            "OBP": 0.8
+          }
+        },
+        {
+          "playerKey": "469.p.10626",
+          "name": "Juan Soto",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 1,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.333,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.11722",
+          "name": "Corbin Carroll",
+          "selectedPosition": "Util",
+          "stats": {
+            "H/AB": 2,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.5,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.63242",
+          "name": "Brett Bateman",
+          "selectedPosition": "Util",
+          "stats": {
+            "H/AB": 3,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 1,
+            "OBP": 1
+          }
+        },
+        {
+          "playerKey": "469.p.64317",
+          "name": "JJ Wetherholt",
+          "selectedPosition": "IL",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.60223",
+          "name": "Walbert Ureña",
+          "selectedPosition": "SP",
+          "stats": {
+            "IP": 8,
+            "K": 4,
+            "ERA": 1.13,
+            "WHIP": 0.5,
+            "K/BB": 4,
+            "QS": 1,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.60211",
+          "name": "Noah Cameron",
+          "selectedPosition": "SP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10657",
+          "name": "Paul Sewald",
+          "selectedPosition": "RP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11926",
+          "name": "Reid Detmers",
+          "selectedPosition": "RP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10432",
+          "name": "Tanner Scott",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12695",
+          "name": "Louis Varland",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.63091",
+          "name": "Erik Sabrowski",
+          "selectedPosition": "P",
+          "stats": {
+            "IP": 1,
+            "K": 1,
+            "ERA": 0,
+            "WHIP": 0,
+            "QS": 0,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.12092",
+          "name": "Eduard Bazardo",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.62972",
+          "name": "Paul Skenes",
+          "selectedPosition": "BN",
+          "stats": {
+            "IP": 5.1,
+            "K": 2,
+            "ERA": 0,
+            "WHIP": 0.94,
+            "K/BB": 2,
+            "QS": 0,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.12554",
+          "name": "Taj Bradley",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.60541",
+          "name": "Jake Bennett",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.63423",
+          "name": "Yoshinobu Yamamoto",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12418",
+          "name": "Sean Burke",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12015",
+          "name": "Max Meyer",
+          "selectedPosition": "IL",
+          "stats": {}
+        }
+      ]
+    },
+    "469.l.75479.t.5": {
+      "teamKey": "469.l.75479.t.5",
+      "name": "Jr Jays",
+      "players": [
+        {
+          "playerKey": "469.p.11855",
+          "name": "Gabriel Moreno",
+          "selectedPosition": "C",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.25,
+            "OBP": 0.25
+          }
+        },
+        {
+          "playerKey": "469.p.10621",
+          "name": "Vladimir Guerrero Jr.",
+          "selectedPosition": "1B",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0
+          }
+        },
+        {
+          "playerKey": "469.p.10237",
+          "name": "Ozzie Albies",
+          "selectedPosition": "2B",
+          "stats": {
+            "H/AB": 1,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.25,
+            "OBP": 0.25
+          }
+        },
+        {
+          "playerKey": "469.p.9111",
+          "name": "Manny Machado",
+          "selectedPosition": "3B",
+          "stats": {
+            "H/AB": 1,
+            "R": 1,
+            "HR": 1,
+            "RBI": 1,
+            "SB": 0,
+            "AVG": 0.333,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.11771",
+          "name": "Bobby Witt Jr.",
+          "selectedPosition": "SS",
+          "stats": {
+            "H/AB": 2,
+            "R": 2,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.5,
+            "OBP": 0.6
+          }
+        },
+        {
+          "playerKey": "469.p.12588",
+          "name": "Seiya Suzuki",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.333,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.12719",
+          "name": "Lawrence Butler",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0
+          }
+        },
+        {
+          "playerKey": "469.p.12521",
+          "name": "James Wood",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.5,
+            "OBP": 0.8
+          }
+        },
+        {
+          "playerKey": "469.p.11231",
+          "name": "Ty France",
+          "selectedPosition": "Util",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0
+          }
+        },
+        {
+          "playerKey": "469.p.9606",
+          "name": "Max Muncy",
+          "selectedPosition": "Util",
+          "stats": {
+            "H/AB": 3,
+            "R": 2,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.75,
+            "OBP": 0.75
+          }
+        },
+        {
+          "playerKey": "469.p.11125",
+          "name": "Brandon Lowe",
+          "selectedPosition": "BN",
+          "stats": {
+            "H/AB": 2,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.667,
+            "OBP": 0.667
+          }
+        },
+        {
+          "playerKey": "469.p.10569",
+          "name": "Clay Holmes",
+          "selectedPosition": "SP",
+          "stats": {
+            "IP": 4.1,
+            "K": 2,
+            "ERA": 16.62,
+            "WHIP": 2.08,
+            "K/BB": 0.67,
+            "QS": 0,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.62935",
+          "name": "Nolan McLean",
+          "selectedPosition": "SP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11453",
+          "name": "Rico Garcia",
+          "selectedPosition": "RP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12275",
+          "name": "Dylan Lee",
+          "selectedPosition": "RP",
+          "stats": {
+            "IP": 1,
+            "K": 1,
+            "ERA": 0,
+            "WHIP": 0,
+            "QS": 0,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.10217",
+          "name": "Luke Weaver",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12114",
+          "name": "Tyler Wells",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.62467",
+          "name": "Juan Morillo",
+          "selectedPosition": "P",
+          "stats": {
+            "IP": 0.2,
+            "K": 1,
+            "ERA": 0,
+            "WHIP": 1.5,
+            "QS": 0,
+            "SV+H": 1
+          }
+        },
+        {
+          "playerKey": "469.p.9546",
+          "name": "Eduardo Rodriguez",
+          "selectedPosition": "P",
+          "stats": {
+            "IP": 6,
+            "K": 6,
+            "ERA": 1.5,
+            "WHIP": 0.83,
+            "K/BB": 3,
+            "QS": 1,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.10489",
+          "name": "Foster Griffin",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.60262",
+          "name": "Logan Henderson",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11763",
+          "name": "Tarik Skubal",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11083",
+          "name": "Casey Mize",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10214",
+          "name": "Edwin Díaz",
+          "selectedPosition": "IL",
+          "stats": {}
+        }
+      ]
+    },
+    "469.l.75479.t.6": {
+      "teamKey": "469.l.75479.t.6",
+      "name": "Juiced Balls",
+      "players": [
+        {
+          "playerKey": "469.p.11928",
+          "name": "Dillon Dingler",
+          "selectedPosition": "C",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.25,
+            "OBP": 0.25
+          }
+        },
+        {
+          "playerKey": "469.p.10465",
+          "name": "Yandy Díaz",
+          "selectedPosition": "1B",
+          "stats": {
+            "H/AB": 2,
+            "R": 1,
+            "HR": 0,
+            "RBI": 1,
+            "SB": 0,
+            "AVG": 0.4,
+            "OBP": 0.4
+          }
+        },
+        {
+          "playerKey": "469.p.10639",
+          "name": "Fernando Tatis Jr.",
+          "selectedPosition": "2B",
+          "stats": {
+            "H/AB": 1,
+            "R": 1,
+            "HR": 1,
+            "RBI": 1,
+            "SB": 0,
+            "AVG": 0.25,
+            "OBP": 0.25
+          }
+        },
+        {
+          "playerKey": "469.p.10868",
+          "name": "Willi Castro",
+          "selectedPosition": "3B",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11817",
+          "name": "Bryson Stott",
+          "selectedPosition": "SS",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.25,
+            "OBP": 0.25
+          }
+        },
+        {
+          "playerKey": "469.p.12480",
+          "name": "Jackson Chourio",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 0,
+            "R": 2,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0.2
+          }
+        },
+        {
+          "playerKey": "469.p.10646",
+          "name": "Ronald Acuña Jr.",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 2,
+            "R": 1,
+            "HR": 1,
+            "RBI": 4,
+            "SB": 0,
+            "AVG": 0.667,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.62973",
+          "name": "Wyatt Langford",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 0,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 1,
+            "AVG": 0,
+            "OBP": 0.6
+          }
+        },
+        {
+          "playerKey": "469.p.10496",
+          "name": "Taylor Ward",
+          "selectedPosition": "Util",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10499",
+          "name": "Brandon Marsh",
+          "selectedPosition": "Util",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0
+          }
+        },
+        {
+          "playerKey": "469.p.64533",
+          "name": "Sam Antonacci",
+          "selectedPosition": "BN",
+          "stats": {
+            "H/AB": 3,
+            "R": 2,
+            "HR": 0,
+            "RBI": 2,
+            "SB": 0,
+            "AVG": 0.75,
+            "OBP": 0.75
+          }
+        },
+        {
+          "playerKey": "469.p.60776",
+          "name": "José Caballero",
+          "selectedPosition": "BN",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0
+          }
+        },
+        {
+          "playerKey": "469.p.9651",
+          "name": "Nick Martinez",
+          "selectedPosition": "SP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10627",
+          "name": "Jesús Luzardo",
+          "selectedPosition": "SP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11846",
+          "name": "Riley O'Brien",
+          "selectedPosition": "RP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11806",
+          "name": "Yoendrys Gómez",
+          "selectedPosition": "RP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11789",
+          "name": "Drew Rasmussen",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.9124",
+          "name": "Zack Wheeler",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12505",
+          "name": "Mason Miller",
+          "selectedPosition": "P",
+          "stats": {
+            "IP": 1,
+            "K": 3,
+            "ERA": 0,
+            "WHIP": 1,
+            "K/BB": 3,
+            "QS": 0,
+            "SV+H": 1
+          }
+        },
+        {
+          "playerKey": "469.p.63640",
+          "name": "Shota Imanaga",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.9701",
+          "name": "Jacob deGrom",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11988",
+          "name": "Emerson Hancock",
+          "selectedPosition": "BN",
+          "stats": {}
+        }
+      ]
+    },
+    "469.l.75479.t.7": {
+      "teamKey": "469.l.75479.t.7",
+      "name": "Risky Bettiness",
+      "players": [
+        {
+          "playerKey": "469.p.10899",
+          "name": "Keibert Ruiz",
+          "selectedPosition": "C",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.9605",
+          "name": "Matt Olson",
+          "selectedPosition": "1B",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0
+          }
+        },
+        {
+          "playerKey": "469.p.11343",
+          "name": "Brice Turang",
+          "selectedPosition": "2B",
+          "stats": {
+            "H/AB": 2,
+            "R": 1,
+            "HR": 0,
+            "RBI": 3,
+            "SB": 0,
+            "AVG": 0.667,
+            "OBP": 0.8
+          }
+        },
+        {
+          "playerKey": "469.p.10420",
+          "name": "Austin Riley",
+          "selectedPosition": "3B",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 1,
+            "SB": 0,
+            "AVG": 0.25,
+            "OBP": 0.25
+          }
+        },
+        {
+          "playerKey": "469.p.60214",
+          "name": "Zach Neto",
+          "selectedPosition": "SS",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.333,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.9861",
+          "name": "Kyle Schwarber",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 1,
+            "R": 2,
+            "HR": 1,
+            "RBI": 1,
+            "SB": 0,
+            "AVG": 0.333,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.8861",
+          "name": "Mike Trout",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 2,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.5,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.11886",
+          "name": "Ezequiel Duran",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 3,
+            "R": 1,
+            "HR": 0,
+            "RBI": 1,
+            "SB": 0,
+            "AVG": 0.6,
+            "OBP": 0.6
+          }
+        },
+        {
+          "playerKey": "469.p.63648",
+          "name": "Liam Hicks",
+          "selectedPosition": "Util",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0
+          }
+        },
+        {
+          "playerKey": "469.p.11866",
+          "name": "Andrew Vaughn",
+          "selectedPosition": "Util",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.10642",
+          "name": "Will Smith",
+          "selectedPosition": "BN",
+          "stats": {
+            "H/AB": 1,
+            "R": 1,
+            "HR": 0,
+            "RBI": 1,
+            "SB": 0,
+            "AVG": 0.333,
+            "OBP": 0.6
+          }
+        },
+        {
+          "playerKey": "469.p.9877",
+          "name": "Aaron Judge",
+          "selectedPosition": "IL",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10366",
+          "name": "Teoscar Hernández",
+          "selectedPosition": "IL",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 1,
+            "SB": 0,
+            "AVG": 0.333,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.9121",
+          "name": "Gerrit Cole",
+          "selectedPosition": "SP",
+          "stats": {
+            "IP": 7,
+            "K": 3,
+            "ERA": 5.14,
+            "WHIP": 0.86,
+            "QS": 0,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.10940",
+          "name": "MacKenzie Gore",
+          "selectedPosition": "SP",
+          "stats": {
+            "IP": 3,
+            "K": 1,
+            "ERA": 15,
+            "WHIP": 3.33,
+            "K/BB": 0.33,
+            "QS": 0,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.11645",
+          "name": "David Bednar",
+          "selectedPosition": "RP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12665",
+          "name": "Hunter Gaddis",
+          "selectedPosition": "RP",
+          "stats": {
+            "IP": 1,
+            "K": 0,
+            "ERA": 0,
+            "WHIP": 1,
+            "K/BB": 0,
+            "QS": 0,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.10901",
+          "name": "Dennis Santana",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11847",
+          "name": "Joe Ryan",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10355",
+          "name": "Matt Strahm",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12733",
+          "name": "Tim Herrin",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12158",
+          "name": "J.T. Ginn",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.60137",
+          "name": "Tanner Bibee",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12007",
+          "name": "Cade Cavalli",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12281",
+          "name": "Spencer Strider",
+          "selectedPosition": "BN",
+          "stats": {}
+        }
+      ]
+    },
+    "469.l.75479.t.8": {
+      "teamKey": "469.l.75479.t.8",
+      "name": "Eephus",
+      "players": [
+        {
+          "playerKey": "469.p.11853",
+          "name": "Alejandro Kirk",
+          "selectedPosition": "C",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10918",
+          "name": "Pete Alonso",
+          "selectedPosition": "1B",
+          "stats": {
+            "H/AB": 2,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.5,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.11892",
+          "name": "Ernie Clement",
+          "selectedPosition": "2B",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0
+          }
+        },
+        {
+          "playerKey": "469.p.9724",
+          "name": "Eugenio Suárez",
+          "selectedPosition": "3B",
+          "stats": {
+            "H/AB": 0,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 1,
+            "AVG": 0,
+            "OBP": 0.4
+          }
+        },
+        {
+          "playerKey": "469.p.12413",
+          "name": "Colson Montgomery",
+          "selectedPosition": "SS",
+          "stats": {
+            "H/AB": 0,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0.2
+          }
+        },
+        {
+          "playerKey": "469.p.10893",
+          "name": "Jo Adell",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0
+          }
+        },
+        {
+          "playerKey": "469.p.9876",
+          "name": "Brandon Nimmo",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.2,
+            "OBP": 0.2
+          }
+        },
+        {
+          "playerKey": "469.p.11733",
+          "name": "Kyle Stowers",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 0,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0.4
+          }
+        },
+        {
+          "playerKey": "469.p.1000001",
+          "name": "Shohei Ohtani (Batter)",
+          "selectedPosition": "Util",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.64311",
+          "name": "Travis Bazzana",
+          "selectedPosition": "Util",
+          "stats": {
+            "H/AB": 2,
+            "R": 0,
+            "HR": 0,
+            "RBI": 1,
+            "SB": 0,
+            "AVG": 0.5,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.66369",
+          "name": "Munetaka Murakami",
+          "selectedPosition": "BN",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 1,
+            "SB": 0,
+            "AVG": 0.2,
+            "OBP": 0.333
+          }
+        },
+        {
+          "playerKey": "469.p.11384",
+          "name": "Julio Rodríguez",
+          "selectedPosition": "BN",
+          "stats": {
+            "H/AB": 1,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.25,
+            "OBP": 0.25
+          }
+        },
+        {
+          "playerKey": "469.p.11531",
+          "name": "Cal Raleigh",
+          "selectedPosition": "BN",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 1,
+            "SB": 0,
+            "AVG": 0.333,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.9334",
+          "name": "Kevin Gausman",
+          "selectedPosition": "SP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.9691",
+          "name": "Robbie Ray",
+          "selectedPosition": "SP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11644",
+          "name": "Tyler Rogers",
+          "selectedPosition": "RP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.64014",
+          "name": "Bryan King",
+          "selectedPosition": "RP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11117",
+          "name": "Ranger Suarez",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.60440",
+          "name": "Cody Bradford",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.9616",
+          "name": "Tyler Glasnow",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.9620",
+          "name": "Max Fried",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10867",
+          "name": "Shane Bieber",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11998",
+          "name": "Bryan Baker",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10185",
+          "name": "Joe Musgrove",
+          "selectedPosition": "IL",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10592",
+          "name": "Jack Flaherty",
+          "selectedPosition": "IL",
+          "stats": {}
+        }
+      ]
+    },
+    "469.l.75479.t.9": {
+      "teamKey": "469.l.75479.t.9",
+      "name": "Babe Ruthless",
+      "players": [
+        {
+          "playerKey": "469.p.62137",
+          "name": "Ben Rice",
+          "selectedPosition": "C",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0.2
+          }
+        },
+        {
+          "playerKey": "469.p.60129",
+          "name": "Sal Stewart",
+          "selectedPosition": "1B",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 1,
+            "SB": 2,
+            "AVG": 0.25,
+            "OBP": 0.333
+          }
+        },
+        {
+          "playerKey": "469.p.12370",
+          "name": "Connor Norby",
+          "selectedPosition": "2B",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0
+          }
+        },
+        {
+          "playerKey": "469.p.60419",
+          "name": "Junior Caminero",
+          "selectedPosition": "3B",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 1,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0.4
+          }
+        },
+        {
+          "playerKey": "469.p.10056",
+          "name": "Trea Turner",
+          "selectedPosition": "SS",
+          "stats": {
+            "H/AB": 1,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.25,
+            "OBP": 0.25
+          }
+        },
+        {
+          "playerKey": "469.p.12522",
+          "name": "Jackson Merrill",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0
+          }
+        },
+        {
+          "playerKey": "469.p.10480",
+          "name": "Kyle Tucker",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0
+          }
+        },
+        {
+          "playerKey": "469.p.11265",
+          "name": "Jake McCarthy",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 3,
+            "R": 2,
+            "HR": 1,
+            "RBI": 3,
+            "SB": 0,
+            "AVG": 0.6,
+            "OBP": 0.6
+          }
+        },
+        {
+          "playerKey": "469.p.10504",
+          "name": "Cody Bellinger",
+          "selectedPosition": "Util",
+          "stats": {
+            "H/AB": 1,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.25,
+            "OBP": 0.25
+          }
+        },
+        {
+          "playerKey": "469.p.12730",
+          "name": "Ceddanne Rafaela",
+          "selectedPosition": "Util",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11735",
+          "name": "Jarren Duran",
+          "selectedPosition": "BN",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0
+          }
+        },
+        {
+          "playerKey": "469.p.10577",
+          "name": "Bryan Reynolds",
+          "selectedPosition": "BN",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0.333
+          }
+        },
+        {
+          "playerKey": "469.p.12336",
+          "name": "Maikel Garcia",
+          "selectedPosition": "IL",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10917",
+          "name": "Brent Rooker",
+          "selectedPosition": "IL",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11327",
+          "name": "José Soriano",
+          "selectedPosition": "SP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.61601",
+          "name": "Kyle Leahy",
+          "selectedPosition": "SP",
+          "stats": {
+            "IP": 2.2,
+            "K": 6,
+            "ERA": 16.88,
+            "WHIP": 2.25,
+            "QS": 0,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.9902",
+          "name": "Raisel Iglesias",
+          "selectedPosition": "RP",
+          "stats": {
+            "IP": 1,
+            "K": 1,
+            "ERA": 0,
+            "WHIP": 1,
+            "QS": 0,
+            "SV+H": 1
+          }
+        },
+        {
+          "playerKey": "469.p.11704",
+          "name": "Garrett Cleavinger",
+          "selectedPosition": "RP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10934",
+          "name": "Shane Baz",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11014",
+          "name": "Freddy Peralta",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10597",
+          "name": "Sandy Alcantara",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.9882",
+          "name": "Aaron Nola",
+          "selectedPosition": "P",
+          "stats": {
+            "IP": 7,
+            "K": 5,
+            "ERA": 1.29,
+            "WHIP": 0.71,
+            "K/BB": 5,
+            "QS": 1,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.9329",
+          "name": "Michael Wacha",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.9459",
+          "name": "Sonny Gray",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.60175",
+          "name": "Troy Melton",
+          "selectedPosition": "BN",
+          "stats": {}
+        }
+      ]
+    },
+    "469.l.75479.t.10": {
+      "teamKey": "469.l.75479.t.10",
+      "name": "The Bryce Is Right",
+      "players": [
+        {
+          "playerKey": "469.p.12409",
+          "name": "Hunter Goodman",
+          "selectedPosition": "C",
+          "stats": {
+            "H/AB": 0,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.10572",
+          "name": "Josh Naylor",
+          "selectedPosition": "1B",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.333,
+            "OBP": 0.333
+          }
+        },
+        {
+          "playerKey": "469.p.10036",
+          "name": "Ketel Marte",
+          "selectedPosition": "2B",
+          "stats": {
+            "H/AB": 1,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.25,
+            "OBP": 0.25
+          }
+        },
+        {
+          "playerKey": "469.p.9507",
+          "name": "José Ramírez",
+          "selectedPosition": "3B",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.9116",
+          "name": "Francisco Lindor",
+          "selectedPosition": "SS",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0.25
+          }
+        },
+        {
+          "playerKey": "469.p.12056",
+          "name": "Michael Harris II",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.25,
+            "OBP": 0.25
+          }
+        },
+        {
+          "playerKey": "469.p.12582",
+          "name": "Daylen Lile",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 2,
+            "R": 1,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.5,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.8875",
+          "name": "Bryce Harper",
+          "selectedPosition": "OF",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0
+          }
+        },
+        {
+          "playerKey": "469.p.11731",
+          "name": "Gunnar Henderson",
+          "selectedPosition": "Util",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0
+          }
+        },
+        {
+          "playerKey": "469.p.11785",
+          "name": "Nasim Nuñez",
+          "selectedPosition": "Util",
+          "stats": {
+            "H/AB": 0,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0,
+            "OBP": 0
+          }
+        },
+        {
+          "playerKey": "469.p.11104",
+          "name": "Randy Arozarena",
+          "selectedPosition": "BN",
+          "stats": {
+            "H/AB": 2,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.5,
+            "OBP": 0.5
+          }
+        },
+        {
+          "playerKey": "469.p.10964",
+          "name": "Luis García Jr.",
+          "selectedPosition": "BN",
+          "stats": {
+            "H/AB": 1,
+            "R": 0,
+            "HR": 0,
+            "RBI": 0,
+            "SB": 0,
+            "AVG": 0.333,
+            "OBP": 0.333
+          }
+        },
+        {
+          "playerKey": "469.p.9590",
+          "name": "Byron Buxton",
+          "selectedPosition": "IL",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10166",
+          "name": "Willson Contreras",
+          "selectedPosition": "IL",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.64316",
+          "name": "Chase Burns",
+          "selectedPosition": "SP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.10683",
+          "name": "Nick Pivetta",
+          "selectedPosition": "SP",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12175",
+          "name": "Kyle Harrison",
+          "selectedPosition": "RP",
+          "stats": {
+            "IP": 3.2,
+            "K": 4,
+            "ERA": 9.82,
+            "WHIP": 3.55,
+            "K/BB": 1,
+            "QS": 0,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.10691",
+          "name": "Emilio Pagán",
+          "selectedPosition": "RP",
+          "stats": {
+            "IP": 0.1,
+            "K": 0,
+            "ERA": 0,
+            "WHIP": 0,
+            "QS": 0,
+            "SV+H": 1
+          }
+        },
+        {
+          "playerKey": "469.p.63960",
+          "name": "Andrew Alvarez",
+          "selectedPosition": "P",
+          "stats": {
+            "IP": 4.1,
+            "K": 5,
+            "ERA": 6.23,
+            "WHIP": 1.38,
+            "K/BB": 2.5,
+            "QS": 0,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.12401",
+          "name": "Gavin Williams",
+          "selectedPosition": "P",
+          "stats": {
+            "IP": 6,
+            "K": 11,
+            "ERA": 3,
+            "WHIP": 1.17,
+            "K/BB": 3.67,
+            "QS": 1,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.11138",
+          "name": "Framber Valdez",
+          "selectedPosition": "P",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.11400",
+          "name": "Tyler Phillips",
+          "selectedPosition": "P",
+          "stats": {
+            "IP": 5,
+            "K": 3,
+            "ERA": 5.4,
+            "WHIP": 1.2,
+            "K/BB": 3,
+            "QS": 0,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.12345",
+          "name": "Kyle Bradish",
+          "selectedPosition": "BN",
+          "stats": {
+            "IP": 4,
+            "K": 3,
+            "ERA": 0,
+            "WHIP": 1.5,
+            "K/BB": 0.75,
+            "QS": 0,
+            "SV+H": 0
+          }
+        },
+        {
+          "playerKey": "469.p.8780",
+          "name": "Chris Sale",
+          "selectedPosition": "BN",
+          "stats": {}
+        },
+        {
+          "playerKey": "469.p.12497",
+          "name": "Hayden Wesneski",
+          "selectedPosition": "BN",
+          "stats": {}
+        }
+      ]
+    }
+  }
+}
