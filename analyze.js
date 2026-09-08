@@ -8,6 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const { BATTING_CATS, PITCHING_CATS } = require('./lib/stat-categories');
+const { FINALS_ROUNDS } = require('./yahoo-helpers');
 
 // Nate left the league in July 2026; his team (t.7, Risky Bettiness) is unmanaged.
 // It stays in league-wide segments (matchups, standings, power rankings, movers)
@@ -140,6 +141,9 @@ function analyzeMatchups(scoreboard, teamNames) {
     if (isTie) {
       return {
         isTie: true,
+        round: m.round || null,
+        // Yahoo breaks category ties (e.g. by seed) — the official winner still matters in the playoffs
+        yahooWinnerTeamKey: m.winnerTeamKey || null,
         team1: { teamKey: m.team1.teamKey, name: teamNames[m.team1.teamKey] || m.team1.name, stats: m.team1.stats, belowIPMinimum: t1BelowIP },
         team2: { teamKey: m.team2.teamKey, name: teamNames[m.team2.teamKey] || m.team2.name, stats: m.team2.stats, belowIPMinimum: t2BelowIP },
         score: `${m.team1Wins}-${m.team2Wins}-${m.ties}`,
@@ -159,6 +163,7 @@ function analyzeMatchups(scoreboard, teamNames) {
 
     return {
       isTie: false,
+      round: m.round || null,
       winner: { teamKey: winner.teamKey, name: teamNames[winner.teamKey] || winner.name, stats: winner.stats, belowIPMinimum: winnerBelowIP },
       loser: { teamKey: loser.teamKey, name: teamNames[loser.teamKey] || loser.name, stats: loser.stats, belowIPMinimum: loserBelowIP },
       score: `${Math.max(m.team1Wins, m.team2Wins)}-${Math.min(m.team1Wins, m.team2Wins)}-${m.ties}`,
@@ -170,11 +175,54 @@ function analyzeMatchups(scoreboard, teamNames) {
       categories: catDetails,
     };
   }).sort((a, b) => {
-    // Sort by drama: ties and closest matchups first, blowouts last
+    // The championship always leads, whatever the score
+    const aChamp = a.round === 'Championship' ? 0 : 1;
+    const bChamp = b.round === 'Championship' ? 0 : 1;
+    if (aChamp !== bChamp) return aChamp - bChamp;
+    // Otherwise sort by drama: ties and closest matchups first, blowouts last
     const aDiff = a.winnerWins - a.loserWins;
     const bDiff = b.winnerWins - b.loserWins;
     return aDiff - bDiff;
   });
+}
+
+/**
+ * Finals mode: the recap covers only the championship and third-place games.
+ * Narrow every input to the four finalist teams so downstream segments
+ * (players of the week, pickups, roasts, storylines) don't drift into the
+ * consolation bracket. Standings-based segments are turned off by the caller.
+ */
+function restrictToFinalists({ scoreboard, rosters, weeklyRosters, weeklyStats, transactions, dailySnapshots }) {
+  const finalsMatchups = scoreboard.filter(m => FINALS_ROUNDS.has(m.round));
+  const finalistKeys = new Set(finalsMatchups.flatMap(m => [m.team1.teamKey, m.team2.teamKey]));
+  const pick = obj => Object.fromEntries(Object.entries(obj || {}).filter(([k]) => finalistKeys.has(k)));
+
+  const finalistRosters = pick(rosters);
+  const finalistWeeklyRosters = pick(weeklyRosters);
+  const finalistPlayerKeys = new Set(
+    Object.values(finalistWeeklyRosters).flatMap(t => (t.players || []).map(p => p.playerKey))
+  );
+  const finalistWeeklyStats = Object.fromEntries(
+    Object.entries(weeklyStats || {}).filter(([k]) => finalistPlayerKeys.has(k))
+  );
+  const finalistTransactions = (transactions || []).filter(tx =>
+    (tx.players || []).some(p => finalistKeys.has(p.sourceTeam) || finalistKeys.has(p.destTeam))
+  );
+  const finalistDaily = (dailySnapshots || []).map(snap => ({
+    ...snap,
+    matchups: (snap.matchups || []).filter(m => finalistKeys.has(m.team1.teamKey) && finalistKeys.has(m.team2.teamKey)),
+    rosters: snap.rosters ? pick(snap.rosters) : snap.rosters,
+  }));
+
+  return {
+    finalistKeys,
+    scoreboard: finalsMatchups,
+    rosters: finalistRosters,
+    weeklyRosters: weeklyRosters ? finalistWeeklyRosters : weeklyRosters,
+    weeklyStats: finalistWeeklyStats,
+    transactions: finalistTransactions,
+    dailySnapshots: finalistDaily,
+  };
 }
 
 /**
@@ -1260,12 +1308,16 @@ async function analyze(week) {
   }
 
   const meta = loadSnapshot(snapshotDir, 'meta.json');
-  const scoreboard = loadSnapshot(snapshotDir, 'scoreboard.json') || [];
+  const fullScoreboard = loadSnapshot(snapshotDir, 'scoreboard.json') || [];
+  let scoreboard = fullScoreboard;
   const standings = loadSnapshot(snapshotDir, 'standings.json') || [];
-  const transactions = loadSnapshot(snapshotDir, 'transactions.json') || [];
-  const rosters = loadSnapshot(snapshotDir, 'rosters.json') || {};
-  const weeklyStats = loadSnapshot(snapshotDir, 'weekly-stats.json') || {};
-  const weeklyRosters = loadSnapshot(snapshotDir, 'weekly-rosters.json');
+  let transactions = loadSnapshot(snapshotDir, 'transactions.json') || [];
+  let rosters = loadSnapshot(snapshotDir, 'rosters.json') || {};
+  let weeklyStats = loadSnapshot(snapshotDir, 'weekly-stats.json') || {};
+  let weeklyRosters = loadSnapshot(snapshotDir, 'weekly-rosters.json');
+
+  // Finals week: only the championship and third-place games get covered.
+  const isFinals = !!meta?.isFinals && fullScoreboard.some(m => FINALS_ROUNDS.has(m.round));
 
   // Try loading previous week's standings for movers
   const prevDir = path.join(__dirname, 'snapshots', `week-${String(week - 1).padStart(2, '0')}`);
@@ -1292,7 +1344,16 @@ async function analyze(week) {
     }
   }
 
-  const storylines = analyzeStorylines(dailySnapshots, scoreboard, teamNames);
+  let dailySnapshots_ = dailySnapshots;
+  if (isFinals) {
+    const narrowed = restrictToFinalists({ scoreboard, rosters, weeklyRosters, weeklyStats, transactions, dailySnapshots });
+    ({ scoreboard, rosters, weeklyRosters, weeklyStats, transactions } = narrowed);
+    dailySnapshots_ = narrowed.dailySnapshots;
+    console.log(`  FINALS mode: ${scoreboard.map(m => `${m.round}: ${m.team1.name} vs ${m.team2.name}`).join('; ')}`);
+    console.log(`  Restricted to ${narrowed.finalistKeys.size} finalist teams (${fullScoreboard.length - scoreboard.length} consolation matchups dropped)`);
+  }
+
+  const storylines = analyzeStorylines(dailySnapshots_, scoreboard, teamNames);
 
   // Fetch MLB game start times for bench detection accuracy
   let gameStarts = new Map();
@@ -1302,9 +1363,9 @@ async function analyze(week) {
 
   console.log(`Analyzing Week ${week}...`);
   console.log(`  ${scoreboard.length} matchups, ${transactions.length} transactions, ${standings.length} teams, ${Object.keys(weeklyStats).length} players with weekly stats`);
-  if (dailySnapshots.length > 0) {
-    const hasRosters = dailySnapshots.some(s => s.rosters);
-    console.log(`  ${dailySnapshots.length} daily snapshots${hasRosters ? ' (with roster positions)' : ''}`);
+  if (dailySnapshots_.length > 0) {
+    const hasRosters = dailySnapshots_.some(s => s.rosters);
+    console.log(`  ${dailySnapshots_.length} daily snapshots${hasRosters ? ' (with roster positions)' : ''}`);
   } else {
     console.log(`  No daily snapshots found`);
   }
@@ -1317,6 +1378,13 @@ async function analyze(week) {
     leagueName: meta?.leagueName || process.env.LEAGUE_NAME || "Fantasy Baseball League",
     weekStart: meta?.weekStart,
     weekEnd: meta?.weekEnd,
+    playoffs: {
+      isPlayoffs: !!meta?.isPlayoffs,
+      isFinals,
+      // Bracket labels for every matchup this week, including the ones the
+      // recap skips, so narrators can mention the consolation results if asked.
+      rounds: fullScoreboard.map(m => ({ round: m.round || null, team1: teamNames[m.team1.teamKey] || m.team1.name, team2: teamNames[m.team2.teamKey] || m.team2.name, winnerTeamKey: m.winnerTeamKey || null })),
+    },
     segments: {
       storylines,
       matchups: analyzeMatchups(scoreboard, teamNames),
@@ -1325,9 +1393,11 @@ async function analyze(week) {
       worstPickup: analyzeWorstPickup(transactions, weeklyStats, teamNames, meta?.weekEnd),
       bestStream: analyzeBestStream(transactions, weeklyStats, teamNames, meta?.weekEnd),
       transactionDesk: analyzeTransactionDesk(transactions, weeklyStats, teamNames, standings, week),
-      standingsMovers: analyzeStandingsMovers(standings, prevStandings, teamNames),
-      powerRankings: analyzePowerRankings(standings, scoreboard, teamNames),
-      roasts: analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNames, computeRecentPlayerStats(week), dailySnapshots, scoreboard, gameStarts),
+      // Standings are frozen during the playoffs — movers and power rankings
+      // would just restate the regular-season table, so the finals skip them.
+      standingsMovers: isFinals ? { available: false, movers: [] } : analyzeStandingsMovers(standings, prevStandings, teamNames),
+      powerRankings: isFinals ? [] : analyzePowerRankings(standings, scoreboard, teamNames),
+      roasts: analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNames, computeRecentPlayerStats(week), dailySnapshots_, scoreboard, gameStarts),
     },
   };
 
@@ -1368,4 +1438,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { analyze };
+module.exports = { analyze, restrictToFinalists };

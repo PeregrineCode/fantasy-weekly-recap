@@ -10,3 +10,4 @@ logs/
 data/faab-bids.json
 .prompt-tmp.txt
 *.tgz
+*.bak-old-app

@@ -72,7 +72,7 @@ function buildNav(articles, activeWeek, pathPrefix = '') {
     const href = `${pathPrefix}weeks/week-${String(article.weekNum).padStart(2, '0')}.html`;
     const isActive = activeWeek === article.weekNum;
     links.push(
-      `<a href="${href}"${isActive ? ' class="active"' : ''}>Wk ${article.weekNum}</a>`
+      `<a href="${href}"${isActive ? ' class="active"' : ''}>${article.meta.label || `Wk ${article.weekNum}`}</a>`
     );
   }
 

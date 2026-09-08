@@ -89,6 +89,11 @@ node deploy.js                  # Push to GitHub Pages repo
 - **Positions are always current:** `selected_position` in API responses always reflects the **current** roster position at the time of the API call, never historical. Requesting stats for a past date/week still returns today's positions. This is why daily data collection uses two phases.
 - **Stats index varies:** Yahoo sometimes inserts extra fields (like `is_editable`) before the `player_stats` object in roster responses, shifting its index. Always search for `player_stats` at any index rather than hardcoding `p[2]`.
 
+## Playoffs and Finals
+Yahoo flags playoff matchups (`is_playoffs`, `is_consolation`) but never says which game is the championship. `collect.js` infers bracket rounds from the previous week's playoff results (`labelPlayoffRounds` in `yahoo-helpers.js`): a team that lost a playoff matchup last week is in the losers' bracket. Each matchup in `scoreboard.json` gets a `round` (Championship, Third Place, Semifinal, Quarterfinal, Consolation, or null), and `meta.json` gets `isPlayoffs` / `isFinals` (finals = the league's `end_week`).
+
+**Finals mode** (automatic when `meta.isFinals`): `analyze.js` covers only the Championship and Third Place games and narrows rosters, transactions, and daily snapshots to the four finalists, so every segment stays on the title games. Standings Movers and Power Rankings are skipped (standings are frozen in the playoffs). `narrate.js` titles the article "Finals Recap", tags each matchup `[CHAMPIONSHIP]` / `[THIRD-PLACE GAME]`, leads with the champion, and switches Mad Dog and The Numbers Don't Lie to finals variants that need no standings. The article frontmatter carries `label: "Finals"`, which `build.js` uses for the nav link instead of "Wk N". The full set of round labels (including consolation results) is preserved in `analysis.playoffs.rounds` if a narrator ever needs them.
+
 ## Segments
 Matchup Recaps (includes mid-week drama/storylines when daily data available), Players of the Week (1 winner + 3 runners-up for batters and pitchers), Best Pickup, Worst Pickup (Hall of Shame), Best Pitcher Stream, Transaction Desk, Standings Movers, Power Rankings, Bench Blunders (requires nightly position data), The Insider Report (trade rumours from league members, requires `RUMOURS_API_URL`)
 

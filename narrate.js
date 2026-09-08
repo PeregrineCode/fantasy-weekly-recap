@@ -156,7 +156,14 @@ const teamStatLine = (stats) => Object.entries(stats)
   .map(([k, v]) => fmtStat(k, v))
   .join(', ');
 
-function promptMatchupRecaps(matchups, storylines) {
+// Bracket label shown ahead of a playoff matchup line, e.g. "[CHAMPIONSHIP] ".
+function roundTag(m) {
+  if (!m.round) return '';
+  const label = m.round === 'Third Place' ? 'THIRD-PLACE GAME' : m.round.toUpperCase();
+  return `[${label}] `;
+}
+
+function promptMatchupRecaps(matchups, storylines, playoffs) {
   if (!matchups.length) return null;
 
   // The closest category is usually won by the matchup winner — without explicit
@@ -178,7 +185,7 @@ function promptMatchupRecaps(matchups, storylines) {
     if (m.isTie) {
       const t1Stats = teamStatLine(m.team1.stats);
       const t2Stats = teamStatLine(m.team2.stats);
-      return `RESULT: ${m.team1.name} TIED ${m.team2.name} ${m.score} (this is a TIE — neither team won)` +
+      return `RESULT: ${roundTag(m)}${m.team1.name} TIED ${m.team2.name} ${m.score} (this is a TIE — neither team won)` +
         closestNote(m, m.team1, m.team2) +
         `\n  ${m.team1.name} stats: ${t1Stats}` +
         `\n  ${m.team2.name} stats: ${t2Stats}` +
@@ -202,7 +209,7 @@ function promptMatchupRecaps(matchups, storylines) {
       if (wouldWin.length) warn += ` But would have WON ${wouldWin.join(', ')} — gave away ${wouldWin.length} categories for free, flipping the matchup result.`;
       ipWarnings.push(warn);
     }
-    return `RESULT: ${m.winner.name} beat ${m.loser.name} ${m.score}` +
+    return `RESULT: ${roundTag(m)}${m.winner.name} beat ${m.loser.name} ${m.score}` +
       (m.isBlowout ? ' (BLOWOUT)' : '') +
       closestNote(m, m.winner, m.loser) +
       (ipWarnings.length ? `\n  ⚠️ ${ipWarnings.join('; ')}` : '') +
@@ -227,6 +234,23 @@ function promptMatchupRecaps(matchups, storylines) {
   }
 
   const numCats = BATTING_CATS.length + PITCHING_CATS.length;
+
+  if (playoffs?.isFinals) {
+    const champ = matchups.find(m => m.round === 'Championship');
+    let champion = null;
+    let tiebreakNote = '';
+    if (champ && !champ.isTie) {
+      champion = champ.winner.name;
+    } else if (champ?.isTie && champ.yahooWinnerTeamKey) {
+      const t = [champ.team1, champ.team2].find(x => x.teamKey === champ.yahooWinnerTeamKey);
+      if (t) {
+        champion = t.name;
+        tiebreakNote = ` The championship finished TIED on categories; Yahoo's tiebreaker awarded the title to ${t.name} — report the tie score exactly and explain the title was decided on the tiebreaker.`;
+      }
+    }
+    return `Write the "Matchup Recaps" segment for the LEAGUE FINALS — the last week of the season. Only two matchups are listed: the CHAMPIONSHIP and the THIRD-PLACE GAME. This is a ${numCats}-category league — all scores must add up to ${numCats}.\n\nLead with the championship${champion ? ` and crown ${champion} as league champion` : ''} — this is the season's climax, so give it the weight of a title game: the trophy, the season-long journey ending here, what sealed it. Then cover the third-place game as the undercard. Both matchups MUST be covered. Use the EXACT scores provided. If a matchup says TIED, report it as a tie. Do NOT mention consolation matchups, next week, or the standings race — the season is over after this.${tiebreakNote}\n\nFor matchups that had mid-week drama (comebacks, lead changes, Sunday swings), weave the storyline into the recap — tell the story of how the title was won.\n\nIMPORTANT: Each team's stats are labeled with their name. Do NOT swap stats between teams.\n\nIMPORTANT: The "stats" lines below are FULL-WEEK CUMULATIVE TOTALS. They are NOT single-day numbers. When describing a Sunday swing, comeback, or lead change, do NOT pair these totals with single-day language. Either describe the swing qualitatively, or make it explicit the numbers are the week's final tally.\n\nMatchup results:\n${data}${storylineBlock}`;
+  }
+
   return `Write the "Matchup Recaps" segment. This is a ${numCats}-category league — all scores must add up to ${numCats}. Lead with the most dramatic matchup. Every matchup MUST be mentioned. Use the EXACT scores provided. If a matchup says TIED, report it as a tie.\n\nFor matchups that had mid-week drama (comebacks, lead changes, Sunday swings), weave the storyline into the recap — don't just report the final score, tell the story of how it got there.\n\nIMPORTANT: Each team's stats are labeled with their name. Do NOT swap stats between teams.\n\nIMPORTANT: The "stats" lines below are FULL-WEEK CUMULATIVE TOTALS. They are NOT single-day numbers. When describing a Sunday swing, comeback, or lead change, do NOT pair these totals with single-day language (e.g., "Then Sunday happened — 14 HR, 45 RBI" reads as if all of that came from one day, which is wrong). Either describe the swing qualitatively, or make it explicit the numbers are the week's final tally.\n\nMatchup results:\n${data}${storylineBlock}`;
 }
 
@@ -374,7 +398,14 @@ function promptRoasts(segment) {
   return `Write "Front Office Failures" roasting the worst roster decisions. Be creative and funny. 2-4 paragraphs.\n\nQuestionable decisions:\n${data}`;
 }
 
-function promptMadDogHotTakes(powerRankings, matchups) {
+function promptMadDogHotTakes(powerRankings, matchups, playoffs) {
+  if (playoffs?.isFinals) {
+    if (!matchups.length) return null;
+    const results = matchups.map(m =>
+      `${roundTag(m)}${m.isTie ? `${m.team1.name} tied ${m.team2.name} ${m.score}` : `${m.winner.name} beat ${m.loser.name} ${m.score}`}`
+    ).join('\n');
+    return `Write "Mad Dog's Hot Takes" — SEASON FINALE edition. The championship is decided. Cover 2-3 of: crown the champion a dynasty (or call it a fluke), declare the runner-up choked, rant about the third-place game being meaningless (or the most important game of the year), make a wildly premature prediction for NEXT SEASON, call out something from the finals that has you furious. Overreact wildly. Do not invent standings or records — only the finals results below are known. 3-4 paragraphs.\n\nFinals results:\n${results}`;
+  }
   if (!powerRankings.length) return null;
   const rankData = powerRankings.map((t, i) =>
     `${i + 1}. ${t.name} [${t.tier}] — ${t.record} (${t.pct.toFixed(3)}) — This week: ${t.weeklyResult} (${t.weeklyCatScore})`
@@ -434,8 +465,10 @@ function findToughLuckLosses(scoreboard, invertedStats, catDisplay) {
   return losses;
 }
 
-function promptNumbersDontLie(matchups, powerRankings, scoreboard) {
-  if (!powerRankings.length) return null;
+function promptNumbersDontLie(matchups, powerRankings, scoreboard, playoffs) {
+  const isFinals = !!playoffs?.isFinals;
+  if (!isFinals && !powerRankings.length) return null;
+  if (isFinals && !matchups.length) return null;
 
   const allTeamStats = {};
   const sb = scoreboard || [];
@@ -472,6 +505,10 @@ function promptNumbersDontLie(matchups, powerRankings, scoreboard) {
   const toughLuckBlock = toughLuck.length
     ? `\n\nTough-luck category losses — pre-verified, state exactly as described (do NOT upgrade the ranking): in each case the ONLY team in the entire league with a better mark this week was the team's own matchup opponent, yet they still lost the category. Phrase a "sole 2nd" entry as the outright second-highest total in the league; phrase a "tied for 2nd" entry as tied for the second-best mark (N other team(s) matched it) — never as the sole second-highest:\n${toughLuck.map(t => `  ${t.team} lost ${t.cat} to ${t.opponent}: ${t.team} ${fmtStat(t.stat, t.loserVal)} vs ${t.opponent} ${fmtStat(t.stat, t.winnerVal)} — ${t.soleSecond ? 'sole 2nd in the league; only the opponent beat them' : `tied for 2nd in the league (${t.tiedWith} other team${t.tiedWith === 1 ? '' : 's'} also at ${fmtStat(t.stat, t.loserVal).split(': ')[1]}); only the opponent beat them`}`).join('\n')}`
     : '';
+
+  if (isFinals) {
+    return `Write "The Numbers Don't Lie" — FINALS edition. Only the four finalists played matchups that matter this week, so every comparison below is among those four teams (not the whole league — say "among the finalists", never "league-wide"). Find 2-3 statistical stories from the championship and third-place game: the category that decided the title, a finalist that dominated a stat but still lost, matchup luck, a line that won't hold up. 3-4 paragraphs.\n\nCategory leaders among the four finalists:\n${leagueContext.join('\n')}${toughLuckBlock.replace(/in the entire league|in the league|league-wide/g, 'among the finalists')}\n\nMatchup details:\n${matchupData}`;
+  }
 
   return `Write "The Numbers Don't Lie". Find 2-3 interesting statistical stories: teams that led the league in a stat but lost, record performances, matchup luck, unsustainable lines. Compare against league averages. 3-4 paragraphs.\n\nLeague-wide category leaders:\n${leagueContext.join('\n')}${toughLuckBlock}\n\nMatchup details:\n${matchupData}`;
 }
@@ -586,8 +623,9 @@ ${context}`;
 
 function fallbackMatchups(matchups) {
   return matchups.map(m => {
-    if (m.isTie) return `**${m.team1.name}** and **${m.team2.name}** tied ${m.score}.`;
-    return `**${m.winner.name}** took down **${m.loser.name}** with a ${m.score} victory.`;
+    const prefix = m.round ? `**${m.round}:** ` : '';
+    if (m.isTie) return `${prefix}**${m.team1.name}** and **${m.team2.name}** tied ${m.score}.`;
+    return `${prefix}**${m.winner.name}** took down **${m.loser.name}** with a ${m.score} victory.`;
   }).join('\n\n');
 }
 
@@ -759,11 +797,16 @@ async function narrate(week, { only, except } = {}) {
 
   const analysis = JSON.parse(fs.readFileSync(analysisPath, 'utf-8'));
   const { segments } = analysis;
+  const playoffs = analysis.playoffs || { isPlayoffs: false, isFinals: false };
 
   const scoreboardPath = path.join(snapshotDir, 'scoreboard.json');
-  const rawScoreboard = fs.existsSync(scoreboardPath)
+  let rawScoreboard = fs.existsSync(scoreboardPath)
     ? JSON.parse(fs.readFileSync(scoreboardPath, 'utf-8'))
     : [];
+  if (playoffs.isFinals) {
+    // Finals recap covers only the championship and third-place games
+    rawScoreboard = rawScoreboard.filter(m => m.round === 'Championship' || m.round === 'Third Place');
+  }
 
   const rostersPath = path.join(snapshotDir, 'rosters.json');
   teamNameBlock = '';
@@ -783,7 +826,7 @@ async function narrate(week, { only, except } = {}) {
   const consumedFromPriorWeeks = loadConsumedRumourTimestamps(week);
   const rumours = rawRumours.filter(r => !consumedFromPriorWeeks.has(r.submittedAt));
 
-  console.log(`Generating narrative for Week ${week}...`);
+  console.log(`Generating narrative for ${playoffs.isFinals ? `the Finals (Week ${week})` : `Week ${week}`}...`);
   if (rawRumours.length > rumours.length) {
     console.log(`  Skipped ${rawRumours.length - rumours.length} rumour(s) already used in prior weeks`);
   }
@@ -795,7 +838,7 @@ async function narrate(week, { only, except } = {}) {
   // --- Build segment prompts ---
 
   // Individual: Matchup Recaps (largest prompt, runs first)
-  const matchupP = promptMatchupRecaps(segments.matchups, segments.storylines);
+  const matchupP = promptMatchupRecaps(segments.matchups, segments.storylines, playoffs);
   const matchupSeg = matchupP ? { title: 'Matchup Recaps', prompt: matchupP, fallback: () => fallbackMatchups(segments.matchups) } : null;
 
   // Individual: Players of the Week
@@ -832,11 +875,11 @@ async function narrate(week, { only, except } = {}) {
   const insiderSeg = insiderP ? { title: 'The Insider Report', prompt: insiderP, fallback: '*Our insider is currently unreachable. Check back next week.*' } : null;
 
   // Individual: Mad Dog (isolation is the point)
-  const maddogP = promptMadDogHotTakes(segments.powerRankings, segments.matchups);
+  const maddogP = promptMadDogHotTakes(segments.powerRankings, segments.matchups, playoffs);
   const maddogSeg = maddogP ? { title: "Mad Dog's Hot Takes", prompt: maddogP, fallback: '*Mad Dog was unavailable for comment this week.*' } : null;
 
   // Individual: Gerald (analytical, independent)
-  const numbersP = promptNumbersDontLie(segments.matchups, segments.powerRankings, rawScoreboard);
+  const numbersP = promptNumbersDontLie(segments.matchups, segments.powerRankings, rawScoreboard, playoffs);
   const geraldSeg = numbersP ? { title: "The Numbers Don't Lie", prompt: numbersP, fallback: '*Gerald is recalculating. Please stand by.*' } : null;
 
   // --- Generate ---
@@ -1008,12 +1051,14 @@ async function narrate(week, { only, except } = {}) {
   generateSingle('gerald', geraldSeg, "The Numbers Don't Lie");
 
   // Assemble article
-  const weekLabel = `Week ${week}`;
+  const weekLabel = playoffs.isFinals ? 'Finals' : `Week ${week}`;
   const dateRange = analysis.weekStart && analysis.weekEnd
     ? ` (${analysis.weekStart} — ${analysis.weekEnd})`
     : '';
 
-  let article = `---\ntitle: "${weekLabel} Recap: ${analysis.leagueName}"\nweek: ${week}\ndate: ${new Date().toISOString().split('T')[0]}\n---\n\n`;
+  // `label` overrides the "Wk N" nav text in build.js
+  const labelLine = playoffs.isFinals ? `label: "Finals"\n` : '';
+  let article = `---\ntitle: "${weekLabel} Recap: ${analysis.leagueName}"\nweek: ${week}\n${labelLine}date: ${new Date().toISOString().split('T')[0]}\n---\n\n`;
   article += `# ${weekLabel} Recap${dateRange}\n\n`;
 
   for (const section of sections) {

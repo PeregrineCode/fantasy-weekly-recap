@@ -100,10 +100,50 @@ function parseScoreboardResponse(data) {
       ties,
       statWinners,
       winnerTeamKey: matchup.winner_team_key || null,
+      isPlayoffs: matchup.is_playoffs == 1,
+      isConsolation: matchup.is_consolation == 1,
+      weekStart: matchup.week_start || null,
+      weekEnd: matchup.week_end || null,
     });
   }
 
   return matchups;
 }
 
-module.exports = { parseTeamInfo, parseStatValues, parseScoreboardResponse };
+/**
+ * Label each playoff matchup with its bracket round.
+ *
+ * Yahoo only flags `is_playoffs` and `is_consolation`; it does not say which
+ * matchup is the championship. We infer the bracket from the previous week's
+ * playoff results: a team that lost a playoff matchup last week is in the
+ * losers' bracket. Teams that won (or had a bye and didn't play) stay in the
+ * winners' bracket. `weeksRemaining` is endWeek - week (0 in the finals week).
+ *
+ * Returns a new array; each matchup gains a `round` string or null for
+ * regular-season matchups.
+ */
+function labelPlayoffRounds(matchups, prevMatchups, weeksRemaining) {
+  const prevLosers = new Set();
+  for (const pm of prevMatchups || []) {
+    if (!pm.isPlayoffs || !pm.winnerTeamKey) continue;
+    const loser = pm.winnerTeamKey === pm.team1.teamKey ? pm.team2.teamKey : pm.team1.teamKey;
+    prevLosers.add(loser);
+  }
+
+  const winnersRound = weeksRemaining === 0 ? 'Championship'
+    : weeksRemaining === 1 ? 'Semifinal'
+    : weeksRemaining === 2 ? 'Quarterfinal'
+    : 'Playoff';
+  const losersRound = weeksRemaining === 0 ? 'Third Place' : 'Consolation';
+
+  return matchups.map(m => {
+    if (!m.isPlayoffs) return { ...m, round: null };
+    if (m.isConsolation) return { ...m, round: 'Consolation' };
+    const inLosersBracket = prevLosers.has(m.team1.teamKey) || prevLosers.has(m.team2.teamKey);
+    return { ...m, round: inLosersBracket ? losersRound : winnersRound };
+  });
+}
+
+const FINALS_ROUNDS = new Set(['Championship', 'Third Place']);
+
+module.exports = { parseTeamInfo, parseStatValues, parseScoreboardResponse, labelPlayoffRounds, FINALS_ROUNDS };

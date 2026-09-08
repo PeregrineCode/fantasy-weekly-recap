@@ -11,7 +11,7 @@ const path = require('path');
 const { createClient } = require('yahoo-fantasy-api');
 const { fetchStandings, fetchAllRosters } = require('./lib/yahoo-fetch');
 const { parseYahooStats } = require('./lib/stat-categories');
-const { parseScoreboardResponse } = require('./yahoo-helpers');
+const { parseScoreboardResponse, labelPlayoffRounds } = require('./yahoo-helpers');
 
 const LEAGUE_ID = process.env.YAHOO_MLB_LEAGUE_ID || process.env.YAHOO_LEAGUE_ID;
 
@@ -199,6 +199,7 @@ async function fetchLeagueMeta(leagueKey) {
   return {
     name: meta.name,
     currentWeek: parseInt(meta.current_week) || 1,
+    endWeek: parseInt(meta.end_week) || null,
     startDate: meta.start_date,
     endDate: meta.end_date,
     season: meta.season,
@@ -229,7 +230,26 @@ async function collect(targetWeek) {
   // can span more than 7 days (e.g. the All-Star break week covers two
   // calendar weeks).
   console.log('\nFetching scoreboard...');
-  const { matchups: scoreboard, weekStart: sbStart, weekEnd: sbEnd } = await fetchScoreboard(leagueKey, week);
+  let { matchups: scoreboard, weekStart: sbStart, weekEnd: sbEnd } = await fetchScoreboard(leagueKey, week);
+
+  // Playoff weeks: label each matchup's bracket round (Championship, Third
+  // Place, Semifinal, Consolation...). The finals week is the league's end_week.
+  // Round inference needs last week's playoff results — see labelPlayoffRounds.
+  const isPlayoffs = scoreboard.some(m => m.isPlayoffs);
+  const isFinals = isPlayoffs && meta.endWeek != null && week === meta.endWeek;
+  if (isPlayoffs) {
+    let prevMatchups = [];
+    if (week > 1) {
+      try {
+        prevMatchups = (await fetchScoreboard(leagueKey, week - 1)).matchups;
+      } catch (e) {
+        console.log(`  Warning: could not fetch week ${week - 1} scoreboard for bracket labeling: ${e.message}`);
+      }
+    }
+    const weeksRemaining = meta.endWeek != null ? meta.endWeek - week : 1;
+    scoreboard = labelPlayoffRounds(scoreboard, prevMatchups, weeksRemaining);
+    console.log(`  Playoff week${isFinals ? ' (FINALS)' : ''}: ${scoreboard.map(m => `${m.round}: ${m.team1.name} vs ${m.team2.name}`).join('; ')}`);
+  }
 
   let weekStart, weekEnd;
   if (sbStart && sbEnd) {
@@ -271,6 +291,9 @@ async function collect(targetWeek) {
     leagueName: meta.name,
     season: meta.season,
     currentWeek: meta.currentWeek,
+    endWeek: meta.endWeek,
+    isPlayoffs,
+    isFinals,
     weekStart: weekStart.toISOString().split('T')[0],
     weekEnd: weekEnd.toISOString().split('T')[0],
     collectedAt: new Date().toISOString(),
