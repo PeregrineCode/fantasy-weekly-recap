@@ -15,6 +15,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { createClient } = require('yahoo-fantasy-api');
+const { shouldSkipCapture } = require('./lib/nightly-trust');
 
 const LEAGUE_ID = process.env.YAHOO_MLB_LEAGUE_ID || process.env.YAHOO_LEAGUE_ID;
 
@@ -101,9 +102,6 @@ async function dailyPositions() {
 
   console.log(`Position capture: Week ${week}, date ${today}`);
 
-  console.log('Fetching roster positions...');
-  const positions = await fetchRosterPositions(leagueKey);
-
   // Save to daily directory as positions-YYYY-MM-DD.json
   const dailyDir = path.join(
     __dirname, 'snapshots',
@@ -111,6 +109,23 @@ async function dailyPositions() {
     'daily'
   );
   fs.mkdirSync(dailyDir, { recursive: true });
+  const filename = `positions-${today}.json`;
+  const filePath = path.join(dailyDir, filename);
+
+  // The workflow fires several times per night to survive GitHub's scheduling
+  // delays. Keep the first trusted capture; never write a post-rollover one.
+  let existing = null;
+  if (fs.existsSync(filePath)) {
+    try { existing = JSON.parse(fs.readFileSync(filePath, 'utf-8')); } catch (e) { existing = null; }
+  }
+  const skipReason = shouldSkipCapture(existing, new Date().toISOString(), today);
+  if (skipReason) {
+    console.log(`Skipping capture: ${skipReason}`);
+    return;
+  }
+
+  console.log('Fetching roster positions...');
+  const positions = await fetchRosterPositions(leagueKey);
 
   const snapshot = {
     date: today,
@@ -119,8 +134,7 @@ async function dailyPositions() {
     positions,
   };
 
-  const filename = `positions-${today}.json`;
-  fs.writeFileSync(path.join(dailyDir, filename), JSON.stringify(snapshot, null, 2));
+  fs.writeFileSync(filePath, JSON.stringify(snapshot, null, 2));
   console.log(`\nSaved ${filename} (${Object.keys(positions).length} rosters)`);
 }
 

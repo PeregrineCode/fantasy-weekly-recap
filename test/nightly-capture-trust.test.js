@@ -71,3 +71,38 @@ describe('addDaysISO', () => {
     assert.equal(addDaysISO('2026-12-31', 1), '2027-01-01');
   });
 });
+
+describe('shouldSkipCapture (daily-positions.js guard)', () => {
+  const { shouldSkipCapture } = require('../lib/nightly-trust');
+  const D = '2026-09-08';
+  const onTime = '2026-09-09T02:30:00Z';      // 10:30 PM EDT on D
+  const delayedOk = '2026-09-09T06:20:00Z';   // 2:20 AM EDT on D+1, pre-rollover
+  const postRollover = '2026-09-09T07:23:00Z'; // 3:23 AM EDT on D+1
+
+  it('proceeds for an on-time run with no existing file', () => {
+    assert.equal(shouldSkipCapture(null, onTime, D), null);
+  });
+
+  it('proceeds for a delayed run that is still pre-rollover', () => {
+    assert.equal(shouldSkipCapture(null, delayedOk, D), null);
+  });
+
+  it('skips when a trusted capture already exists', () => {
+    const r = shouldSkipCapture({ collectedAt: onTime }, delayedOk, D);
+    assert.match(r, /already exists/);
+  });
+
+  it('overwrites an untrusted (premature) existing capture', () => {
+    // e.g. a post-rollover run the night before wrote a file dated D
+    assert.equal(shouldSkipCapture({ collectedAt: '2026-09-08T07:23:00Z' }, onTime, D), null);
+  });
+
+  it('refuses to write a post-rollover capture', () => {
+    const r = shouldSkipCapture(null, postRollover, '2026-09-09');
+    assert.match(r, /outside/);
+  });
+
+  it('tolerates a corrupt existing file (no collectedAt)', () => {
+    assert.equal(shouldSkipCapture({}, onTime, D), null);
+  });
+});

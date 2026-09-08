@@ -49,7 +49,7 @@ collect.js → analyze.js → narrate.js → build.js → deploy.js
 ## Daily Data Collection (Two-Phase)
 Daily snapshots use a two-phase capture to get both accurate roster positions and finalized stats:
 
-1. **10:30 PM ET** — `daily-positions.js` via `nightly-positions.yml`: Captures roster positions for **today**. The latest West Coast game starts before this, so all lineups are locked and positions reflect the actual game-day lineup. Saves `positions-YYYY-MM-DD.json`. (Scheduled early enough to give buffer against GitHub's scheduling delays before Yahoo's ~3 AM ET fantasy-day rollover — a run that slips past the rollover would capture the next day's roster.)
+1. **10:30 PM ET** — `daily-positions.js` via `nightly-positions.yml`: Captures roster positions for **today**. The latest West Coast game starts before this, so all lineups are locked and positions reflect the actual game-day lineup. Saves `positions-YYYY-MM-DD.json`. GitHub delays scheduled runs by hours (5h+ seen in Sept 2026), and a run that slips past Yahoo's ~3 AM ET fantasy-day rollover would capture the next day's unset roster, so the workflow fires four times inside the locked window (10:30 PM, 11:17 PM, 12:43 AM, 1:51 AM ET). The script keeps the first trusted capture and refuses to write a post-rollover one (`shouldSkipCapture` in `lib/nightly-trust.js`), so extra firings cost one API call and produce no commit.
 
 2. **7 AM ET next morning** — `daily-collect.js` via `daily-collect.yml`: Collects finalized stats for **yesterday** (all games end by ~2 AM). Merges positions from the nightly file into the final `YYYY-MM-DD.json` snapshot. Snapshots include a `positionsSource` field (`"nightly"` or `"api"`) indicating whether accurate positions were available.
 

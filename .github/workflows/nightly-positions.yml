@@ -2,13 +2,21 @@ name: Nightly Roster Position Capture
 
 on:
   schedule:
-    # Run at 10:30pm ET (02:30 UTC next day, EDT) every day during MLB season.
+    # Target: 10:30pm ET (02:30 UTC during EDT) every day of the MLB season.
     # The latest West Coast game starts before 10:30pm ET, so all lineups are
-    # locked by this time and positions reflect the actual game-day roster.
-    # Earlier than the old 11pm slot to buy more buffer against GitHub's
-    # scheduling delays before Yahoo's ~3am ET fantasy-day rollover (a run that
-    # slips past the rollover captures the NEXT day's roster instead).
-    - cron: '30 2 * * *'
+    # locked by then and positions reflect the actual game-day roster.
+    #
+    # GitHub delays scheduled runs by hours (5h+ observed in Sept 2026), and a
+    # run that slips past Yahoo's ~3am ET fantasy-day rollover captures the NEXT
+    # day's unset roster instead. So we fire several times inside the locked
+    # window (10:30pm–2:59am ET). daily-positions.js skips once a trusted
+    # capture exists for the day and refuses to write a post-rollover one, so
+    # extra firings cost one API call and produce no commit. Odd minutes avoid
+    # the top-of-hour pileup that makes delays worst.
+    - cron: '30 2 * * *'   # 10:30pm ET
+    - cron: '17 3 * * *'   # 11:17pm ET
+    - cron: '43 4 * * *'   # 12:43am ET
+    - cron: '51 5 * * *'   # 1:51am ET
   workflow_dispatch: # Allow manual trigger
 
 jobs:
