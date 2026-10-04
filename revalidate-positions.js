@@ -15,11 +15,13 @@
  * Usage:
  *   node revalidate-positions.js --week 11      # one week
  *   node revalidate-positions.js                # all weeks under snapshots/
+ *   node revalidate-positions.js --league hockey
  */
 
 const fs = require('fs');
 const path = require('path');
-const { isNightlyCaptureTrustworthy } = require('./daily-collect');
+const { isNightlyCaptureTrustworthy } = require('./lib/nightly-trust');
+const { activeLeague } = require('./lib/league');
 
 function revalidateWeek(weekDir) {
   const dailyDir = path.join(weekDir, 'daily');
@@ -53,7 +55,7 @@ function revalidateWeek(weekDir) {
 
 function main() {
   const weekArgIdx = process.argv.indexOf('--week');
-  const snapshotsRoot = path.join(__dirname, 'snapshots');
+  const snapshotsRoot = activeLeague().paths.snapshots;
   let weekDirs;
   if (weekArgIdx !== -1 && process.argv[weekArgIdx + 1]) {
     const n = String(parseInt(process.argv[weekArgIdx + 1], 10)).padStart(2, '0');

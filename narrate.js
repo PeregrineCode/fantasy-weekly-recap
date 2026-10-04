@@ -5,17 +5,20 @@
  * Batches all segments by writer into single calls for consistency
  * (one writer won't contradict themselves across sections).
  *
- * Usage: node narrate.js [--week N] [--only key,...] [--except key,...] [--list-segments]
+ * Usage: node narrate.js [--week N] [--league hockey] [--only key,...] [--except key,...] [--list-segments]
  */
 
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
-const { BATTING_CATS, PITCHING_CATS } = require('./lib/stat-categories');
+const { activeLeague } = require('./lib/league');
 
-const SYSTEM_PROMPT = fs.readFileSync(path.join(__dirname, 'prompts', 'system.txt'), 'utf-8');
-const REFERENCE = fs.readFileSync(path.join(__dirname, 'prompts', 'reference.md'), 'utf-8');
+const league = activeLeague();
+const sport = league.sportProfile;
+
+const SYSTEM_PROMPT = fs.readFileSync(path.join(league.paths.prompts, 'system.txt'), 'utf-8');
+const REFERENCE = fs.readFileSync(path.join(league.paths.prompts, 'reference.md'), 'utf-8');
 
 // Parse the team key → manager mapping out of the reference table (rows like
 // "| t.9 | Jordan | ... |"). Used to pin each current team name to its manager in
@@ -28,50 +31,38 @@ for (const m of REFERENCE.matchAll(/^\|\s*(t\.\d+)\s*\|\s*([^|]+?)\s*\|/gm)) {
 // Set before narration starts with current team key → name mapping
 let teamNameBlock = '';
 
-// Writer definitions
-const WRITERS = {
-  chuck: {
-    name: 'Chuck "The Hammer" Morrison',
-    prompt: 'You are Chuck "The Hammer" Morrison. Write in his voice as described in the Writers section of the reference.',
-  },
-  maddog: {
-    name: '"Mad Dog" Maguire',
-    prompt: 'You are "Mad Dog" Maguire. Write in his voice as described in the Writers section of the reference. You are brash, always certain, full of hot takes. You make sweeping declarations and contradict yourself with zero self-awareness.',
-  },
-  gerald: {
-    name: 'Gerald R. Pemberton III',
-    prompt: 'You are Gerald R. Pemberton III. Write in his voice as described in the Writers section of the reference. You love the numbers, you write concisely, and you let the stats tell the story. No filler, no jargon for jargon\'s sake.',
-  },
-  insider: {
-    name: '"Deep Source" DiNapoli',
-    prompt: 'You are "Deep Source" DiNapoli. Write in his voice as described in the Writers section of the reference. You are the league\'s insider, reporting on trade rumours and behind-the-scenes dealings with the urgency of a breaking news correspondent.',
-  },
-};
+// Writer personas (by role: lead, hottakes, analytics, insider) and any
+// league-specific column titles live in the league's prompts/writers.json.
+const { writers: WRITERS, titles: TITLE_OVERRIDES = {} } =
+  JSON.parse(fs.readFileSync(path.join(league.paths.prompts, 'writers.json'), 'utf-8'));
 
 // Canonical segment registry — maps CLI keys to titles, writers, and batch groups.
 // Requesting any 'tx'-group key regenerates the entire Transactions batch.
 const SEGMENT_REGISTRY = [
-  { key: 'matchups',      title: 'Matchup Recaps',           writer: 'chuck',  group: null },
-  { key: 'potw',          title: 'Players of the Week',      writer: 'chuck',  group: null },
-  { key: 'rankings',      title: 'Power Rankings',           writer: 'chuck',  group: null },
-  { key: 'movers',        title: 'Movers and Shakers',       writer: 'chuck',  group: null },
-  { key: 'best-pickup',   title: 'Best Pickup of the Week',  writer: 'chuck',  group: 'tx' },
-  { key: 'hall-of-shame', title: 'Hall of Shame',            writer: 'chuck',  group: 'tx' },
-  { key: 'stream',        title: 'Stream of the Week',       writer: 'chuck',  group: 'tx' },
-  { key: 'roasts',        title: 'Front Office Failures',    writer: 'chuck',  group: 'tx' },
-  { key: 'tx-desk',       title: 'Transaction Desk',         writer: 'chuck',  group: 'tx' },
-  { key: 'insider',       title: 'The Insider Report',        writer: 'insider', group: null },
-  { key: 'maddog',        title: "Mad Dog's Hot Takes",      writer: 'maddog', group: null },
-  { key: 'numbers',       title: "The Numbers Don't Lie",    writer: 'gerald', group: null },
-];
+  { key: 'matchups',      title: 'Matchup Recaps',           writer: 'lead',      group: null },
+  { key: 'potw',          title: 'Players of the Week',      writer: 'lead',      group: null },
+  { key: 'rankings',      title: 'Power Rankings',           writer: 'lead',      group: null },
+  { key: 'movers',        title: 'Movers and Shakers',       writer: 'lead',      group: null },
+  { key: 'best-pickup',   title: 'Best Pickup of the Week',  writer: 'lead',      group: 'tx' },
+  { key: 'hall-of-shame', title: 'Hall of Shame',            writer: 'lead',      group: 'tx' },
+  { key: 'stream',        title: 'Stream of the Week',       writer: 'lead',      group: 'tx' },
+  { key: 'roasts',        title: 'Front Office Failures',    writer: 'lead',      group: 'tx' },
+  { key: 'tx-desk',       title: 'Transaction Desk',         writer: 'lead',      group: 'tx' },
+  { key: 'insider',       title: 'The Insider Report',       writer: 'insider',   group: null },
+  { key: 'maddog',        title: "Mad Dog's Hot Takes",      writer: 'hottakes',  group: null },
+  { key: 'numbers',       title: "The Numbers Don't Lie",    writer: 'analytics', group: null },
+].map(entry => ({ ...entry, title: TITLE_OVERRIDES[entry.key] || entry.title }));
+
+// Segment key → title for the active league
+const TITLE = Object.fromEntries(SEGMENT_REGISTRY.map(e => [e.key, e.title]));
 
 /**
  * Call claude CLI with a batched prompt containing multiple segments.
  * Returns the raw output string.
  */
-function callClaude(prompt, writerKey = 'chuck') {
+function callClaude(prompt, writerKey = 'lead') {
   try {
-    const writer = WRITERS[writerKey] || WRITERS.chuck;
+    const writer = WRITERS[writerKey] || WRITERS.lead;
     const fullPrompt = `${SYSTEM_PROMPT}\n\n${writer.prompt}\n\n---\n\n# Reference\n\n${REFERENCE}${teamNameBlock}\n\n---\n\n${prompt}`;
 
     const result = execFileSync('claude', ['--print', '--model', 'sonnet'], {
@@ -141,18 +132,21 @@ function stripEchoedTitle(text, title) {
 const THREE_DECIMAL_STATS = new Set(['AVG', 'OBP']);
 const TWO_DECIMAL_STATS = new Set(['ERA', 'WHIP', 'K/BB', 'IP']);
 const fmtStat = (k, v) => {
+  // Hockey goalie ratios keep fixed precision even when whole: .917 / 1.000, 3.00
+  if (k === 'SV%' && typeof v === 'number') return `${k}: ${v.toFixed(3).replace(/^0\./, '.')}`;
+  if (k === 'GAA' && typeof v === 'number') return `${k}: ${v.toFixed(2)}`;
   if (typeof v !== 'number' || v % 1 === 0) return `${k}: ${v}`;
   if (THREE_DECIMAL_STATS.has(k)) return `${k}: ${v.toFixed(3)}`;
   if (TWO_DECIMAL_STATS.has(k)) return `${k}: ${v.toFixed(2)}`;
   return `${k}: ${v.toFixed(2)}`;
 };
 
-// Serialize a team's weekly stats for a prompt. Yahoo sometimes emits a bare numeric
-// `H/AB` at the team level (the hits count with the at-bats half dropped), which the
-// writers read as a phantom "hits" category — hits is not a scoring category, so drop
-// it. (Player-level H/AB is a "9/21" string and is already removed by the isNaN check.)
+// Serialize a team's weekly stats for a prompt. Non-category stats the writers would
+// misread as categories are hidden per sport — e.g. Yahoo's bare numeric team-level
+// `H/AB` (hits with the at-bats half dropped) reads as a phantom "hits" category.
+// (Player-level H/AB is a "9/21" string and is already removed by the isNaN check.)
 const teamStatLine = (stats) => Object.entries(stats)
-  .filter(([k, v]) => k !== 'H/AB' && !isNaN(v))
+  .filter(([k, v]) => !sport.hiddenTeamStats.has(k) && !isNaN(v))
   .map(([k, v]) => fmtStat(k, v))
   .join(', ');
 
@@ -196,14 +190,14 @@ function promptMatchupRecaps(matchups, storylines, playoffs) {
     const ipWarnings = [];
     for (const [team, opp] of [[m.winner, m.loser], [m.loser, m.winner]]) {
       if (!team.belowIPMinimum) continue;
-      const pitchCats = ['K', 'ERA', 'WHIP', 'K/BB', 'QS', 'SV+H'];
+      const pitchCats = sport.categoryGroups.find(g => g.key === 'pitching').cats.map(c => c.name);
       const lowerBetter = { ERA: true, WHIP: true };
       const wouldWin = pitchCats.filter(c => {
         const tv = team.stats?.[c], ov = opp.stats?.[c];
         return tv != null && ov != null && (lowerBetter[c] ? tv < ov : tv > ov);
       });
       const wouldLose = pitchCats.filter(c => !wouldWin.includes(c));
-      const minIP = parseInt(process.env.MIN_IP) || 30;
+      const minIP = parseInt(league.setting('MIN_IP')) || sport.defaultMinIP;
       let warn = `${team.name} was BELOW the ${minIP} IP minimum (${fmtStat('IP', team.stats.IP)}) — forfeited ALL pitching categories.`;
       if (wouldLose.length) warn += ` Would have lost ${wouldLose.join(', ')} anyway.`;
       if (wouldWin.length) warn += ` But would have WON ${wouldWin.join(', ')} — gave away ${wouldWin.length} categories for free, flipping the matchup result.`;
@@ -233,7 +227,7 @@ function promptMatchupRecaps(matchups, storylines, playoffs) {
     storylineBlock = `\n\nMid-week drama (use this to add color to the relevant matchup recaps — lead changes, comebacks, Sunday swings):\n${arcs}`;
   }
 
-  const numCats = BATTING_CATS.length + PITCHING_CATS.length;
+  const numCats = sport.allCats.length;
 
   if (playoffs?.isFinals) {
     const champ = matchups.find(m => m.round === 'Championship');
@@ -248,14 +242,14 @@ function promptMatchupRecaps(matchups, storylines, playoffs) {
         tiebreakNote = ` The championship finished TIED on categories; Yahoo's tiebreaker awarded the title to ${t.name} — report the tie score exactly and explain the title was decided on the tiebreaker.`;
       }
     }
-    return `Write the "Matchup Recaps" segment for the LEAGUE FINALS — the last week of the season. Only two matchups are listed: the CHAMPIONSHIP and the THIRD-PLACE GAME. This is a ${numCats}-category league — all scores must add up to ${numCats}.\n\nLead with the championship${champion ? ` and crown ${champion} as league champion` : ''} — this is the season's climax, so give it the weight of a title game: the trophy, the season-long journey ending here, what sealed it. Then cover the third-place game as the undercard. Both matchups MUST be covered. Use the EXACT scores provided. If a matchup says TIED, report it as a tie. Do NOT mention consolation matchups, next week, or the standings race — the season is over after this.${tiebreakNote}\n\nFor matchups that had mid-week drama (comebacks, lead changes, Sunday swings), weave the storyline into the recap — tell the story of how the title was won.\n\nIMPORTANT: Each team's stats are labeled with their name. Do NOT swap stats between teams.\n\nIMPORTANT: The "stats" lines below are FULL-WEEK CUMULATIVE TOTALS. They are NOT single-day numbers. When describing a Sunday swing, comeback, or lead change, do NOT pair these totals with single-day language. Either describe the swing qualitatively, or make it explicit the numbers are the week's final tally.\n\nMatchup results:\n${data}${storylineBlock}`;
+    return `Write the "${TITLE.matchups}" segment for the LEAGUE FINALS — the last week of the season. Only two matchups are listed: the CHAMPIONSHIP and the THIRD-PLACE GAME. This is a ${numCats}-category league — all scores must add up to ${numCats}.\n\nLead with the championship${champion ? ` and crown ${champion} as league champion` : ''} — this is the season's climax, so give it the weight of a title game: the trophy, the season-long journey ending here, what sealed it. Then cover the third-place game as the undercard. Both matchups MUST be covered. Use the EXACT scores provided. If a matchup says TIED, report it as a tie. Do NOT mention consolation matchups, next week, or the standings race — the season is over after this.${tiebreakNote}\n\nFor matchups that had mid-week drama (comebacks, lead changes, Sunday swings), weave the storyline into the recap — tell the story of how the title was won.\n\nIMPORTANT: Each team's stats are labeled with their name. Do NOT swap stats between teams.\n\nIMPORTANT: The "stats" lines below are FULL-WEEK CUMULATIVE TOTALS. They are NOT single-day numbers. When describing a Sunday swing, comeback, or lead change, do NOT pair these totals with single-day language. Either describe the swing qualitatively, or make it explicit the numbers are the week's final tally.\n\nMatchup results:\n${data}${storylineBlock}`;
   }
 
-  return `Write the "Matchup Recaps" segment. This is a ${numCats}-category league — all scores must add up to ${numCats}. Lead with the most dramatic matchup. Every matchup MUST be mentioned. Use the EXACT scores provided. If a matchup says TIED, report it as a tie.\n\nFor matchups that had mid-week drama (comebacks, lead changes, Sunday swings), weave the storyline into the recap — don't just report the final score, tell the story of how it got there.\n\nIMPORTANT: Each team's stats are labeled with their name. Do NOT swap stats between teams.\n\nIMPORTANT: The "stats" lines below are FULL-WEEK CUMULATIVE TOTALS. They are NOT single-day numbers. When describing a Sunday swing, comeback, or lead change, do NOT pair these totals with single-day language (e.g., "Then Sunday happened — 14 HR, 45 RBI" reads as if all of that came from one day, which is wrong). Either describe the swing qualitatively, or make it explicit the numbers are the week's final tally.\n\nMatchup results:\n${data}${storylineBlock}`;
+  return `Write the "${TITLE.matchups}" segment. This is a ${numCats}-category league — all scores must add up to ${numCats}. Lead with the most dramatic matchup. Every matchup MUST be mentioned. Use the EXACT scores provided. If a matchup says TIED, report it as a tie.\n\nFor matchups that had mid-week drama (comebacks, lead changes, Sunday swings), weave the storyline into the recap — don't just report the final score, tell the story of how it got there.\n\nIMPORTANT: Each team's stats are labeled with their name. Do NOT swap stats between teams.\n\nIMPORTANT: The "stats" lines below are FULL-WEEK CUMULATIVE TOTALS. They are NOT single-day numbers. When describing a Sunday swing, comeback, or lead change, do NOT pair these totals with single-day language (e.g., ${sport.narrative.weeklyTotalsExample}). Either describe the swing qualitatively, or make it explicit the numbers are the week's final tally.\n\nMatchup results:\n${data}${storylineBlock}`;
 }
 
 function promptPlayersOfTheWeek(segment) {
-  if (!segment?.batter && !segment?.pitcher) return null;
+  if (!segment || !sport.playerGroups.some(g => segment[g.key])) return null;
 
   const fmtPlayer = (p, label) => {
     const statLine = Object.entries(p.stats).filter(([k, v]) => !isNaN(v) && v !== 0).map(([k, v]) => fmtStat(k, v)).join(', ');
@@ -264,25 +258,19 @@ function promptPlayersOfTheWeek(segment) {
 
   const parts = [];
 
-  if (segment.batter) {
-    const lines = [fmtPlayer(segment.batter, 'BATTER OF THE WEEK')];
-    if (segment.batterRunnersUp.length > 0) {
+  for (const group of sport.playerGroups) {
+    const top = segment[group.key];
+    if (!top) continue;
+    const lines = [fmtPlayer(top, group.title)];
+    const runnersUp = segment[`${group.key}RunnersUp`] || [];
+    if (runnersUp.length > 0) {
       lines.push('Runners-up:');
-      segment.batterRunnersUp.forEach((p, i) => lines.push(fmtPlayer(p, `  ${i + 1}`)));
+      runnersUp.forEach((p, i) => lines.push(fmtPlayer(p, `  ${i + 1}`)));
     }
     parts.push(lines.join('\n'));
   }
 
-  if (segment.pitcher) {
-    const lines = [fmtPlayer(segment.pitcher, 'PITCHER OF THE WEEK')];
-    if (segment.pitcherRunnersUp.length > 0) {
-      lines.push('Runners-up:');
-      segment.pitcherRunnersUp.forEach((p, i) => lines.push(fmtPlayer(p, `  ${i + 1}`)));
-    }
-    parts.push(lines.join('\n'));
-  }
-
-  return `Write "Players of the Week" highlighting the most dominant individual performances across the league. Crown one batter and one pitcher as the week's standout stars, then give brief nods to the runners-up. Focus on what made these performances special — historic stat lines, clutch timing, or absurd dominance. Use your baseball knowledge to add context about the players. 2-3 paragraphs.\n\n${parts.join('\n\n')}`;
+  return `Write "${TITLE.potw}" highlighting the most dominant individual performances across the league. ${sport.narrative.potwInstruction} 2-3 paragraphs.\n\n${parts.join('\n\n')}`;
 }
 
 function promptPowerRankings(rankings) {
@@ -290,7 +278,7 @@ function promptPowerRankings(rankings) {
   const data = rankings.map((t, i) =>
     `${i + 1}. ${t.name} [${t.tier}] — ${t.record} (${t.pct.toFixed(3)}) — This week: ${t.weeklyResult} (${t.weeklyCatScore})`
   ).join('\n');
-  return `Write the "Power Rankings". Rank every team explicitly #1 through #${rankings.length}, grouped by tier (Contenders, Solid, Mediocre, Rebuilding) with a brief intro per tier.\n\nFormat each team as its own entry: a bold header line, then the take. The header line must be exactly:\n**#N Team Name** — record (pct) — W/L/T, weekly category score\nExample: **#4 Big Bats** — 88-63-5 (.580) — W, 7-5-0\nUse the records and weekly scores exactly as provided. Follow each header with a 1-2 sentence take as its own paragraph.\n\nRankings:\n${data}`;
+  return `Write the "${TITLE.rankings}". Rank every team explicitly #1 through #${rankings.length}, grouped by tier (Contenders, Solid, Mediocre, Rebuilding) with a brief intro per tier.\n\nFormat each team as its own entry: a bold header line, then the take. The header line must be exactly:\n**#N Team Name** — record (pct) — W/L/T, weekly category score\nExample: ${sport.narrative.rankingsExample}\nUse the records and weekly scores exactly as provided. Follow each header with a 1-2 sentence take as its own paragraph.\n\nRankings:\n${data}`;
 }
 
 function promptBestPickup(segment) {
@@ -299,7 +287,7 @@ function promptBestPickup(segment) {
     const statLine = Object.entries(p.stats).filter(([k, v]) => v !== 0 && !isNaN(v)).map(([k, v]) => fmtStat(k, v)).join(', ');
     return `${p.name} (${p.position}, ${p.team}) — picked up by ${p.fantasyTeam}\n  Stats: ${statLine}`;
   }).join('\n\n');
-  return `Write the "Best Pickup of the Week". Crown the #1 pickup, praise the manager, mention runners-up briefly.\n\nTop pickups:\n${data}`;
+  return `Write the "${TITLE['best-pickup']}". Crown the #1 pickup, praise the manager, mention runners-up briefly.\n\nTop pickups:\n${data}`;
 }
 
 function promptWorstPickup(segment) {
@@ -308,7 +296,7 @@ function promptWorstPickup(segment) {
     const statLine = Object.entries(p.stats).filter(([k, v]) => !isNaN(v)).map(([k, v]) => fmtStat(k, v)).join(', ');
     return `${p.name} (${p.position}, ${p.team}) — picked up by ${p.fantasyTeam}\n  Stats: ${statLine}`;
   }).join('\n\n');
-  return `Write the "Hall of Shame" about the worst waiver pickups this week. Roast the decisions. Be funny about it.\n\nWorst pickups:\n${data}`;
+  return `Write the "${TITLE['hall-of-shame']}" about the worst waiver pickups this week. Roast the decisions. Be funny about it.\n\nWorst pickups:\n${data}`;
 }
 
 function promptBestStream(segment) {
@@ -317,7 +305,7 @@ function promptBestStream(segment) {
     const statLine = Object.entries(p.stats).filter(([k, v]) => !isNaN(v)).map(([k, v]) => fmtStat(k, v)).join(', ');
     return `${p.name} (${p.position}, ${p.team}) — streamed by ${p.fantasyTeam}\n  Stats: ${statLine}`;
   }).join('\n\n');
-  return `Write the "Stream of the Week" about the best pitcher streaming decision. Focus on the pitching line.\n\nTop pitcher streams:\n${data}`;
+  return `Write the "${TITLE.stream}" ${sport.narrative.streamFocus}\n\n${sport.narrative.streamListLabel}:\n${data}`;
 }
 
 function promptTransactionDesk(segment) {
@@ -342,7 +330,7 @@ function promptTransactionDesk(segment) {
       const statLine = Object.entries(c.stats)
         .filter(([k, v]) => !isNaN(v) && v !== 0)
         .map(([k, v]) => fmtStat(k, v)).join(', ');
-      const startingBudget = parseInt(process.env.FAAB_BUDGET) || 200;
+      const startingBudget = league.faabBudget();
       const pctOfBudget = Math.round((c.bid / startingBudget) * 100);
       let line = `${c.fantasyTeam} bid $${c.bid} (${pctOfBudget}% of starting budget) on ${c.player} (${c.position}, ${c.playerTeam})`;
       if (c.dropped) line += `, dropping ${c.dropped}`;
@@ -358,11 +346,11 @@ function promptTransactionDesk(segment) {
       `${b.team}: $${b.remaining} remaining`
     ).join('\n');
 
-    const faabBudget = parseInt(process.env.FAAB_BUDGET) || 200;
+    const faabBudget = league.faabBudget();
     parts.push(`FAAB BIDS (this is a $${faabBudget} FAAB league):\n${claims}\n\nTotal FAAB spent this week: $${segment.faabWeekTotal}\n\nFAAB budgets remaining:\n${budgetLines}`);
   }
 
-  let prompt = `Write the "Transaction Desk" covering this week's major roster moves. `;
+  let prompt = `Write the "${TITLE['tx-desk']}" covering this week's major roster moves. `;
   if (segment.trades.length > 0 && segment.faabClaims.length > 0) {
     prompt += `Cover both trades and FAAB waiver bids. For trades, pick a winner and defend it. For FAAB, highlight the biggest bids, whether the spend looks justified, and who's burning through their budget. 3-4 paragraphs.`;
   } else if (segment.trades.length > 0) {
@@ -382,7 +370,7 @@ function promptStandingsMovers(movers) {
     const dir = m.change > 0 ? `UP ${m.change}` : `DOWN ${Math.abs(m.change)}`;
     return `${m.name}: ${dir} → now #${m.rank} (${m.record})`;
   }).join('\n');
-  return `Write "Movers and Shakers" about standings movement. 1-2 paragraphs.\n\nStandings changes:\n${data}`;
+  return `Write "${TITLE.movers}" about standings movement. 1-2 paragraphs.\n\nStandings changes:\n${data}`;
 }
 
 function promptRoasts(segment) {
@@ -395,7 +383,7 @@ function promptRoasts(segment) {
       : '';
     return `[${label}] ${r.fantasyTeam}: ${r.description}${statLine ? `\n  Stats: ${statLine}` : ''}`;
   }).join('\n\n');
-  return `Write "Front Office Failures" roasting the worst roster decisions. Be creative and funny. 2-4 paragraphs.\n\nQuestionable decisions:\n${data}`;
+  return `Write "${TITLE.roasts}" roasting the worst roster decisions. Be creative and funny. 2-4 paragraphs.\n\nQuestionable decisions:\n${data}`;
 }
 
 function promptMadDogHotTakes(powerRankings, matchups, playoffs) {
@@ -404,7 +392,7 @@ function promptMadDogHotTakes(powerRankings, matchups, playoffs) {
     const results = matchups.map(m =>
       `${roundTag(m)}${m.isTie ? `${m.team1.name} tied ${m.team2.name} ${m.score}` : `${m.winner.name} beat ${m.loser.name} ${m.score}`}`
     ).join('\n');
-    return `Write "Mad Dog's Hot Takes" — SEASON FINALE edition. The championship is decided. Cover 2-3 of: crown the champion a dynasty (or call it a fluke), declare the runner-up choked, rant about the third-place game being meaningless (or the most important game of the year), make a wildly premature prediction for NEXT SEASON, call out something from the finals that has you furious. Overreact wildly. Do not invent standings or records — only the finals results below are known. 3-4 paragraphs.\n\nFinals results:\n${results}`;
+    return `Write "${TITLE.maddog}" — SEASON FINALE edition. The championship is decided. Cover 2-3 of: crown the champion a dynasty (or call it a fluke), declare the runner-up choked, rant about the third-place game being meaningless (or the most important game of the year), make a wildly premature prediction for NEXT SEASON, call out something from the finals that has you furious. Overreact wildly. Do not invent standings or records — only the finals results below are known. 3-4 paragraphs.\n\nFinals results:\n${results}`;
   }
   if (!powerRankings.length) return null;
   const rankData = powerRankings.map((t, i) =>
@@ -413,7 +401,7 @@ function promptMadDogHotTakes(powerRankings, matchups, playoffs) {
   const matchupData = matchups.map(m =>
     m.isTie ? `${m.team1.name} tied ${m.team2.name} ${m.score}` : `${m.winner.name} beat ${m.loser.name} ${m.score}`
   ).join('\n');
-  return `Write "Mad Dog's Hot Takes". Cover 2-3 of: declare a team DONE, crown a dynasty, make a bold prediction for next week, call out something that has you furious. Overreact wildly. 3-4 paragraphs.\n\nStandings:\n${rankData}\n\nResults:\n${matchupData}`;
+  return `Write "${TITLE.maddog}". Cover 2-3 of: declare a team DONE, crown a dynasty, make a bold prediction for next week, call out something that has you furious. Overreact wildly. 3-4 paragraphs.\n\nStandings:\n${rankData}\n\nResults:\n${matchupData}`;
 }
 
 /**
@@ -477,14 +465,14 @@ function promptNumbersDontLie(matchups, powerRankings, scoreboard, playoffs) {
     allTeamStats[m.team2.name] = m.team2.stats;
   }
 
-  const invertedStats = new Set([...BATTING_CATS, ...PITCHING_CATS].filter(c => c.inverted).map(c => c.name));
-  const catDisplay = Object.fromEntries([...BATTING_CATS, ...PITCHING_CATS].map(c => [c.name, c.display || c.name]));
-  const cats = Object.keys(Object.values(allTeamStats)[0] || {}).filter(k => k !== 'H/AB');
+  const invertedStats = new Set(sport.allCats.filter(c => c.inverted).map(c => c.name));
+  const catDisplay = Object.fromEntries(sport.allCats.map(c => [c.name, c.display || c.name]));
+  const cats = Object.keys(Object.values(allTeamStats)[0] || {}).filter(k => !sport.hiddenTeamStats.has(k));
   const leagueContext = [];
   for (const cat of cats) {
     const vals = Object.entries(allTeamStats).map(([name, stats]) => ({ name, val: stats[cat] })).filter(e => !isNaN(e.val)).sort((a, b) => b.val - a.val);
     if (vals.length === 0) continue;
-    // For inverted stats (ERA, WHIP), lower is better
+    // For inverted stats (ERA, WHIP, GAA), lower is better
     const best = invertedStats.has(cat) ? vals[vals.length - 1] : vals[0];
     const worst = invertedStats.has(cat) ? vals[0] : vals[vals.length - 1];
     leagueContext.push(`${cat}: best ${best.name} (${fmtStat(cat, best.val)}), worst ${worst.name} (${fmtStat(cat, worst.val)}), avg ${fmtStat(cat, vals.reduce((s,e) => s+e.val, 0)/vals.length)}`);
@@ -507,10 +495,10 @@ function promptNumbersDontLie(matchups, powerRankings, scoreboard, playoffs) {
     : '';
 
   if (isFinals) {
-    return `Write "The Numbers Don't Lie" — FINALS edition. Only the four finalists played matchups that matter this week, so every comparison below is among those four teams (not the whole league — say "among the finalists", never "league-wide"). Find 2-3 statistical stories from the championship and third-place game: the category that decided the title, a finalist that dominated a stat but still lost, matchup luck, a line that won't hold up. 3-4 paragraphs.\n\nCategory leaders among the four finalists:\n${leagueContext.join('\n')}${toughLuckBlock.replace(/in the entire league|in the league|league-wide/g, 'among the finalists')}\n\nMatchup details:\n${matchupData}`;
+    return `Write "${TITLE.numbers}" — FINALS edition. Only the four finalists played matchups that matter this week, so every comparison below is among those four teams (not the whole league — say "among the finalists", never "league-wide"). Find 2-3 statistical stories from the championship and third-place game: the category that decided the title, a finalist that dominated a stat but still lost, matchup luck, a line that won't hold up. 3-4 paragraphs.\n\nCategory leaders among the four finalists:\n${leagueContext.join('\n')}${toughLuckBlock.replace(/in the entire league|in the league|league-wide/g, 'among the finalists')}\n\nMatchup details:\n${matchupData}`;
   }
 
-  return `Write "The Numbers Don't Lie". Find 2-3 interesting statistical stories: teams that led the league in a stat but lost, record performances, matchup luck, unsustainable lines. Compare against league averages. 3-4 paragraphs.\n\nLeague-wide category leaders:\n${leagueContext.join('\n')}${toughLuckBlock}\n\nMatchup details:\n${matchupData}`;
+  return `Write "${TITLE.numbers}". Find 2-3 interesting statistical stories: teams that led the league in a stat but lost, record performances, matchup luck, unsustainable lines. Compare against league averages. 3-4 paragraphs.\n\nLeague-wide category leaders:\n${leagueContext.join('\n')}${toughLuckBlock}\n\nMatchup details:\n${matchupData}`;
 }
 
 // --- Rumours ---
@@ -526,6 +514,8 @@ async function fetchRumours(weekStart) {
   try {
     const url = new URL(apiUrl);
     url.searchParams.set('since', weekStart);
+    // Rumours are tagged by league (untagged legacy rumours count as baseball)
+    url.searchParams.set('league', league.id);
     const res = await fetch(url);
     if (!res.ok) {
       console.log(`  Warning: rumours API returned ${res.status}`);
@@ -545,7 +535,7 @@ async function fetchRumours(weekStart) {
 // exclude those by submittedAt.
 function loadConsumedRumourTimestamps(currentWeek) {
   const consumed = new Set();
-  const snapshotsDir = path.join(__dirname, 'snapshots');
+  const snapshotsDir = league.paths.snapshots;
   if (!fs.existsSync(snapshotsDir)) return consumed;
 
   for (const dir of fs.readdirSync(snapshotsDir)) {
@@ -608,7 +598,7 @@ function promptInsiderReport(rumours, powerRankings, transactions) {
     if (parts.length) context += `\nRECENT TRANSACTIONS (for context):\n${parts.join('\n')}\n`;
   }
 
-  return `Write "The Insider Report" — a column covering trade rumours and behind-the-scenes dealings in the league.
+  return `Write "${TITLE.insider}" — a column covering trade rumours and behind-the-scenes dealings in the league.
 
 You have received the following tips from sources around the league. Weave them into a cohesive insider column. Don't just list the rumours — connect them to the team's standing, recent moves, and league dynamics. Speculate on motivations and potential trade partners. Treat each tip like a legitimate insider scoop.
 
@@ -787,7 +777,7 @@ function spliceArticle(parsed, newSections, sectionToKey) {
 // --- Main narration ---
 
 async function narrate(week, { only, except } = {}) {
-  const snapshotDir = path.join(__dirname, 'snapshots', `week-${String(week).padStart(2, '0')}`);
+  const snapshotDir = league.weekDir(week);
   const analysisPath = path.join(snapshotDir, 'analysis.json');
 
   if (!fs.existsSync(analysisPath)) {
@@ -826,7 +816,7 @@ async function narrate(week, { only, except } = {}) {
   const consumedFromPriorWeeks = loadConsumedRumourTimestamps(week);
   const rumours = rawRumours.filter(r => !consumedFromPriorWeeks.has(r.submittedAt));
 
-  console.log(`Generating narrative for ${playoffs.isFinals ? `the Finals (Week ${week})` : `Week ${week}`}...`);
+  console.log(`Generating ${league.id} narrative for ${playoffs.isFinals ? `the Finals (Week ${week})` : `Week ${week}`}...`);
   if (rawRumours.length > rumours.length) {
     console.log(`  Skipped ${rawRumours.length - rumours.length} rumour(s) already used in prior weeks`);
   }
@@ -839,65 +829,65 @@ async function narrate(week, { only, except } = {}) {
 
   // Individual: Matchup Recaps (largest prompt, runs first)
   const matchupP = promptMatchupRecaps(segments.matchups, segments.storylines, playoffs);
-  const matchupSeg = matchupP ? { title: 'Matchup Recaps', prompt: matchupP, fallback: () => fallbackMatchups(segments.matchups) } : null;
+  const matchupSeg = matchupP ? { title: TITLE.matchups, prompt: matchupP, fallback: () => fallbackMatchups(segments.matchups) } : null;
 
   // Individual: Players of the Week
   const potwP = promptPlayersOfTheWeek(segments.playersOfTheWeek);
-  const potwSeg = potwP ? { title: 'Players of the Week', prompt: potwP, fallback: '*No standout performances this week.*' } : null;
+  const potwSeg = potwP ? { title: TITLE.potw, prompt: potwP, fallback: '*No standout performances this week.*' } : null;
 
   // Individual: Power Rankings
   const prP = promptPowerRankings(segments.powerRankings);
-  const prSeg = prP ? { title: 'Power Rankings', prompt: prP, fallback: () => fallbackPowerRankings(segments.powerRankings) } : null;
+  const prSeg = prP ? { title: TITLE.rankings, prompt: prP, fallback: () => fallbackPowerRankings(segments.powerRankings) } : null;
 
   // Individual: Standings Movers (if available)
   const moversP = promptStandingsMovers(segments.standingsMovers);
-  const moversSeg = moversP ? { title: 'Movers and Shakers', prompt: moversP, fallback: '' } : null;
+  const moversSeg = moversP ? { title: TITLE.movers, prompt: moversP, fallback: '' } : null;
 
   // Batch 2: "Transactions" — player moves, needs consistent takes on which decisions were smart/dumb
   const txBatch = [];
   const bestP = promptBestPickup(segments.bestPickup);
-  if (bestP) txBatch.push({ title: 'Best Pickup of the Week', prompt: bestP, fallback: () => fallbackSimple('pickups', segments.bestPickup.top) });
+  if (bestP) txBatch.push({ title: TITLE['best-pickup'], prompt: bestP, fallback: () => fallbackSimple('pickups', segments.bestPickup.top) });
   const worstP = promptWorstPickup(segments.worstPickup);
-  if (worstP) txBatch.push({ title: 'Hall of Shame', prompt: worstP, fallback: () => fallbackSimple('duds', segments.worstPickup.bottom) });
+  if (worstP) txBatch.push({ title: TITLE['hall-of-shame'], prompt: worstP, fallback: () => fallbackSimple('duds', segments.worstPickup.bottom) });
   const streamP = promptBestStream(segments.bestStream);
-  if (streamP) txBatch.push({ title: 'Stream of the Week', prompt: streamP, fallback: () => fallbackSimple('streams', segments.bestStream.top) });
+  if (streamP) txBatch.push({ title: TITLE.stream, prompt: streamP, fallback: () => fallbackSimple('streams', segments.bestStream.top) });
   if (segments.roasts?.available) {
     const roastsP = promptRoasts(segments.roasts);
-    if (roastsP) txBatch.push({ title: 'Front Office Failures', prompt: roastsP, fallback: () => segments.roasts.roasts.map(r => `**${r.fantasyTeam}**: ${r.description}`).join('\n\n') });
+    if (roastsP) txBatch.push({ title: TITLE.roasts, prompt: roastsP, fallback: () => segments.roasts.roasts.map(r => `**${r.fantasyTeam}**: ${r.description}`).join('\n\n') });
   }
   if (segments.transactionDesk?.available) {
     const txDeskP = promptTransactionDesk(segments.transactionDesk);
-    if (txDeskP) txBatch.push({ title: 'Transaction Desk', prompt: txDeskP, fallback: '*No trades or FAAB activity this week.*' });
+    if (txDeskP) txBatch.push({ title: TITLE['tx-desk'], prompt: txDeskP, fallback: '*No trades or FAAB activity this week.*' });
   }
 
   // Individual: Insider Report (only if rumours exist)
   const insiderP = promptInsiderReport(rumours, segments.powerRankings, segments.transactionDesk);
-  const insiderSeg = insiderP ? { title: 'The Insider Report', prompt: insiderP, fallback: '*Our insider is currently unreachable. Check back next week.*' } : null;
+  const insiderSeg = insiderP ? { title: TITLE.insider, prompt: insiderP, fallback: '*Our insider is currently unreachable. Check back next week.*' } : null;
 
-  // Individual: Mad Dog (isolation is the point)
+  // Individual: hot takes (isolation is the point)
   const maddogP = promptMadDogHotTakes(segments.powerRankings, segments.matchups, playoffs);
-  const maddogSeg = maddogP ? { title: "Mad Dog's Hot Takes", prompt: maddogP, fallback: '*Mad Dog was unavailable for comment this week.*' } : null;
+  const maddogSeg = maddogP ? { title: TITLE.maddog, prompt: maddogP, fallback: `*${WRITERS.hottakes.name} was unavailable for comment this week.*` } : null;
 
-  // Individual: Gerald (analytical, independent)
+  // Individual: analytics column (independent)
   const numbersP = promptNumbersDontLie(segments.matchups, segments.powerRankings, rawScoreboard, playoffs);
-  const geraldSeg = numbersP ? { title: "The Numbers Don't Lie", prompt: numbersP, fallback: '*Gerald is recalculating. Please stand by.*' } : null;
+  const geraldSeg = numbersP ? { title: TITLE.numbers, prompt: numbersP, fallback: `*${WRITERS.analytics.name} is recalculating. Please stand by.*` } : null;
 
   // --- Generate ---
 
-  const articlesDir = path.join(__dirname, 'articles');
+  const articlesDir = league.paths.articles;
   fs.mkdirSync(articlesDir, { recursive: true });
   const articlePath = path.join(articlesDir, `week-${String(week).padStart(2, '0')}.md`);
 
   // Map registry keys to their individual segment objects
   const individualSegs = [
-    ['matchups', matchupSeg, 'chuck', 'Matchup Recaps'],
-    ['potw', potwSeg, 'chuck', 'Players of the Week'],
-    ['rankings', prSeg, 'chuck', 'Power Rankings'],
-    ['movers', moversSeg, 'chuck', 'Movers and Shakers'],
-    ['insider', insiderSeg, 'insider', 'The Insider Report'],
-    ['maddog', maddogSeg, 'maddog', "Mad Dog's Hot Takes"],
-    ['numbers', geraldSeg, 'gerald', "The Numbers Don't Lie"],
-  ];
+    ['matchups', matchupSeg],
+    ['potw', potwSeg],
+    ['rankings', prSeg],
+    ['movers', moversSeg],
+    ['insider', insiderSeg],
+    ['maddog', maddogSeg],
+    ['numbers', geraldSeg],
+  ].map(([key, seg]) => [key, seg, SEGMENT_REGISTRY.find(e => e.key === key).writer, TITLE[key]]);
 
   // Build title→key lookup for tx batch entries
   const txTitleToKey = {};
@@ -962,17 +952,17 @@ async function narrate(week, { only, except } = {}) {
 
         // Tx batch (if any tx key targeted)
         if (hasTx && txBatch.length > 0) {
-          const writer = WRITERS.chuck;
+          const writer = WRITERS.lead;
           console.log(`  Regenerating Transactions batch (${writer.name}, ${txBatch.length} segments)...`);
 
           if (txBatch.length === 1) {
             const seg = txBatch[0];
-            const text = callClaude(seg.prompt, 'chuck') || (typeof seg.fallback === 'function' ? seg.fallback() : seg.fallback);
+            const text = callClaude(seg.prompt, 'lead') || (typeof seg.fallback === 'function' ? seg.fallback() : seg.fallback);
             const rKey = txTitleToKey[seg.title];
             if (rKey) newSections.push({ registryKey: rKey, content: stripEchoedTitle(text, seg.title) });
           } else {
             const batchPrompt = buildBatchPrompt(txBatch);
-            const output = callClaude(batchPrompt, 'chuck');
+            const output = callClaude(batchPrompt, 'lead');
 
             if (output) {
               const batchParsed = parseBatchOutput(output, txBatch.length);
@@ -1041,14 +1031,9 @@ async function narrate(week, { only, except } = {}) {
     sections.push({ title: seg.title, content: stripEchoedTitle(text, seg.title), byline: writer.name });
   }
 
-  generateSingle('chuck', matchupSeg, 'Matchup Recaps');
-  generateSingle('chuck', potwSeg, 'Players of the Week');
-  generateSingle('chuck', prSeg, 'Power Rankings');
-  generateSingle('chuck', moversSeg, 'Movers and Shakers');
-  generateBatch('chuck', txBatch, 'Transactions');
-  generateSingle('insider', insiderSeg, 'The Insider Report');
-  generateSingle('maddog', maddogSeg, "Mad Dog's Hot Takes");
-  generateSingle('gerald', geraldSeg, "The Numbers Don't Lie");
+  for (const [key, seg, writerKey, label] of individualSegs.slice(0, 4)) generateSingle(writerKey, seg, label);
+  generateBatch('lead', txBatch, 'Transactions');
+  for (const [key, seg, writerKey, label] of individualSegs.slice(4)) generateSingle(writerKey, seg, label);
 
   // Assemble article
   const weekLabel = playoffs.isFinals ? 'Finals' : `Week ${week}`;
@@ -1092,7 +1077,7 @@ if (require.main === module) {
   let week = weekIdx !== -1 ? parseInt(args[weekIdx + 1]) : null;
 
   if (!week) {
-    const snapshotsDir = path.join(__dirname, 'snapshots');
+    const snapshotsDir = league.paths.snapshots;
     const dirs = fs.readdirSync(snapshotsDir).filter(d => d.startsWith('week-')).sort().reverse();
     if (!dirs.length) { console.error('No snapshots found.'); process.exit(1); }
     week = parseInt(dirs[0].replace('week-', ''));

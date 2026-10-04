@@ -4,6 +4,7 @@
  * Usage:
  *   node daily-collect.js                    # default: yesterday (ET)
  *   node daily-collect.js --date 2026-04-13  # backfill a specific date
+ *   node daily-collect.js --league hockey    # any of the above for hockey
  *
  * Run daily at 7 AM ET (after all games finish ~2 AM). Collects finalized stats
  * for the previous day and merges in roster positions from the nightly capture
@@ -19,7 +20,10 @@ const { createClient } = require('yahoo-fantasy-api');
 const { isNightlyCaptureTrustworthy, addDaysISO } = require('./lib/nightly-trust');
 const { parseScoreboardResponse, parseTeamInfo, parseStatValues } = require('./yahoo-helpers');
 
-const LEAGUE_ID = process.env.YAHOO_MLB_LEAGUE_ID || process.env.YAHOO_LEAGUE_ID;
+const { activeLeague } = require('./lib/league');
+
+const league = activeLeague();
+const LEAGUE_ID = league.yahooLeagueId();
 
 
 const { auth, client } = createClient({
@@ -91,10 +95,10 @@ async function dailyCollect() {
   }
 
   if (!LEAGUE_ID) {
-    console.error('Set YAHOO_MLB_LEAGUE_ID or YAHOO_LEAGUE_ID in .env');
+    console.error(`Set ${league.leagueIdEnv.join(' or ')} in .env`);
     process.exit(1);
   }
-  const gameKey = await client.resolveGameKey('mlb');
+  const gameKey = await client.resolveGameKey(league.gameCode);
   const leagueKey = client.leagueKey(gameKey, LEAGUE_ID);
 
   // Get current week
@@ -146,11 +150,7 @@ async function dailyCollect() {
   const rosterStats = await fetchDailyRosters(leagueKey, statsDate);
 
   // Save to daily directory
-  const dailyDir = path.join(
-    __dirname, 'snapshots',
-    `week-${String(week).padStart(2, '0')}`,
-    'daily'
-  );
+  const dailyDir = path.join(league.weekDir(week), 'daily');
   fs.mkdirSync(dailyDir, { recursive: true });
 
   // Merge in accurate positions from the nightly capture (daily-positions.js).

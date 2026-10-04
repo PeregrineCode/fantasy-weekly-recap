@@ -1,7 +1,7 @@
 {
   "name": "fantasy-weekly-recap",
   "version": "1.0.0",
-  "description": "Automated weekly fantasy baseball recap site generator — AI-narrated league recaps with storyline tracking",
+  "description": "Automated weekly fantasy baseball and hockey recap site generator — AI-narrated league recaps with storyline tracking",
   "main": "run.js",
   "scripts": {
     "test": "node --test test/*.test.js",

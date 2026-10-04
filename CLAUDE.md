@@ -1,12 +1,31 @@
 # Fantasy Weekly Recap
 
-Automated weekly fantasy baseball recap site for Dad's Baseball League 9.0. Dennis's league — 10 teams, H2H Categories, Auction draft, FAAB waivers.
+Automated weekly fantasy recap sites for Dennis's leagues: Dad's Baseball League 9.0 and Dad's Hockey League 10.0. Every script serves one league per run, chosen with `--league <id>` (or `LEAGUE=<id>`); the default is `baseball`.
 
-## League
+## Leagues
 
-| League | Sport | Key | Teams | Format |
-|--------|-------|-----|-------|--------|
-| Dad's Baseball League 9.0 | MLB | 469.l.75479 | 10 | H2H Categories, Auction, FAAB ($200) |
+| League | `--league` | Sport | Key | Teams | Format |
+|--------|-----------|-------|-----|-------|--------|
+| Dad's Baseball League 9.0 | `baseball` (default) | MLB | 469.l.75479 | 10 | H2H Categories, Auction, FAAB ($200) |
+| Dad's Hockey League 10.0 | `hockey` | NHL | 477.l.48642 | 14 | H2H Categories, Auction, FAAB ($100) |
+
+## Multiple Leagues
+- **Registry:** `lib/league.js` defines each league (game code, Yahoo league ID, paths, env prefix, abandoned teams). `activeLeague()` resolves the league from `--league`/`LEAGUE` once per process.
+- **Sport profiles:** `lib/sports/baseball.js` and `lib/sports/hockey.js` hold everything sport-specific: stat IDs and categories, player groups (batter/pitcher, skater/goalie), stream rules, bench-blunder thresholds, dead-weight rules, the pro schedule API (MLB Stats API / NHL `api-web.nhle.com`), and prompt wording. `analyze.js` and `narrate.js` stay sport-neutral; put new sport logic in the profile, not behind `if (sport === ...)` checks.
+- **Stat IDs collide across sports** (26 is ERA in MLB, SV% in NHL), so `STAT_ID_MAP` in `lib/stat-categories.js` is built from the active league's profile.
+- **Paths:** baseball predates multi-league support and keeps its data at the repo root (`snapshots/`, `articles/`, `site/`, `.deploy/`, `prompts/`). Other leagues live under `leagues/<id>/` with the same layout (`leagues/hockey/prompts/` is committed; snapshots/articles/site are gitignored).
+- **Env vars:** baseball uses the unprefixed names; other leagues prefix league-scoped settings (`HOCKEY_DEPLOY_REPO`, `HOCKEY_LEAGUE_NAME`, `HOCKEY_FAAB_BUDGET`). `RUMOURS_API_URL` and the Yahoo credentials are shared.
+- **Writers:** each league's `prompts/writers.json` defines its four personas by role (`lead`, `hottakes`, `analytics`, `insider`) plus column-title overrides. Segment keys (`maddog`, `numbers`, etc.) are the same in every league even when the column is renamed.
+- **Abandoned teams are per league:** baseball t.7 (Nate) is excluded from editorial segments; hockey t.7 is Dennis's team and is NOT.
+
+## Hockey League
+**Scoring Categories (9 total):** Skaters (6): G, A, P, SOG, HIT, BLK. Goalies (3): W, GAA, SV%. GA, SV, and SA are display-only.
+
+**League mechanics:** Rosters are 2C/2LW/2RW/4D/1Util/2G with 4 BN, 1 IR and 2 IR+. Lineups are set daily and lock at puck drop. FAAB is $100 with a maximum of 4 adds per week (free agents not on waivers cost $0, so most adds carry no bid). Trade deadline 2027-03-03. Playoffs: 8 teams; QF week 24, SF week 25, final week 26, with reseeding. Season runs 2026-09-29 to 2027-04-04. Dennis won 2025 (Hockey 9.0, as Mr. Roboto).
+
+**Hockey segment variants:** Players of the Week crowns a skater and a goalie (goalies need ~20 shots against to qualify). The stream segment is "Goalie Stream of the Week". Dead weight flags skaters with zero points despite shots, and goalies under .870. There is no innings-style minimum and no IR-hoarding roast (the league allows 3 IR slots).
+
+## Baseball League
 
 **Scoring Categories (12 total):**
 - Batting (6): R, HR, RBI, SB, AVG, OBP
@@ -18,11 +37,16 @@ Automated weekly fantasy baseball recap site for Dad's Baseball League 9.0. Denn
 ```
 fantasy-weekly-recap/
 ├── lib/
-│   ├── stat-categories.js    # Yahoo stat ID mappings + category definitions
+│   ├── league.js             # League registry + active-league resolution (--league)
+│   ├── sports/               # Sport profiles: baseball.js, hockey.js
+│   ├── stat-categories.js    # Stat ID map for the active league
+│   ├── et.js                 # DST-aware Eastern-time helpers
 │   └── yahoo-fetch.js        # Yahoo API roster/standings fetch helpers
-├── prompts/
+├── prompts/                  # Baseball prompts
 │   ├── system.txt            # Core role instruction for claude CLI
-│   └── reference.md          # Style guide + league context (edit to improve quality)
+│   ├── reference.md          # Style guide + league context (edit to improve quality)
+│   └── writers.json          # Writer personas + column-title overrides
+├── leagues/hockey/           # Hockey: prompts/ (committed) + snapshots/articles/site (gitignored)
 ├── rumours-worker/           # Cloudflare Worker for trade rumour submissions
 │   ├── worker.js             # POST/GET API (~110 lines)
 │   ├── wrangler.toml         # Worker config with KV namespace binding
@@ -31,7 +55,7 @@ fantasy-weekly-recap/
 │   ├── layout.html           # Page template ({{LEAGUE_NAME}} etc.)
 │   └── style.css             # Newspaper-style CSS (includes rumour form styles)
 ├── test/                     # Node.js test suite
-├── .github/workflows/        # Daily collection GitHub Actions
+├── .github/workflows/        # Daily collection GitHub Actions (baseball + hockey-*)
 ├── snapshots/                # Collected data (gitignored, accumulates via Actions)
 ├── articles/                 # Generated markdown (gitignored)
 ├── site/                     # Built HTML (gitignored)
@@ -55,7 +79,9 @@ Daily snapshots use a two-phase capture to get both accurate roster positions an
 
 **Why two phases:** Yahoo's API always returns **current** roster positions regardless of what date you request stats for. A single morning collection would capture next-day positions (after managers rearrange for the new day), not the game-day lineup. The nightly capture at lineup lock solves this.
 
-**Bench blunder detection** in `analyze.js` only trusts positions from snapshots with `positionsSource: "nightly"`. Days without nightly position data are excluded from bench analysis to avoid false positives.
+**Bench blunder detection** in `analyze.js` only trusts positions from snapshots with `positionsSource: "nightly"`. Days without nightly position data are excluded from bench analysis to avoid false positives, and a week with no daily snapshots gets no bench blunders at all (weekly roster positions are the *current* lineup).
+
+**Hockey** runs the same two phases via `hockey-nightly-positions.yml` (four firings between 11:07 PM and 2:31 AM ET, chosen to land inside the locked window under both EDT and EST) and `hockey-daily-collect.yml` (~7 AM ET). The baseball workflows are disabled in the offseason; re-enable them in the GitHub UI when the MLB season starts.
 
 ## Usage
 ```bash
@@ -72,6 +98,9 @@ node analyze.js [--week N]      # Compute segments → analysis.json
 node narrate.js [--week N]      # Generate prose → articles/
 node build.js                   # Build HTML → site/
 node deploy.js                  # Push to GitHub Pages repo
+
+# Every script takes --league hockey (default: baseball)
+node run.js --league hockey --week 2 --skip-narrate --skip-deploy
 ```
 
 ## Important
@@ -98,8 +127,12 @@ Yahoo flags playoff matchups (`is_playoffs`, `is_consolation`) but never says wh
 Matchup Recaps (includes mid-week drama/storylines when daily data available), Players of the Week (1 winner + 3 runners-up for batters and pitchers), Best Pickup, Worst Pickup (Hall of Shame), Best Pitcher Stream, Transaction Desk, Standings Movers, Power Rankings, Bench Blunders (requires nightly position data), The Insider Report (trade rumours from league members, requires `RUMOURS_API_URL`)
 
 ## Prompts
-- `prompts/system.txt` — Core role instruction for claude CLI
-- `prompts/reference.md` — Style guide + league context (edit to improve narrative quality)
+Per league (`prompts/` for baseball, `leagues/hockey/prompts/` for hockey):
+- `system.txt` — Core role instruction for claude CLI
+- `reference.md` — Style guide + league context (edit to improve narrative quality)
+- `writers.json` — Writer personas by role + column-title overrides
+
+Hockey writers: Murray "Muzz" Kowalchuk (lead), Ronnie "Red Light" Russo (hot takes), Dr. Ingrid Lindqvist (analytics), Gary "The Wire" Halloran (insider, "The Trade Board").
 
 ## Environment Variables (.env)
 ```
@@ -112,6 +145,12 @@ RUMOURS_API_URL          # Optional: Cloudflare Worker URL for trade rumours
 LEAGUE_NAME              # Optional: override auto-detected league name
 FAAB_BUDGET              # Optional: starting FAAB budget (default: 200)
 MIN_IP                   # Optional: minimum innings pitched per week (default: 30)
+
+# Hockey (league-scoped settings use the HOCKEY_ prefix)
+YAHOO_NHL_LEAGUE_ID      # Optional: defaults to 48642
+HOCKEY_DEPLOY_REPO       # GitHub Pages target for the hockey site
+HOCKEY_LEAGUE_NAME       # Optional
+HOCKEY_FAAB_BUDGET       # Optional (default: 100)
 ```
 
 ## Trade Rumours
@@ -120,8 +159,9 @@ League members submit trade rumours and team gossip via a form on the recap site
 **Architecture:** Static form on GitHub Pages → Cloudflare Worker + KV → pipeline fetches via GET during narration.
 
 **Worker:** `rumours-worker/` — Cloudflare Worker with KV storage. Deployed at `https://trade-rumours.dads-league.workers.dev`. The Cloudflare account is under the pucksavant domain. Requires `CLOUDFLARE_API_TOKEN` env var for deploys (set in `~/.zshenv`).
-- `POST /api/rumours` — accepts `{ text, source? }`, stores in KV with 90-day TTL, rate-limited to 1 per IP per 12 hours
-- `GET /api/rumours?since=YYYY-MM-DD` — returns rumours since the given date
+- `POST /api/rumours` — accepts `{ text, source?, league? }`, stores in KV with 90-day TTL, rate-limited to 1 per IP per league per 12 hours
+- `GET /api/rumours?since=YYYY-MM-DD&league=hockey` — returns rumours since the given date for one league (no `league` = all leagues)
+- One worker serves both sites. Each rumour is tagged with its league (`baseball` or `hockey`); entries from before tagging have no league and count as baseball. The submit page and `narrate.js` pass the active league
 - KV uses metadata for fast `list()` reads (no per-key fetches), with value fallback for legacy entries
 - Deploy: `cd rumours-worker && npm install && npx wrangler deploy`
 - Manage KV: entries visible at https://dash.cloudflare.com → Workers & Pages → KV

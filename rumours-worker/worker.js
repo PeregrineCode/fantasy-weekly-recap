@@ -6,11 +6,14 @@
  *
  * KV key prefixes:
  *   rumour:*     — rumour data (stored in metadata for fast listing)
- *   ratelimit:*  — ephemeral per-IP rate limit markers (12h TTL)
+ *   ratelimit:*  — ephemeral per-league, per-IP rate limit markers (12h TTL)
  *
  * Routes:
- *   POST /api/rumours    — submit a rumour { text, source? }
- *   GET  /api/rumours    — list rumours, optional ?since=YYYY-MM-DD filter
+ *   POST /api/rumours    — submit a rumour { text, source?, league? }
+ *   GET  /api/rumours    — list rumours, optional ?since=YYYY-MM-DD and ?league= filters
+ *
+ * One worker serves every league's site. Rumours are tagged with their league;
+ * entries from before league tagging have none and belong to baseball.
  */
 
 const CORS_HEADERS = {
@@ -21,6 +24,9 @@ const CORS_HEADERS = {
 
 // Rumours auto-expire after 90 days — old tips have no narration value
 const RUMOUR_TTL_DAYS = 90;
+
+const LEAGUES = ['baseball', 'hockey'];
+const DEFAULT_LEAGUE = 'baseball';
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -44,19 +50,23 @@ export default {
 
     // --- POST: submit a rumour ---
     if (request.method === 'POST') {
-      // Rate limit: 1 submission per 12 hours per IP
-      const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
-      const rateKey = `ratelimit:${ip}`;
-      const existing = await env.RUMOURS.get(rateKey);
-      if (existing) {
-        return json({ error: "You've already submitted your rumour for today." }, 429);
-      }
-
       let body;
       try {
         body = await request.json();
       } catch {
         return json({ error: 'Invalid JSON' }, 400);
+      }
+
+      const league = body.league || DEFAULT_LEAGUE;
+      if (!LEAGUES.includes(league)) return json({ error: 'Unknown league' }, 400);
+
+      // Rate limit: 1 submission per 12 hours per IP, per league (some
+      // managers play in more than one league)
+      const ip = request.headers.get('CF-Connecting-IP') || 'unknown';
+      const rateKey = league === DEFAULT_LEAGUE ? `ratelimit:${ip}` : `ratelimit:${league}:${ip}`;
+      const existing = await env.RUMOURS.get(rateKey);
+      if (existing) {
+        return json({ error: "You've already submitted your rumour for today." }, 429);
       }
 
       const text = (body.text || '').trim();
@@ -67,7 +77,7 @@ export default {
       const submittedAt = new Date().toISOString();
       const key = `rumour:${submittedAt}:${crypto.randomUUID()}`;
 
-      const rumour = { text, source, submittedAt };
+      const rumour = { text, source, submittedAt, league };
 
       // Store rumour data in KV metadata so GET can read it from list()
       // without issuing individual get() calls per key
@@ -91,6 +101,11 @@ export default {
         return json({ error: 'Invalid since date, expected YYYY-MM-DD' }, 400);
       }
 
+      // Without ?league=, return every league's rumours (pre-tagging behavior)
+      const leagueFilter = url.searchParams.get('league');
+      if (leagueFilter && !LEAGUES.includes(leagueFilter)) return json({ error: 'Unknown league' }, 400);
+      const inLeague = r => !leagueFilter || (r.league || DEFAULT_LEAGUE) === leagueFilter;
+
       const rumours = [];
       let cursor = null;
 
@@ -103,7 +118,7 @@ export default {
         for (const key of list.keys) {
           if (key.metadata && key.metadata.submittedAt) {
             // New format: data in metadata
-            if (new Date(key.metadata.submittedAt) >= sinceDate) {
+            if (new Date(key.metadata.submittedAt) >= sinceDate && inLeague(key.metadata)) {
               rumours.push(key.metadata);
             }
           } else {
@@ -118,7 +133,7 @@ export default {
           if (!val) continue;
           try {
             const rumour = JSON.parse(val);
-            if (rumour.submittedAt && new Date(rumour.submittedAt) >= sinceDate) {
+            if (rumour.submittedAt && new Date(rumour.submittedAt) >= sinceDate && inLeague(rumour)) {
               rumours.push(rumour);
             }
           } catch { /* skip malformed entries */ }

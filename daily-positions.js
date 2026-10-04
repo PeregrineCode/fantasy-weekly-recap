@@ -1,7 +1,7 @@
 /**
  * Nightly position capture — snapshots roster positions at lineup lock.
  *
- * Usage: node daily-positions.js
+ * Usage: node daily-positions.js [--league hockey]
  *
  * Run nightly at 10:30 PM ET when all lineups are locked for the day.
  * Captures TODAY's positions (not yesterday's), since games are still in progress.
@@ -17,7 +17,10 @@ const path = require('path');
 const { createClient } = require('yahoo-fantasy-api');
 const { shouldSkipCapture } = require('./lib/nightly-trust');
 
-const LEAGUE_ID = process.env.YAHOO_MLB_LEAGUE_ID || process.env.YAHOO_LEAGUE_ID;
+const { activeLeague } = require('./lib/league');
+
+const league = activeLeague();
+const LEAGUE_ID = league.yahooLeagueId();
 
 
 const { auth, client } = createClient({
@@ -80,10 +83,10 @@ async function dailyPositions() {
   }
 
   if (!LEAGUE_ID) {
-    console.error('Set YAHOO_MLB_LEAGUE_ID or YAHOO_LEAGUE_ID in .env');
+    console.error(`Set ${league.leagueIdEnv.join(' or ')} in .env`);
     process.exit(1);
   }
-  const gameKey = await client.resolveGameKey('mlb');
+  const gameKey = await client.resolveGameKey(league.gameCode);
   const leagueKey = client.leagueKey(gameKey, LEAGUE_ID);
 
   // Get current week
@@ -103,11 +106,7 @@ async function dailyPositions() {
   console.log(`Position capture: Week ${week}, date ${today}`);
 
   // Save to daily directory as positions-YYYY-MM-DD.json
-  const dailyDir = path.join(
-    __dirname, 'snapshots',
-    `week-${String(week).padStart(2, '0')}`,
-    'daily'
-  );
+  const dailyDir = path.join(league.weekDir(week), 'daily');
   fs.mkdirSync(dailyDir, { recursive: true });
   const filename = `positions-${today}.json`;
   const filePath = path.join(dailyDir, filename);

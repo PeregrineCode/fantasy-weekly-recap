@@ -2,7 +2,7 @@
  * Static site builder — converts markdown articles to HTML pages
  * with a classic newspaper layout.
  *
- * Usage: node build.js
+ * Usage: node build.js [--league hockey]
  */
 
 const fs = require('fs');
@@ -10,10 +10,12 @@ const path = require('path');
 const { marked } = require('marked');
 
 require('dotenv').config();
+const { activeLeague } = require('./lib/league');
 
+const league = activeLeague();
 const TEMPLATES_DIR = path.join(__dirname, 'templates');
-const ARTICLES_DIR = path.join(__dirname, 'articles');
-const SITE_DIR = path.join(__dirname, 'site');
+const ARTICLES_DIR = league.paths.articles;
+const SITE_DIR = league.paths.site;
 const WEEKS_DIR = path.join(SITE_DIR, 'weeks');
 const RUMOURS_API_URL = process.env.RUMOURS_API_URL || '';
 
@@ -94,7 +96,7 @@ function renderPage(title, content, nav, cssPath, homePath, dateDisplay, leagueN
     .replace('{{NAV}}', nav)
     .replace('{{SUBMIT_LINK}}', buildSubmitLink(pathPrefix))
     .replace('{{DATE_DISPLAY}}', dateDisplay)
-    .replace(/\{\{LEAGUE_NAME\}\}/g, leagueName || 'Fantasy Baseball League')
+    .replace(/\{\{LEAGUE_NAME\}\}/g, leagueName || league.defaultName)
     .replace('{{SEASON}}', season)
     .replace('{{CONTENT}}', content);
 }
@@ -125,7 +127,7 @@ function renderArticle(article) {
 
 function getLeagueName() {
   // Read from the most recent analysis.json, fall back to env var or default
-  const snapshotsDir = path.join(__dirname, 'snapshots');
+  const snapshotsDir = league.paths.snapshots;
   if (fs.existsSync(snapshotsDir)) {
     const weeks = fs.readdirSync(snapshotsDir).filter(f => f.startsWith('week-')).sort().reverse();
     for (const week of weeks) {
@@ -138,7 +140,7 @@ function getLeagueName() {
       }
     }
   }
-  return process.env.LEAGUE_NAME || 'Fantasy Baseball League';
+  return league.leagueName() || league.defaultName;
 }
 
 function buildSubmitContent() {
@@ -152,7 +154,7 @@ function buildSubmitContent() {
       <form id="rumour-form" class="rumour-form">
         <div>
           <label for="rumour-text">Your tip</label>
-          <textarea id="rumour-text" name="text" rows="5" maxlength="1000" placeholder="e.g., Jarren Duran is on the trade block. His manager is looking for pitching help..." required></textarea>
+          <textarea id="rumour-text" name="text" rows="5" maxlength="1000" placeholder="${league.sportProfile.narrative.rumourPlaceholder}" required></textarea>
         </div>
         <div class="rumour-field">
           <label for="rumour-source">Your name or alias (optional)</label>
@@ -167,6 +169,7 @@ function buildSubmitContent() {
     <script>
     (function() {
       var API = ${JSON.stringify(RUMOURS_API_URL)};
+      var LEAGUE = ${JSON.stringify(league.id)};
       var form = document.getElementById('rumour-form');
       var btn = document.getElementById('rumour-submit');
       var status = document.getElementById('rumour-status');
@@ -184,7 +187,7 @@ function buildSubmitContent() {
         fetch(API, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: text, source: source || undefined })
+          body: JSON.stringify({ text: text, source: source || undefined, league: LEAGUE })
         })
         .then(function(res) {
           if (!res.ok) return res.text().then(function(t) {
@@ -215,7 +218,7 @@ function build() {
   const articles = loadArticles();
 
   if (articles.length === 0) {
-    console.log('No articles found in articles/. Run narrate.js first.');
+    console.log(`No articles found in ${ARTICLES_DIR}. Run narrate.js first.`);
     return;
   }
 

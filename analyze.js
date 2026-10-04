@@ -2,67 +2,26 @@
  * Analysis module — transforms raw snapshot data into structured segments
  * for narrative generation. Pure data transforms, no API calls.
  *
- * Usage: node analyze.js [--week N]
+ * Usage: node analyze.js [--week N] [--league hockey]
  */
 
 const fs = require('fs');
 const path = require('path');
-const { BATTING_CATS, PITCHING_CATS } = require('./lib/stat-categories');
 const { FINALS_ROUNDS } = require('./yahoo-helpers');
+const { activeLeague } = require('./lib/league');
+const { etDate, etHour } = require('./lib/et');
 
-// Nate left the league in July 2026; his team (t.7, Risky Bettiness) is unmanaged.
-// It stays in league-wide segments (matchups, standings, power rankings, movers)
-// but is excluded from editorial features (players of the week, pickups, streams,
-// bench blunders) — there's no manager to credit or roast.
-const ABANDONED_TEAM_SUFFIXES = ['.t.7'];
-const isAbandonedTeam = key =>
-  typeof key === 'string' && ABANDONED_TEAM_SUFFIXES.some(s => key.endsWith(s));
+const league = activeLeague();
+const sport = league.sportProfile;
 
-/**
- * Fetch MLB game start times for a date range.
- * Returns a Map: "TEAM_ABBREV|YYYY-MM-DD" → game start timestamp (Unix seconds).
- * Uses the free MLB Stats API (no auth required).
- */
-async function fetchGameStartTimes(startDate, endDate) {
-  const gameStarts = new Map();
-  const url = `https://statsapi.mlb.com/api/v1/schedule?startDate=${startDate}&endDate=${endDate}&sportId=1`;
+// Teams with no manager (e.g. baseball's t.7 after Nate left) stay in
+// league-wide segments but are excluded from editorial features — see lib/league.js.
+const isAbandonedTeam = league.isAbandonedTeam;
 
-  try {
-    const resp = await fetch(url);
-    const data = await resp.json();
-
-    // Fetch team abbreviations
-    const teamsResp = await fetch('https://statsapi.mlb.com/api/v1/teams?sportId=1&season=' + startDate.substring(0, 4));
-    const teamsData = await teamsResp.json();
-    const idToAbbrev = {};
-    for (const t of teamsData.teams) idToAbbrev[t.id] = t.abbreviation;
-
-    for (const dateEntry of (data.dates || [])) {
-      for (const game of dateEntry.games) {
-        const startTs = Math.floor(new Date(game.gameDate).getTime() / 1000);
-        const date = game.officialDate;
-        for (const side of ['away', 'home']) {
-          const abbrev = idToAbbrev[game.teams[side].team.id];
-          if (abbrev) {
-            const key = `${abbrev}|${date}`;
-            // Keep earliest game if doubleheader
-            if (!gameStarts.has(key) || startTs < gameStarts.get(key)) {
-              gameStarts.set(key, startTs);
-            }
-          }
-        }
-      }
-    }
-  } catch (e) {
-    console.log(`  Warning: could not fetch MLB schedule: ${e.message}`);
-  }
-
-  return gameStarts;
-}
-
-const ALL_CATS = [...BATTING_CATS, ...PITCHING_CATS];
-const PITCHING_POSITIONS = ['SP', 'RP', 'P'];
-const MIN_IP = 30; // League minimum innings pitched per week; below this, ratio cats are forfeited
+const ALL_CATS = sport.allCats;
+// League minimum innings pitched per week (baseball only); below this, all
+// pitching cats are forfeited
+const MIN_IP = sport.defaultMinIP != null ? (parseInt(league.setting('MIN_IP')) || sport.defaultMinIP) : null;
 
 /**
  * Load a snapshot file, returning null if it doesn't exist.
@@ -107,6 +66,18 @@ function buildTeamNames(rosters, standings, scoreboard) {
  * Matchup recaps — who won, category scores, closest battles, blowouts.
  */
 function analyzeMatchups(scoreboard, teamNames) {
+  // Each category's spread across every team this week. "Closest battle" is
+  // judged in these units so ratio cats (.824 vs .974 SV%) aren't always
+  // "closest" next to counting cats (47 vs 67 SOG) just for being small numbers.
+  const catSpread = {};
+  for (const cat of ALL_CATS) {
+    const vals = scoreboard.flatMap(m => [m.team1.stats[cat.name], m.team2.stats[cat.name]])
+      .filter(v => typeof v === 'number' && !isNaN(v));
+    if (vals.length < 2) continue;
+    const mean = vals.reduce((a, v) => a + v, 0) / vals.length;
+    catSpread[cat.name] = Math.sqrt(vals.reduce((a, v) => a + (v - mean) ** 2, 0) / vals.length);
+  }
+
   return scoreboard.map(m => {
     const isTie = m.team1Wins === m.team2Wins;
 
@@ -116,12 +87,14 @@ function analyzeMatchups(scoreboard, teamNames) {
       const t2Val = m.team2.stats[sw.stat] ?? 0;
       const cat = ALL_CATS.find(c => c.name === sw.stat);
       const margin = Math.abs(t1Val - t2Val);
+      const spreadMargin = margin / (catSpread[sw.stat] || 1);
       return {
         stat: sw.stat,
         display: cat?.display || sw.stat,
         team1Val: t1Val,
         team2Val: t2Val,
         margin,
+        spreadMargin,
         isTied: sw.isTied,
         winnerTeamKey: sw.winnerTeamKey,
       };
@@ -130,13 +103,13 @@ function analyzeMatchups(scoreboard, teamNames) {
     // Sort by margin to find closest battle
     const closest = catDetails
       .filter(c => !c.isTied)
-      .sort((a, b) => a.margin - b.margin)[0] || null;
+      .sort((a, b) => a.spreadMargin - b.spreadMargin)[0] || null;
 
-    const isBlowout = !isTie && Math.max(m.team1Wins, m.team2Wins) >= 8;
+    const isBlowout = !isTie && Math.max(m.team1Wins, m.team2Wins) >= sport.blowoutWins;
 
     // Flag teams below the minimum IP threshold (forfeit pitching ratio cats)
-    const t1BelowIP = (m.team1.stats.IP || 0) < MIN_IP;
-    const t2BelowIP = (m.team2.stats.IP || 0) < MIN_IP;
+    const t1BelowIP = MIN_IP != null && (m.team1.stats.IP || 0) < MIN_IP;
+    const t2BelowIP = MIN_IP != null && (m.team2.stats.IP || 0) < MIN_IP;
 
     if (isTie) {
       return {
@@ -278,11 +251,12 @@ function scorePlayer(stats) {
 }
 
 /**
- * Score a pitcher's weekly performance using z-scores (pitching cats only).
+ * Score a player's weekly performance using z-scores over one group's
+ * categories (e.g. batting cats for batters, goalie cats for goalies).
  */
-function scorePitcher(stats) {
+function scoreCats(stats, cats) {
   let score = 0;
-  for (const cat of PITCHING_CATS) {
+  for (const cat of cats) {
     const val = stats[cat.name];
     if (val == null || isNaN(val)) continue;
     const dist = _statDistributions[cat.name];
@@ -316,10 +290,9 @@ function hasRealStats(stats) {
 // worst-pickup pool — a 1-day cold stat line isn't a roastable decision.
 function computeDaysRostered(addTimestampSec, weekEndStr) {
   if (!addTimestampSec || !weekEndStr) return null;
-  const ET_OFFSET_MS = -4 * 3600 * 1000; // EDT; close enough for April–Oct MLB season
-  const addEt = new Date(addTimestampSec * 1000 + ET_OFFSET_MS);
-  const startDay = Date.UTC(addEt.getUTCFullYear(), addEt.getUTCMonth(), addEt.getUTCDate())
-    + (addEt.getUTCHours() >= 12 ? 86400000 : 0);
+  const addMs = addTimestampSec * 1000;
+  const [ay, am, ad] = etDate(addMs).split('-').map(Number);
+  const startDay = Date.UTC(ay, am - 1, ad) + (etHour(addMs) >= 12 ? 86400000 : 0);
   const [y, m, d] = weekEndStr.split('-').map(Number);
   const weekEndDay = Date.UTC(y, m - 1, d);
   return Math.max(0, Math.round((weekEndDay - startDay) / 86400000) + 1);
@@ -362,7 +335,7 @@ function findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd
         fantasyTeam: teamName,
         stats: playerStats,
         score: scorePlayer(playerStats),
-        isPitcher: PITCHING_POSITIONS.some(p => added.position.includes(p)),
+        group: sport.groupForPosition(added.position),
         timestamp: tx.timestamp,
         daysRostered: computeDaysRostered(tx.timestamp, weekEnd),
       });
@@ -378,7 +351,7 @@ function findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd
 function analyzeBestPickup(transactions, weeklyStats, teamNames, weekEnd) {
   const added = findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd);
   const sorted = added
-    .filter(p => !p.isPitcher)
+    .filter(p => p.group === sport.pickupGroup)
     .sort((a, b) => b.score - a.score);
 
   return {
@@ -419,15 +392,16 @@ function analyzeWorstPickup(transactions, weeklyStats, teamNames, weekEnd) {
 }
 
 /**
- * Best pitcher stream — best pitching add of the week.
- * A stream implies a starting pitcher: require 5+ IP so tiny relief
- * lines (2 IP, ERA 0.00) can't dominate the z-score ranking.
+ * Best stream — best pitcher (baseball) or goalie (hockey) add of the week.
+ * The sport's streamQualifies sets a workload floor (5+ IP, ~a full start in
+ * net) so tiny relief lines can't dominate the ratio-stat z-scores.
  */
 function analyzeBestStream(transactions, weeklyStats, teamNames, weekEnd) {
   const added = findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd);
+  const streamCats = sport.playerGroups.find(g => g.key === sport.streamGroup).cats;
   const pitchers = added
-    .filter(p => p.isPitcher && Number(p.stats.IP) >= 5)
-    .sort((a, b) => scorePitcher(b.stats) - scorePitcher(a.stats));
+    .filter(p => p.group === sport.streamGroup && sport.streamQualifies(p.stats))
+    .sort((a, b) => scoreCats(b.stats, streamCats) - scoreCats(a.stats, streamCats));
 
   return {
     top: pitchers.slice(0, 3).map(p => ({
@@ -495,7 +469,7 @@ function analyzeTransactionDesk(transactions, weeklyStats, teamNames, standings,
   }
 
   // Merge manually-entered losing bids (from data/faab-bids.json)
-  const faabBidsFile = path.join(__dirname, 'data', 'faab-bids.json');
+  const faabBidsFile = path.join(league.paths.data, 'faab-bids.json');
   if (faabClaims.length > 0 && fs.existsSync(faabBidsFile)) {
     const allBids = JSON.parse(fs.readFileSync(faabBidsFile, 'utf-8'));
     const weekBids = allBids[String(week)] || [];
@@ -605,66 +579,42 @@ function analyzePowerRankings(standings, scoreboard, teamNames) {
 }
 
 /**
- * Score a batter's weekly performance using z-scores (batting cats only).
- */
-function scoreBatter(stats) {
-  let score = 0;
-  for (const cat of BATTING_CATS) {
-    const val = stats[cat.name];
-    if (val == null || isNaN(val)) continue;
-    const dist = _statDistributions[cat.name];
-    if (!dist) continue;
-
-    let z = (val - dist.mean) / dist.std;
-    if (cat.inverted) z = -z;
-    score += z;
-  }
-  return score;
-}
-
-/**
  * Players of the Week — standout individual performances across all rosters.
- * Finds the top batters and top pitchers by z-score from weekly roster stats.
- * Excludes bench (BN) and injured list (IL/IL+) players.
+ * Finds the top players in each of the sport's player groups (batters and
+ * pitchers, or skaters and goalies) by z-score from weekly roster stats.
+ * Excludes bench and injured-list players.
+ * Returns { <group>: top, <group>RunnersUp: [...] } for each group.
  */
 function analyzePlayersOfTheWeek(weeklyRosters) {
-  if (!weeklyRosters) return { batters: [], pitchers: [] };
+  const result = {};
+  const pools = {};
+  for (const g of sport.playerGroups) {
+    pools[g.key] = [];
+  }
 
-  const batters = [];
-  const pitchers = [];
-
-  for (const [teamKey, roster] of Object.entries(weeklyRosters)) {
+  for (const [teamKey, roster] of Object.entries(weeklyRosters || {})) {
     if (isAbandonedTeam(teamKey)) continue;
     for (const player of roster.players) {
       // Skip bench and IL players — only count active lineup contributions
-      if (['BN', 'IL', 'IL+'].includes(player.selectedPosition)) continue;
+      if (sport.inactiveSlots.includes(player.selectedPosition)) continue;
 
       const stats = player.stats || {};
       if (Object.keys(stats).length === 0) continue;
       if (!hasRealStats(stats)) continue;
 
-      const isPitcher = PITCHING_POSITIONS.some(p => player.displayPosition.includes(p));
+      const group = sport.playerGroups.find(g => g.key === sport.groupForPosition(player.displayPosition));
+      if (group.qualifies && !group.qualifies(stats)) continue;
 
-      const entry = {
+      pools[group.key].push({
         name: player.name,
         team: player.team,
         position: player.displayPosition,
         fantasyTeam: roster.name,
         stats,
-      };
-
-      if (isPitcher) {
-        entry.score = scorePitcher(stats);
-        pitchers.push(entry);
-      } else {
-        entry.score = scoreBatter(stats);
-        batters.push(entry);
-      }
+        score: scoreCats(stats, group.cats),
+      });
     }
   }
-
-  batters.sort((a, b) => b.score - a.score);
-  pitchers.sort((a, b) => b.score - a.score);
 
   const mapOut = p => ({
     name: p.name,
@@ -674,73 +624,10 @@ function analyzePlayersOfTheWeek(weeklyRosters) {
     stats: p.stats,
   });
 
-  return {
-    batter: batters.length > 0 ? mapOut(batters[0]) : null,
-    batterRunnersUp: batters.slice(1, 4).map(mapOut),
-    pitcher: pitchers.length > 0 ? mapOut(pitchers[0]) : null,
-    pitcherRunnersUp: pitchers.slice(1, 4).map(mapOut),
-  };
-}
-
-/**
- * Compute rolling batting stats from recent weekly roster snapshots.
- * Looks back up to ROLLING_WEEKS weeks and sums H/AB to compute rolling AVG/OBP.
- * Returns { playerKey: { hits, ab, avg, obp, weeks } }
- */
-const ROLLING_WEEKS = 3;
-
-function computeRecentPlayerStats(currentWeek) {
-  const playerTotals = {};
-  let weeksFound = 0;
-
-  for (let w = currentWeek; w >= 1 && w > currentWeek - ROLLING_WEEKS; w--) {
-    const weekDir = path.join(__dirname, 'snapshots', `week-${String(w).padStart(2, '0')}`);
-    const weeklyRosters = loadSnapshot(weekDir, 'weekly-rosters.json');
-    if (!weeklyRosters) continue;
-    weeksFound++;
-
-    for (const roster of Object.values(weeklyRosters)) {
-      for (const player of roster.players) {
-        const hab = player.stats?.['H/AB'];
-        if (hab == null) continue;
-        // H/AB can be a number (from parseYahooStats) or string "5/20"
-        let hits = 0, ab = 0;
-        if (typeof hab === 'string' && hab.includes('/')) {
-          const parts = hab.split('/');
-          hits = parseInt(parts[0]) || 0;
-          ab = parseInt(parts[1]) || 0;
-        }
-        if (ab === 0) continue;
-
-        if (!playerTotals[player.playerKey]) {
-          playerTotals[player.playerKey] = { hits: 0, ab: 0, obpNumer: 0, obpDenom: 0 };
-        }
-        playerTotals[player.playerKey].hits += hits;
-        playerTotals[player.playerKey].ab += ab;
-
-        // For OBP: use weekly OBP × PA as a rough weighted average
-        const obp = player.stats?.OBP;
-        if (obp != null && !isNaN(obp)) {
-          // Approximate PA ≈ AB * 1.1 (rough)
-          const pa = Math.round(ab * 1.1);
-          playerTotals[player.playerKey].obpNumer += obp * pa;
-          playerTotals[player.playerKey].obpDenom += pa;
-        }
-      }
-    }
-  }
-
-  // Compute rolling averages
-  const result = {};
-  for (const [key, totals] of Object.entries(playerTotals)) {
-    if (totals.ab < 1) continue;
-    result[key] = {
-      hits: totals.hits,
-      ab: totals.ab,
-      avg: totals.hits / totals.ab,
-      obp: totals.obpDenom > 0 ? totals.obpNumer / totals.obpDenom : 0,
-      weeks: weeksFound,
-    };
+  for (const g of sport.playerGroups) {
+    const pool = pools[g.key].sort((a, b) => b.score - a.score);
+    result[g.key] = pool.length > 0 ? mapOut(pool[0]) : null;
+    result[`${g.key}RunnersUp`] = pool.slice(1, 4).map(mapOut);
   }
   return result;
 }
@@ -751,7 +638,7 @@ function computeRecentPlayerStats(currentWeek) {
  * roster dead weight, same-player carousel, IL hoarding.
  * Only included if there's material worth roasting.
  */
-function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNames, recentPlayerStats, dailySnapshots, scoreboard, gameStarts) {
+function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNames, week, dailySnapshots, scoreboard, gameStarts) {
   const roasts = [];
 
   // 1. Benched players who produced — uses daily roster snapshots for accuracy.
@@ -762,7 +649,7 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
   if (dailySnapshots && dailySnapshots.length > 0 && weeklyRosters) {
     // Build a lookup: "playerKey|teamKey" → add timestamp (Unix seconds)
     const addTimestamps = {};
-    const addedPlayerTeams = {}; // playerKey → MLB team abbrev at time of add
+    const addedPlayerTeams = {}; // playerKey → pro team abbrev at time of add
     for (const tx of transactions) {
       if (tx.type !== 'add' && tx.type !== 'add/drop') continue;
       for (const p of tx.players) {
@@ -771,7 +658,7 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
         // Keep earliest add timestamp if multiple
         if (!addTimestamps[key] || tx.timestamp < addTimestamps[key]) {
           addTimestamps[key] = tx.timestamp;
-          addedPlayerTeams[key] = p.team; // MLB team abbreviation
+          addedPlayerTeams[key] = p.team; // pro team abbreviation
         }
       }
     }
@@ -794,7 +681,7 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
           }
           benchDays[key].totalDays++;
           const hadStats = player.stats && Object.values(player.stats).some(v => typeof v === 'number' && v !== 0);
-          if (player.selectedPosition === 'BN') {
+          if (player.selectedPosition === sport.benchSlot) {
             benchDays[key].daysOnBench++;
             if (hadStats) {
               // Check if the player was added after their game started on this day.
@@ -802,8 +689,8 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
               const addTs = addTimestamps[key];
               let couldHaveStarted = true;
               if (addTs) {
-                const mlbTeam = addedPlayerTeams[key];
-                const gameStartTs = mlbTeam && gameStarts?.get(`${mlbTeam}|${snap.date}`);
+                const proTeam = addedPlayerTeams[key];
+                const gameStartTs = proTeam && gameStarts?.get(`${proTeam}|${snap.date}`);
                 if (gameStartTs) {
                   // Player was added after their game started — can't be benched
                   couldHaveStarted = addTs < gameStartTs;
@@ -839,48 +726,11 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
           benchStats[k] = (benchStats[k] || 0) + v;
         }
       }
-      // Drop daily ratio stats (AVG, OBP, ERA, WHIP, K/BB) — they can't be summed
-      delete benchStats['AVG'];
-      delete benchStats['OBP'];
-      delete benchStats['ERA'];
-      delete benchStats['WHIP'];
-      delete benchStats['K/BB'];
-      // Daily H/AB parses to a bare hits count (the AB half is dropped), so the
-      // sum is just hits. Label it H — "H/AB: 5" reads as a ratio and tempts
-      // writers to invent an at-bat denominator.
-      if (benchStats['H/AB'] != null) {
-        benchStats['H'] = benchStats['H/AB'];
-        delete benchStats['H/AB'];
-      }
-
-      // Use counting-stat thresholds instead of z-scores (which are calibrated for
-      // full-week totals and would filter out every single-day bench blunder).
-      const isBatter = (benchStats['H'] != null || benchStats['R'] != null);
-      const isPitcher = (benchStats['IP'] != null || benchStats['K'] != null);
-      let notable = false;
-      if (isBatter) {
-        notable = (benchStats['HR'] >= 1 || benchStats['RBI'] >= 3 || benchStats['SB'] >= 2 || benchStats['R'] >= 3);
-      } else if (isPitcher) {
-        // QS or SV+H on any benched day (SV+H caps at 1 per day).
-        // For ratio check, use per-day ERA/WHIP from the raw daily stats
-        // (not the summed benchStats where ratios were dropped).
-        // A start with ERA < 3 and WHIP < 1.2 is always worth starting.
-        notable = (benchStats['QS'] >= 1 || benchStats['SV+H'] >= 1);
-        if (!notable) {
-          notable = info.benchedDayStats.some(day =>
-            day['IP'] > 0 && day['ERA'] != null && day['WHIP'] != null
-            && day['ERA'] < 3 && day['WHIP'] < 1.2
-          );
-        }
-      }
-      if (!notable) continue;
-
-      // Rank by simple fantasy points (z-scores are calibrated for weekly totals
-      // and produce nonsensical rankings for daily counting stats).
-      const score = (benchStats['R'] || 0) * 1 + (benchStats['HR'] || 0) * 4
-        + (benchStats['RBI'] || 0) * 1 + (benchStats['SB'] || 0) * 2
-        + (benchStats['K'] || 0) * 1 + (benchStats['QS'] || 0) * 5
-        + (benchStats['SV+H'] || 0) * 3;
+      // Drop per-day ratio stats that can't be summed, then judge the benching
+      // with counting-stat thresholds (z-scores are calibrated for full weeks)
+      sport.normalizeBenchStats(benchStats);
+      if (!sport.isNotableBenching(benchStats, info.benchedDayStats)) continue;
+      const score = sport.benchScore(benchStats);
 
       const weeklyPlayer = weeklyStats[info.playerKey];
       const statLine = Object.entries(benchStats)
@@ -909,32 +759,10 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
         description: `Benched ${info.name} on ${benchDesc} while he put up ${statLine}`,
       });
     }
-  } else if (weeklyRosters) {
-    // Fallback: use end-of-week roster positions (less accurate)
-    for (const roster of Object.values(weeklyRosters)) {
-      for (const player of roster.players) {
-        if (player.selectedPosition !== 'BN') continue;
-        const score = scorePlayer(player.stats);
-        if (score <= 2) continue;
-
-        const statLine = Object.entries(player.stats)
-          .filter(([k, v]) => !isNaN(v) && v !== 0)
-          .map(([k, v]) => `${k}: ${typeof v === 'number' && v % 1 !== 0 ? v.toFixed(3) : v}`)
-          .join(', ');
-
-        roasts.push({
-          type: 'benched',
-          playerName: player.name,
-          playerTeam: player.team,
-          position: player.displayPosition,
-          fantasyTeam: teamNames[roster.teamKey] || roster.name,
-          stats: player.stats,
-          score,
-          description: `Left ${player.name} on the bench while he put up ${statLine}`,
-        });
-      }
-    }
   }
+  // No daily snapshots → no bench blunders. Weekly roster positions are the
+  // *current* lineup (Yahoo never returns historical positions), so treating
+  // them as the week's lineup roasts stars who were simply off that day.
 
   // 2. Dropped players who had great weeks after being dropped
   const drops = transactions.filter(tx =>
@@ -1003,45 +831,14 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
     }
   }
 
-  // 4. Roster dead weight — players with terrible rolling stats
-  //    Uses recent weekly snapshots (last 3 weeks) to compute rolling averages.
-  //    Falls back to season stats if not enough weekly data.
-  if (rosters) {
-    for (const roster of Object.values(rosters)) {
-      for (const player of roster.players) {
-        const rolling = recentPlayerStats?.[player.playerKey];
-        if (rolling && rolling.ab >= 20 && rolling.avg < 0.150) {
-          roasts.push({
-            type: 'dead_weight',
-            playerName: player.name,
-            playerTeam: player.team,
-            position: player.displayPosition,
-            fantasyTeam: teamNames[roster.teamKey] || roster.name,
-            stats: { AVG: rolling.avg, OBP: rolling.obp, AB: rolling.ab, weeks: rolling.weeks },
-            score: 0,
-            description: `Still rostering ${player.name} who is hitting ${rolling.avg.toFixed(3)} over the last ${rolling.weeks} week${rolling.weeks > 1 ? 's' : ''}`,
-          });
-        } else if (!rolling && player.stats?.AVG != null && player.stats.AVG < 0.150 && player.stats['H/AB']) {
-          // Fallback to season stats if no weekly data
-          const hab = String(player.stats['H/AB']);
-          const parts = hab.split('/');
-          const ab = parts.length === 2 ? parseInt(parts[1]) : 0;
-          if (ab >= 30) {
-            roasts.push({
-              type: 'dead_weight',
-              playerName: player.name,
-              playerTeam: player.team,
-              position: player.displayPosition,
-              fantasyTeam: teamNames[roster.teamKey] || roster.name,
-              stats: { AVG: player.stats.AVG, OBP: player.stats.OBP, AB: ab },
-              score: 0,
-              description: `Still rostering ${player.name} who is hitting ${player.stats.AVG.toFixed(3)} on the season`,
-            });
-          }
-        }
-      }
-    }
-  }
+  // 4. Roster dead weight — players with terrible rolling stats (sport-specific:
+  //    sub-.150 hitters in baseball, pointless skaters / leaky goalies in hockey)
+  roasts.push(...sport.findDeadWeight({
+    rosters,
+    teamNames,
+    week,
+    loadWeeklyRosters: w => loadSnapshot(league.weekDir(w), 'weekly-rosters.json'),
+  }));
 
   // 4. Same-player carousel — add/dropped the same player multiple times in one week
   const playerTxCount = {};
@@ -1067,11 +864,12 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
     }
   }
 
-  // 5. IL hoarding — teams carrying 3+ IL players
-  if (weeklyRosters) {
+  // 5. IL hoarding — teams carrying 3+ IL players (off where the league's own
+  //    injured slots already allow that many)
+  if (weeklyRosters && sport.injuredHoardThreshold) {
     for (const roster of Object.values(weeklyRosters)) {
-      const ilPlayers = roster.players.filter(p => p.selectedPosition === 'IL' || p.selectedPosition === 'IL+');
-      if (ilPlayers.length >= 3) {
+      const ilPlayers = roster.players.filter(p => sport.injuredSlots.includes(p.selectedPosition));
+      if (ilPlayers.length >= sport.injuredHoardThreshold) {
         const names = ilPlayers.map(p => p.name).join(', ');
         roasts.push({
           type: 'il_hoarder',
@@ -1088,7 +886,7 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
   }
 
   // 6. Below IP minimum — teams that didn't pitch enough innings and forfeited ALL pitching categories
-  if (scoreboard) {
+  if (scoreboard && MIN_IP != null) {
     for (const m of scoreboard) {
       const opponent = (team) => team === m.team1 ? m.team2 : m.team1;
       for (const team of [m.team1, m.team2]) {
@@ -1096,7 +894,7 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
         if (ip < MIN_IP) {
           const opp = opponent(team);
           // Figure out which pitching cats they would have won if they'd hit the minimum
-          const pitchingCats = PITCHING_CATS.map(c => c.name);
+          const pitchingCats = sport.categoryGroups.find(g => g.key === 'pitching').cats.map(c => c.name);
           const lowerIsBetter = { ERA: true, WHIP: true };
           const wouldHaveWon = pitchingCats.filter(cat => {
             const teamVal = team.stats?.[cat];
@@ -1269,7 +1067,7 @@ function analyzeStorylines(dailySnapshots, finalScoreboard, teamNames) {
         arc: arcSummary,
         drama: 4 + (biggestSwing?.swing || 0),
       });
-    } else if (wireToWire && (matchup.team1Wins >= 8 || matchup.team2Wins >= 8)) {
+    } else if (wireToWire && (matchup.team1Wins >= sport.blowoutWins || matchup.team2Wins >= sport.blowoutWins)) {
       storylines.push({
         type: 'wire_to_wire',
         winner: winnerName,
@@ -1300,7 +1098,7 @@ function analyzeStorylines(dailySnapshots, finalScoreboard, teamNames) {
 // --- Main analysis ---
 
 async function analyze(week) {
-  const snapshotDir = path.join(__dirname, 'snapshots', `week-${String(week).padStart(2, '0')}`);
+  const snapshotDir = league.weekDir(week);
 
   if (!fs.existsSync(snapshotDir)) {
     console.error(`No snapshot found for week ${week} at ${snapshotDir}`);
@@ -1320,7 +1118,7 @@ async function analyze(week) {
   const isFinals = !!meta?.isFinals && fullScoreboard.some(m => FINALS_ROUNDS.has(m.round));
 
   // Try loading previous week's standings for movers
-  const prevDir = path.join(__dirname, 'snapshots', `week-${String(week - 1).padStart(2, '0')}`);
+  const prevDir = league.weekDir(week - 1);
   const prevStandings = loadSnapshot(prevDir, 'standings.json');
 
   const teamNames = buildTeamNames(rosters, standings, scoreboard);
@@ -1355,13 +1153,13 @@ async function analyze(week) {
 
   const storylines = analyzeStorylines(dailySnapshots_, scoreboard, teamNames);
 
-  // Fetch MLB game start times for bench detection accuracy
+  // Fetch pro game start times for bench detection accuracy
   let gameStarts = new Map();
   if (meta?.weekStart && meta?.weekEnd) {
-    gameStarts = await fetchGameStartTimes(meta.weekStart, meta.weekEnd);
+    gameStarts = await sport.fetchGameStartTimes(meta.weekStart, meta.weekEnd);
   }
 
-  console.log(`Analyzing Week ${week}...`);
+  console.log(`Analyzing ${league.id} Week ${week}...`);
   console.log(`  ${scoreboard.length} matchups, ${transactions.length} transactions, ${standings.length} teams, ${Object.keys(weeklyStats).length} players with weekly stats`);
   if (dailySnapshots_.length > 0) {
     const hasRosters = dailySnapshots_.some(s => s.rosters);
@@ -1375,7 +1173,7 @@ async function analyze(week) {
 
   const analysis = {
     week,
-    leagueName: meta?.leagueName || process.env.LEAGUE_NAME || "Fantasy Baseball League",
+    leagueName: meta?.leagueName || league.leagueName() || league.defaultName,
     weekStart: meta?.weekStart,
     weekEnd: meta?.weekEnd,
     playoffs: {
@@ -1397,7 +1195,7 @@ async function analyze(week) {
       // would just restate the regular-season table, so the finals skip them.
       standingsMovers: isFinals ? { available: false, movers: [] } : analyzeStandingsMovers(standings, prevStandings, teamNames),
       powerRankings: isFinals ? [] : analyzePowerRankings(standings, scoreboard, teamNames),
-      roasts: analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNames, computeRecentPlayerStats(week), dailySnapshots_, scoreboard, gameStarts),
+      roasts: analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNames, week, dailySnapshots_, scoreboard, gameStarts),
     },
   };
 
@@ -1418,7 +1216,7 @@ if (require.main === module) {
 
   if (!week) {
     // Auto-detect from most recent snapshot
-    const snapshotsDir = path.join(__dirname, 'snapshots');
+    const snapshotsDir = league.paths.snapshots;
     if (!fs.existsSync(snapshotsDir)) {
       console.error('No snapshots directory found. Run collect.js first.');
       process.exit(1);

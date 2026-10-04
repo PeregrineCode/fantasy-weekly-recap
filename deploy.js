@@ -1,18 +1,21 @@
 /**
  * Deploy script — pushes built site to a separate public GitHub Pages repo.
  *
- * Usage: node deploy.js
+ * Usage: node deploy.js [--league hockey]
  *
- * Target repo is configured via DEPLOY_REPO env var (required).
+ * Target repo is configured via DEPLOY_REPO (baseball) or HOCKEY_DEPLOY_REPO
+ * (hockey) env var (required).
  */
 
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const { activeLeague } = require('./lib/league');
 
-const SITE_DIR = path.join(__dirname, 'site');
-const DEPLOY_DIR = path.join(__dirname, '.deploy');
+const league = activeLeague();
+const SITE_DIR = league.paths.site;
+const DEPLOY_DIR = league.paths.deploy;
 
 function git(args, opts = {}) {
   console.log(`  $ git ${args.join(' ')}`);
@@ -25,9 +28,9 @@ function git(args, opts = {}) {
 }
 
 function deploy() {
-  const DEPLOY_REPO = process.env.DEPLOY_REPO;
+  const DEPLOY_REPO = league.deployRepo();
   if (!DEPLOY_REPO) {
-    console.error('DEPLOY_REPO env var required (e.g., "your-user/your-recap-site")');
+    console.error(`${league.envPrefix}DEPLOY_REPO env var required (e.g., "your-user/your-recap-site")`);
     process.exit(1);
   }
   const REPO_URL = `https://github.com/${DEPLOY_REPO}.git`;
@@ -49,7 +52,7 @@ function deploy() {
       git(['clone', REPO_URL, DEPLOY_DIR]);
     } catch (e) {
       console.error(`Failed to clone ${REPO_URL}. Make sure the repo exists:`);
-      console.error(`  gh repo create ${DEPLOY_REPO} --public --description "Weekly fantasy baseball league recaps"`);
+      console.error(`  gh repo create ${DEPLOY_REPO} --public --description "Weekly fantasy ${league.sport} league recaps"`);
       process.exit(1);
     }
   }
@@ -64,7 +67,7 @@ function deploy() {
   copyRecursive(SITE_DIR, DEPLOY_DIR);
 
   // Include reference file for transparency
-  const refSrc = path.join(__dirname, 'prompts', 'reference.md');
+  const refSrc = path.join(league.paths.prompts, 'reference.md');
   if (fs.existsSync(refSrc)) {
     fs.copyFileSync(refSrc, path.join(DEPLOY_DIR, 'reference.md'));
   }

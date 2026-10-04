@@ -2,7 +2,7 @@
  * Weekly data collector — fetches scoreboard, transactions, standings, rosters
  * from Yahoo Fantasy API and saves weekly snapshots.
  *
- * Usage: node collect.js [--week N]
+ * Usage: node collect.js [--week N] [--league hockey]
  */
 
 require('dotenv').config();
@@ -12,8 +12,11 @@ const { createClient } = require('yahoo-fantasy-api');
 const { fetchStandings, fetchAllRosters } = require('./lib/yahoo-fetch');
 const { parseYahooStats } = require('./lib/stat-categories');
 const { parseScoreboardResponse, labelPlayoffRounds } = require('./yahoo-helpers');
+const { activeLeague } = require('./lib/league');
+const { etMidnightUTC } = require('./lib/et');
 
-const LEAGUE_ID = process.env.YAHOO_MLB_LEAGUE_ID || process.env.YAHOO_LEAGUE_ID;
+const league = activeLeague();
+const LEAGUE_ID = league.yahooLeagueId();
 
 
 const { auth, client } = createClient({
@@ -215,16 +218,16 @@ async function collect(targetWeek) {
   }
 
   if (!LEAGUE_ID) {
-    console.error('Set YAHOO_MLB_LEAGUE_ID or YAHOO_LEAGUE_ID in .env');
+    console.error(`Set ${league.leagueIdEnv.join(' or ')} in .env`);
     process.exit(1);
   }
-  const gameKey = await client.resolveGameKey('mlb');
+  const gameKey = await client.resolveGameKey(league.gameCode);
   const leagueKey = client.leagueKey(gameKey, LEAGUE_ID);
 
   console.log('Fetching league metadata...');
   const meta = await fetchLeagueMeta(leagueKey);
   const week = targetWeek || Math.max(1, meta.currentWeek - 1);
-  console.log(`\nCollecting data for Week ${week} (current week: ${meta.currentWeek})`);
+  console.log(`\nCollecting ${league.id} data for Week ${week} (current week: ${meta.currentWeek})`);
 
   // Fetch scoreboard first — it carries Yahoo's true week boundaries, which
   // can span more than 7 days (e.g. the All-Star break week covers two
@@ -253,9 +256,9 @@ async function collect(targetWeek) {
 
   let weekStart, weekEnd;
   if (sbStart && sbEnd) {
-    // Anchor at 04:00 UTC (start of day ET) to match the arithmetic fallback
-    weekStart = new Date(sbStart + 'T04:00:00Z');
-    weekEnd = new Date(sbEnd + 'T04:00:00Z');
+    // Anchor at the start of day ET (DST-aware — hockey runs through EST)
+    weekStart = new Date(etMidnightUTC(sbStart));
+    weekEnd = new Date(etMidnightUTC(sbEnd));
   } else {
     // Fallback: compute a Mon-Sun range (week 1 can be a partial week).
     // Use start of day ET (04:00 UTC) for consistent boundaries regardless of server timezone
@@ -281,7 +284,7 @@ async function collect(targetWeek) {
     console.log(`  Warning: scoreboard did not include week_start/week_end; using computed ${weekStart.toISOString().split('T')[0]} – ${weekEnd.toISOString().split('T')[0]}`);
   }
 
-  const snapshotDir = path.join(__dirname, 'snapshots', `week-${String(week).padStart(2, '0')}`);
+  const snapshotDir = league.weekDir(week);
   fs.mkdirSync(snapshotDir, { recursive: true });
 
   // Save meta
@@ -315,7 +318,7 @@ async function collect(targetWeek) {
   const allTransactions = await fetchTransactions(leagueKey);
   // Filter to this week's transactions by timestamp
   const weekStartTs = Math.floor(weekStart.getTime() / 1000);
-  const weekEndTs = Math.floor(weekEnd.getTime() / 1000) + 86400; // include end day
+  const weekEndTs = Math.floor(weekEnd.getTime() / 1000) + 86400; // include end day (±1h across a DST switch)
   const weekTransactions = allTransactions.filter(
     tx => tx.timestamp >= weekStartTs && tx.timestamp < weekEndTs
   );

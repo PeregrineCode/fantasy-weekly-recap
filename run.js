@@ -7,6 +7,7 @@
  *   node run.js --week 3            # Specific week
  *   node run.js --skip-narrate      # Skip LLM generation (data + build only)
  *   node run.js --skip-deploy       # Skip pushing to GitHub Pages
+ *   node run.js --league hockey     # Any of the above for another league (default: baseball)
  */
 
 const { collect } = require('./collect');
@@ -14,6 +15,7 @@ const { analyze } = require('./analyze');
 const { narrate } = require('./narrate');
 const { build } = require('./build');
 const { deploy } = require('./deploy');
+const { activeLeague } = require('./lib/league');
 
 async function run() {
   const args = process.argv.slice(2);
@@ -30,7 +32,7 @@ async function run() {
   const skipDeploy = args.includes('--skip-deploy');
 
   const startTime = Date.now();
-  console.log(`\n=== Weekly Recap Pipeline ===`);
+  console.log(`\n=== Weekly Recap Pipeline (${activeLeague().id}) ===`);
   console.log(`Started: ${new Date().toISOString()}\n`);
 
   try {
