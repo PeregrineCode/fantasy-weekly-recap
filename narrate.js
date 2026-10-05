@@ -276,9 +276,9 @@ function promptPlayersOfTheWeek(segment) {
 function promptPowerRankings(rankings) {
   if (!rankings.length) return null;
   const data = rankings.map((t, i) =>
-    `${i + 1}. ${t.name} [${t.tier}] — ${t.record} (${t.pct.toFixed(3)}) — This week: ${t.weeklyResult} (${t.weeklyCatScore})`
+    `${i + 1}. ${t.name} [${t.tier}] — ${t.record} (${t.pct.toFixed(3).replace(/^0\./, '.')}) — This week: ${t.weeklyResult} (${t.weeklyCatScore})`
   ).join('\n');
-  return `Write the "${TITLE.rankings}". Rank every team explicitly #1 through #${rankings.length}, grouped by tier (Contenders, Solid, Mediocre, Rebuilding) with a brief intro per tier.\n\nFormat each team as its own entry: a bold header line, then the take. The header line must be exactly:\n**#N Team Name** — record (pct) — W/L/T, weekly category score\nExample: ${sport.narrative.rankingsExample}\nUse the records and weekly scores exactly as provided. Follow each header with a 1-2 sentence take as its own paragraph.\n\nRankings:\n${data}`;
+  return `Write the "${TITLE.rankings}". Rank every team explicitly #1 through #${rankings.length}, grouped by tier (Contenders, Solid, Mediocre, Rebuilding) with a brief intro per tier. Label each tier with bold text on its own line (e.g. **Contenders**), never a markdown heading — headings break the article's section structure.\n\nFormat each team as its own entry: a bold header line, then the take. The header line must be exactly:\n**#N Team Name** — record (pct) — W/L/T, weekly category score\nExample: ${sport.narrative.rankingsExample}\nUse the records and weekly scores exactly as provided. Follow each header with a 1-2 sentence take as its own paragraph.\n\nRankings:\n${data}`;
 }
 
 function promptBestPickup(segment) {
