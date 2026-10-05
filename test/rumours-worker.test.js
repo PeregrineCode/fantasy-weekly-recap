@@ -55,3 +55,45 @@ describe('rumours worker league tagging', () => {
     assert.equal((await worker.fetch(new Request('https://w/api/rumours?league=curling'), env)).status, 400);
   });
 });
+
+describe('rumours worker cron dispatch', () => {
+  const runCron = async (cron, env) => {
+    const calls = [];
+    const realFetch = global.fetch;
+    global.fetch = async (url, opts) => { calls.push({ url, opts }); return new Response(null, { status: 204 }); };
+    const pending = [];
+    try {
+      await worker.scheduled({ cron }, env, { waitUntil: p => pending.push(p) });
+      await Promise.all(pending);
+    } finally {
+      global.fetch = realFetch;
+    }
+    return calls;
+  };
+  const env = { GITHUB_DISPATCH_TOKEN: 'tok', GITHUB_REPO: 'me/repo' };
+
+  it('dispatches the nightly capture for its cron', async () => {
+    const calls = await runCron('7 4 * * *', env);
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].url, 'https://api.github.com/repos/me/repo/actions/workflows/hockey-nightly-positions.yml/dispatches');
+    assert.equal(calls[0].opts.headers.Authorization, 'Bearer tok');
+    assert.deepEqual(JSON.parse(calls[0].opts.body), { ref: 'master' });
+  });
+
+  it('dispatches the daily collect for its cron', async () => {
+    const calls = await runCron('23 11 * * *', env);
+    assert.match(calls[0].url, /hockey-daily-collect\.yml\/dispatches$/);
+  });
+
+  it('does nothing without a token', async () => {
+    assert.equal((await runCron('7 4 * * *', { GITHUB_REPO: 'me/repo' })).length, 0);
+  });
+
+  it('every cron in wrangler.toml has workflows mapped', async () => {
+    const toml = require('fs').readFileSync(path.join(__dirname, '..', 'rumours-worker', 'wrangler.toml'), 'utf-8');
+    const crons = JSON.parse(toml.match(/crons = (\[.*\])/)[1]);
+    for (const cron of crons) {
+      assert.ok((await runCron(cron, env)).length > 0, `cron "${cron}" dispatches nothing`);
+    }
+  });
+});

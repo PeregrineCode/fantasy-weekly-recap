@@ -111,7 +111,7 @@ Always use the current team name in your writing, never the key.
 |-----|---------|-------|
 | t.1 | Tom | |
 | t.2 | Derek | |
-| t.3 | David | |
+| t.3 | Dave | Returning this season after nearly 10 years away from the league |
 | t.4 | Ivan | |
 | t.5 | Matthew | |
 | t.6 | Jim | |

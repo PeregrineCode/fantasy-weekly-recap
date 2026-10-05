@@ -106,3 +106,21 @@ describe('shouldSkipCapture (daily-positions.js guard)', () => {
     assert.equal(shouldSkipCapture({}, onTime, D), null);
   });
 });
+
+describe('dailyCollectSkipReason', () => {
+  const { dailyCollectSkipReason } = require('../lib/nightly-trust');
+
+  it('proceeds on an on-time morning run with no snapshot', () => {
+    assert.equal(dailyCollectSkipReason(null, '2026-10-06T11:23:00Z'), null); // 7:23am EDT
+    assert.equal(dailyCollectSkipReason(null, '2026-12-08T11:23:00Z'), null); // 6:23am EST
+  });
+
+  it('skips when a snapshot already exists', () => {
+    assert.match(dailyCollectSkipReason({ date: '2026-10-05', collectedAt: 'x' }, '2026-10-06T11:23:00Z'), /already exists/);
+  });
+
+  it('skips a run delayed past noon ET', () => {
+    assert.match(dailyCollectSkipReason(null, '2026-10-05T19:38:00Z'), /past noon ET/); // 3:38pm EDT
+    assert.match(dailyCollectSkipReason(null, '2026-12-08T17:05:00Z'), /past noon ET/); // 12:05pm EST
+  });
+});

@@ -17,7 +17,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { createClient } = require('yahoo-fantasy-api');
-const { isNightlyCaptureTrustworthy, addDaysISO } = require('./lib/nightly-trust');
+const { isNightlyCaptureTrustworthy, addDaysISO, dailyCollectSkipReason } = require('./lib/nightly-trust');
 const { parseScoreboardResponse, parseTeamInfo, parseStatValues } = require('./yahoo-helpers');
 
 const { activeLeague } = require('./lib/league');
@@ -136,6 +136,22 @@ async function dailyCollect() {
   }
 
   console.log(`Daily collect: Week ${week}, stats for ${statsDate}`);
+
+  // Default runs only: never overwrite a snapshot or collect after today's games
+  // could have started (explicit --date backfills are a deliberate choice)
+  const isBackfill = dateArgIdx !== -1;
+  const snapshotPath = path.join(league.weekDir(week), 'daily', `${statsDate}.json`);
+  if (!isBackfill) {
+    let existing = null;
+    if (fs.existsSync(snapshotPath)) {
+      try { existing = JSON.parse(fs.readFileSync(snapshotPath, 'utf-8')); } catch (e) { existing = { date: statsDate, collectedAt: 'unknown' }; }
+    }
+    const skipReason = dailyCollectSkipReason(existing, new Date().toISOString());
+    if (skipReason) {
+      console.log(`Skipping collect: ${skipReason}`);
+      return;
+    }
+  }
 
   let scoreboard;
   try {

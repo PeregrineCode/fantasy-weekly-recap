@@ -5,3 +5,11 @@ compatibility_date = "2024-01-01"
 [[kv_namespaces]]
 binding = "RUMOURS"
 id = "4758befba9f24f3d8ea00d2c531c1161"
+
+# Start the recap repo's data-collection workflows on time (see worker.js
+# CRON_DISPATCHES; the two lists must match). Times are UTC.
+[triggers]
+crons = ["7 4 * * *", "43 5 * * *", "23 11 * * *"]
+
+[vars]
+GITHUB_REPO = "PeregrineCode/fantasy-weekly-recap"

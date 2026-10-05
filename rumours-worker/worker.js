@@ -14,6 +14,12 @@
  *
  * One worker serves every league's site. Rumours are tagged with their league;
  * entries from before league tagging have none and belong to baseball.
+ *
+ * Cron triggers (wrangler.toml) also start the recap repo's data-collection
+ * workflows via workflow_dispatch. GitHub's own `schedule` runs have arrived
+ * 7+ hours late, which misses the overnight lineup-capture window; dispatched
+ * runs start right away. Needs the GITHUB_DISPATCH_TOKEN secret (fine-grained
+ * PAT, Actions: read and write on the recap repo) and the GITHUB_REPO var.
  */
 
 const CORS_HEADERS = {
@@ -35,7 +41,43 @@ function json(data, status = 200) {
   });
 }
 
+// Cron expression (UTC, must match wrangler.toml) → workflow files to dispatch
+const CRON_DISPATCHES = {
+  '7 4 * * *': ['hockey-nightly-positions.yml'],   // 12:07am EDT / 11:07pm EST
+  '43 5 * * *': ['hockey-nightly-positions.yml'],  // 1:43am EDT / 12:43am EST (retry; script skips if already captured)
+  '23 11 * * *': ['hockey-daily-collect.yml'],     // 7:23am EDT / 6:23am EST
+};
+
+async function dispatchWorkflow(env, workflow) {
+  if (!env.GITHUB_DISPATCH_TOKEN || !env.GITHUB_REPO) {
+    console.error(`Cannot dispatch ${workflow}: GITHUB_DISPATCH_TOKEN or GITHUB_REPO is not set`);
+    return false;
+  }
+  const res = await fetch(`https://api.github.com/repos/${env.GITHUB_REPO}/actions/workflows/${workflow}/dispatches`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${env.GITHUB_DISPATCH_TOKEN}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      'User-Agent': 'trade-rumours-worker',
+    },
+    body: JSON.stringify({ ref: env.GITHUB_REF || 'master' }),
+  });
+  if (res.status !== 204) {
+    console.error(`Dispatch of ${workflow} failed: ${res.status} ${await res.text()}`);
+    return false;
+  }
+  console.log(`Dispatched ${workflow}`);
+  return true;
+}
+
 export default {
+  async scheduled(event, env, ctx) {
+    const workflows = CRON_DISPATCHES[event.cron] || [];
+    if (!workflows.length) console.error(`No workflows mapped to cron "${event.cron}"`);
+    ctx.waitUntil(Promise.all(workflows.map(wf => dispatchWorkflow(env, wf))));
+  },
+
   async fetch(request, env) {
     const url = new URL(request.url);
 
