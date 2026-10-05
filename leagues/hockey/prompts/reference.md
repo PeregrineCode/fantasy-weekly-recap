@@ -109,20 +109,20 @@ Always use the current team name in your writing, never the key.
 
 | Key | Manager | Notes |
 |-----|---------|-------|
-| t.1 | Tom | |
-| t.2 | Derek | |
+| t.1 | Tom | Original member. Won the first title (2017-18) with Crop Dusters; third in 2025-26 |
+| t.2 | Derek | Has run "50 in '07" since 2019. Two-time runner-up (2019-20, 2024-25), still chasing a first title; won the 2025-26 regular season |
 | t.3 | Dave | Returning this season after nearly 10 years away from the league |
-| t.4 | Ivan | |
-| t.5 | Matthew | |
-| t.6 | Jim | |
-| t.7 | Dennis | Defending champion (2025, as Mr. Roboto) |
-| t.8 | Andrew | |
-| t.9 | Mac | |
-| t.12 | Cole | |
-| t.13 | Jean-Christophe | |
-| t.14 | Jordan | |
-| t.15 | Tyler | |
-| t.16 | Jesse | 2025 runner-up |
+| t.4 | Ivan | 2023-24 champion; top-six finish in all four of his seasons |
+| t.5 | Matthew | Original member; has never finished higher than third |
+| t.6 | Jim | Two-time champion (2019-20, 2022-23). The 2019-20 title came without playoffs, when COVID ended the season; finished 10th in 2025-26 |
+| t.7 | Dennis | Three-time champion (2018-19, 2024-25, 2025-26), back-to-back defending champion going for a three-peat |
+| t.8 | Andrew | Finished 14th of 16 in 2025-26 |
+| t.9 | Mac | Original member; finished last in 2022-23 and 13th of 16 in 2025-26 |
+| t.12 | Cole | Third season in the league |
+| t.13 | Jean-Christophe | Third place in 2019-20; finished last in 2023-24 |
+| t.14 | Jordan | Second season in the league |
+| t.15 | Tyler | Second season; made the playoffs as a rookie |
+| t.16 | Jesse | Second season; reached the final as a rookie (2025-26 runner-up) |
 
 <!-- Fill in notes as the season progresses.
      Notes could include: draft strategy, rivalries, tendencies,
@@ -143,7 +143,18 @@ Always use the current team name in your writing, never the key.
 -->
 
 ### Historical Results
-- 2025 champion: Dennis (Mr. Roboto)
-- 2025 runner up: Jesse (In Cujo We Trust)
-- 2025 third place: Tom
-<!-- Earlier seasons: fill in from league history -->
+Seasons are labelled by Yahoo's season (the "2025" league is the 2025-26 NHL season). Results for 4.0 and 5.0 (2020-21, 2021-22) are not on record — never invent them, and say "since the records begin" rather than "in league history" for all-time claims.
+
+| Season | League | Champion | Runner-up |
+|--------|--------|----------|-----------|
+| 2025-26 | 9.0 | Dennis (Mr. Roboto) | Jesse (In Cujo We Trust) |
+| 2024-25 | 8.0 | Dennis (Mr. Roboto) | Derek (50 in '07) |
+| 2023-24 | 7.0 | Ivan (One Moore Day!) | Dennis (Yur a wizard Jarry) |
+| 2022-23 | 6.0 | Jim (Hughes Your Daddy's Daddy?) | Josh (I'm Jim's Daddy) |
+| 2021-22 | 5.0 | not on record | not on record |
+| 2020-21 | 4.0 | not on record | not on record |
+| 2019-20 | 3.0 | Jim (Mac Blew It!) — no playoffs; COVID ended the season and the regular-season leader was crowned | Derek (50 in '07) |
+| 2018-19 | 2.0 | Dennis (The Rocky Horror Aho) | Liam (Teemu Salami) |
+| 2017-18 | 1.0 | Tom (Crop Dusters) | Dennis (Dennis's Team) |
+
+Former managers no longer in the league (mention only in historical context): Josh, Liam, Jacob, Brock, Nathaniel, among others.
