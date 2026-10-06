@@ -81,7 +81,7 @@ Daily snapshots use a two-phase capture to get both accurate roster positions an
 
 **Bench blunder detection** in `analyze.js` only trusts positions from snapshots with `positionsSource: "nightly"`. Days without nightly position data are excluded from bench analysis to avoid false positives, and a week with no daily snapshots gets no bench blunders at all (weekly roster positions are the *current* lineup).
 
-**Hockey** runs the same two phases via `hockey-nightly-positions.yml` (four firings between 11:07 PM and 2:31 AM ET, chosen to land inside the locked window under both EDT and EST) and `hockey-daily-collect.yml` (~7 AM ET). The baseball workflows are disabled in the offseason; re-enable them in the GitHub UI when the MLB season starts.
+**Hockey** runs the same two phases via `hockey-nightly-positions.yml` and `hockey-daily-collect.yml`, but they have no GitHub `schedule` (it ran 7+ hours late). The rumours worker's Cloudflare cron triggers start them via `workflow_dispatch` at 12:07 AM + 1:43 AM and 7:23 AM EDT (one hour earlier in EST) — see `CRON_DISPATCHES` in `rumours-worker/worker.js`, which needs the `GITHUB_DISPATCH_TOKEN` secret (fine-grained PAT, Actions read/write, expires after the season). The baseball workflows are disabled in the offseason; re-enable them in the GitHub UI when the MLB season starts.
 
 ## Usage
 ```bash

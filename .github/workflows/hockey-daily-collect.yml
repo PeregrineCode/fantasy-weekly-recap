@@ -1,12 +1,10 @@
 name: Hockey Daily Stats Collection
 
 on:
-  schedule:
-    # 7:23am EDT / 6:23am EST. Collects finalized stats for yesterday (late
-    # West Coast games end by ~1am ET) and merges positions from the nightly
-    # capture for bench detection.
-    - cron: '23 11 * * *'
-  workflow_dispatch: # Allow manual trigger
+  # Started by the rumours worker's Cloudflare cron (rumours-worker/worker.js,
+  # CRON_DISPATCHES) at 7:23am EDT / 6:23am EST. Collects finalized stats for
+  # yesterday and merges positions from the nightly capture.
+  workflow_dispatch: # Cloudflare cron dispatch, or manual
 
 jobs:
   collect:

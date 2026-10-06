@@ -1,19 +1,12 @@
 name: Hockey Nightly Roster Position Capture
 
 on:
-  schedule:
-    # Hockey lineups lock per player at puck drop; the latest West Coast games
-    # start ~10:30pm ET. Capture after that and before Yahoo's ~3am ET
-    # fantasy-day rollover. The season spans EDT and EST, so every slot below
-    # lands inside that window under both offsets. As with baseball, GitHub
-    # delays scheduled runs by hours, so fire several times;
-    # daily-positions.js keeps the first trusted capture and refuses a
-    # post-rollover one.
-    - cron: '7 4 * * *'    # 12:07am EDT / 11:07pm EST
-    - cron: '47 4 * * *'   # 12:47am EDT / 11:47pm EST
-    - cron: '43 5 * * *'   # 1:43am EDT / 12:43am EST
-    - cron: '31 6 * * *'   # 2:31am EDT / 1:31am EST
-  workflow_dispatch: # Allow manual trigger
+  # Started by the rumours worker's Cloudflare cron (rumours-worker/worker.js,
+  # CRON_DISPATCHES) at 12:07am and 1:43am EDT (11:07pm / 12:43am EST).
+  # GitHub's own `schedule` ran 7+ hours late, past Yahoo's ~3am ET rollover.
+  # Hockey lineups lock at puck drop (latest ~10:30pm ET); daily-positions.js
+  # keeps the first trusted capture and refuses a post-rollover one.
+  workflow_dispatch: # Cloudflare cron dispatch, or manual
 
 jobs:
   capture:
