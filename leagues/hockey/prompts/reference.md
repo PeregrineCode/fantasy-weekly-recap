@@ -109,7 +109,7 @@ Always use the current team name in your writing, never the key.
 
 | Key | Manager | Notes |
 |-----|---------|-------|
-| t.1 | Tom | Original member. Won the first title (2017-18) with Crop Dusters; third in 2025-26 |
+| t.1 | Tom | Original member. Won the first title (2017-18) with Crop Dusters; third in 2025-26 | Drafted a team comprised almost entirely of anaheim ducks this year
 | t.2 | Derek | Has run "50 in '07" since 2019. Two-time runner-up (2019-20, 2024-25), still chasing a first title; won the 2025-26 regular season |
 | t.3 | Dave | Returning this season after nearly 10 years away from the league |
 | t.4 | Ivan | 2023-24 champion; top-six finish in all four of his seasons |
