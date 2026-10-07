@@ -1,0 +1,1361 @@
+{
+  "date": "2026-10-06",
+  "collectedAt": "2026-10-07T04:08:33.082Z",
+  "week": 2,
+  "positions": {
+    "477.l.48642.t.1": {
+      "teamKey": "477.l.48642.t.1",
+      "name": "Ducks on the Pond 🦆",
+      "players": [
+        {
+          "playerKey": "477.p.9269",
+          "name": "Juraj Slafkovský",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.7267",
+          "name": "Jesper Bratt",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.8648",
+          "name": "Jack Quinn",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.33674",
+          "name": "Maxim Shabanov",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.7066",
+          "name": "Mason Marchment",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.8661",
+          "name": "Egor Chinakhov",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.33425",
+          "name": "Porter Martone",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.5686",
+          "name": "Hampus Lindholm",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.30154",
+          "name": "Jackson LaCombe",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.32779",
+          "name": "Beckett Sennecke",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.31759",
+          "name": "Cutter Gauthier",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.30545",
+          "name": "Leo Carlsson",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.4969",
+          "name": "Mikael Granlund",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.8287",
+          "name": "Trevor Zegras",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.8881",
+          "name": "Kent Johnson",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.6890",
+          "name": "Troy Terry",
+          "selectedPosition": "IR"
+        },
+        {
+          "playerKey": "477.p.8645",
+          "name": "Jake Sanderson",
+          "selectedPosition": "IR+"
+        },
+        {
+          "playerKey": "477.p.30544",
+          "name": "Connor Bedard",
+          "selectedPosition": "IR+"
+        },
+        {
+          "playerKey": "477.p.9238",
+          "name": "Brandon Bussi",
+          "selectedPosition": "G"
+        },
+        {
+          "playerKey": "477.p.5057",
+          "name": "Scott Wedgewood",
+          "selectedPosition": "G"
+        }
+      ]
+    },
+    "477.l.48642.t.2": {
+      "teamKey": "477.l.48642.t.2",
+      "name": "50 in ‘07",
+      "players": [
+        {
+          "playerKey": "477.p.33428",
+          "name": "Anton Frondell",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.6745",
+          "name": "Dylan Strome",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.7854",
+          "name": "Kiefer Sherwood",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.6877",
+          "name": "Kirill Kaprizov",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.30547",
+          "name": "Will Smith",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.8699",
+          "name": "Will Cuylle",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.32773",
+          "name": "Zayne Parekh",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.7519",
+          "name": "Cale Makar",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.5685",
+          "name": "Morgan Rielly",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.5992",
+          "name": "Josh Morrissey",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.6728",
+          "name": "Artemi Panarin",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "477.p.33913",
+          "name": "Ivar Stenberg",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.8650",
+          "name": "Cole Perfetti",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.30550",
+          "name": "Ryan Leonard",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.7124",
+          "name": "Jakob Chychrun",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.9277",
+          "name": "Matt Savoie",
+          "selectedPosition": "IR+"
+        },
+        {
+          "playerKey": "477.p.8004",
+          "name": "Joel Hofer",
+          "selectedPosition": "G"
+        },
+        {
+          "playerKey": "477.p.9118",
+          "name": "Jet Greaves",
+          "selectedPosition": "G"
+        }
+      ]
+    },
+    "477.l.48642.t.3": {
+      "teamKey": "477.l.48642.t.3",
+      "name": "Oscar Meier Wiener",
+      "players": [
+        {
+          "playerKey": "477.p.5431",
+          "name": "Vincent Trocheck",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.6381",
+          "name": "Dylan Larkin",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.7961",
+          "name": "Jack McBain",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.6751",
+          "name": "Timo Meier",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.5696",
+          "name": "Tom Wilson",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.4471",
+          "name": "Steven Stamkos",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.6798",
+          "name": "Vince Dunn",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.5232",
+          "name": "Jared Spurgeon",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.7905",
+          "name": "Quinn Hughes",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.6795",
+          "name": "Rasmus Andersson",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.30139",
+          "name": "Alex Laferriere",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "477.p.5370",
+          "name": "Dougie Hamilton",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.7554",
+          "name": "Jason Robertson",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.7527",
+          "name": "Martin Necas",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.7930",
+          "name": "Mattias Samuelsson",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.6758",
+          "name": "Mathew Barzal",
+          "selectedPosition": "IR"
+        },
+        {
+          "playerKey": "477.p.6486",
+          "name": "Igor Shesterkin",
+          "selectedPosition": "G"
+        },
+        {
+          "playerKey": "477.p.7626",
+          "name": "Jeremy Swayman",
+          "selectedPosition": "G"
+        }
+      ]
+    },
+    "477.l.48642.t.4": {
+      "teamKey": "477.l.48642.t.4",
+      "name": "Goon City Grifters",
+      "players": [
+        {
+          "playerKey": "477.p.5368",
+          "name": "Mark Scheifele",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.6777",
+          "name": "Sebastian Aho",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.5928",
+          "name": "Anders Lee",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.6480",
+          "name": "Viktor Arvidsson",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.7114",
+          "name": "Matthew Tkachuk",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.30155",
+          "name": "Jackson Blake",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.7936",
+          "name": "Alexander Romanov",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.30905",
+          "name": "Alexander Nikishin",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.6901",
+          "name": "Vladislav Gavrikov",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.5010",
+          "name": "Justin Faulk",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.5999",
+          "name": "Anthony Mantha",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "477.p.5391",
+          "name": "Rickard Rakell",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.6748",
+          "name": "Pavel Zacha",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.5425",
+          "name": "Nikita Kucherov",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.5986",
+          "name": "Darnell Nurse",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.8369",
+          "name": "Aliaksei Protas",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.6749",
+          "name": "Ivan Provorov",
+          "selectedPosition": "IR"
+        },
+        {
+          "playerKey": "477.p.5699",
+          "name": "Andrei Vasilevskiy",
+          "selectedPosition": "G"
+        },
+        {
+          "playerKey": "477.p.7089",
+          "name": "Alex Lyon",
+          "selectedPosition": "IR+"
+        }
+      ]
+    },
+    "477.l.48642.t.5": {
+      "teamKey": "477.l.48642.t.5",
+      "name": "Mackin’ a Drai Hard",
+      "players": [
+        {
+          "playerKey": "477.p.6390",
+          "name": "Jared McCann",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.6797",
+          "name": "Yakov Trenin",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.6753",
+          "name": "Lawson Crouse",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.30184",
+          "name": "Easton Cowan",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.30574",
+          "name": "Gabe Perreault",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.8331",
+          "name": "Nick Robertson",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.7174",
+          "name": "Adam Fox",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.5765",
+          "name": "Esa Lindell",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.5365",
+          "name": "Adam Larsson",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.5329",
+          "name": "Mattias Ekholm",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.4681",
+          "name": "John Tavares",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "477.p.6752",
+          "name": "Mikko Rantanen",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.8288",
+          "name": "Vasily Podkolzin",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.6369",
+          "name": "Leon Draisaitl",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.5980",
+          "name": "Nathan MacKinnon",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.4901",
+          "name": "Sergei Bobrovsky",
+          "selectedPosition": "G"
+        },
+        {
+          "playerKey": "477.p.5734",
+          "name": "Anthony Stolarz",
+          "selectedPosition": "G"
+        }
+      ]
+    },
+    "477.l.48642.t.6": {
+      "teamKey": "477.l.48642.t.6",
+      "name": "Fortune Favors The Boldy",
+      "players": [
+        {
+          "playerKey": "477.p.8285",
+          "name": "Dylan Cozens",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.7516",
+          "name": "Nico Hischier",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.7902",
+          "name": "Brady Tkachuk",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.4002",
+          "name": "Claude Giroux",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.8290",
+          "name": "Matt Boldy",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.6386",
+          "name": "Nick Schmaltz",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.32898",
+          "name": "Cole Hutson",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.7751",
+          "name": "Sean Walker",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.6424",
+          "name": "Brandon Montour",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.7498",
+          "name": "Neal Pionk",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.7528",
+          "name": "Nick Suzuki",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "477.p.6062",
+          "name": "Carter Verhaeghe",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.3637",
+          "name": "Alex Ovechkin",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.8682",
+          "name": "Luke Evangelista",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.7143",
+          "name": "Jordan Kyrou",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.7569",
+          "name": "Ukko-Pekka Luukkonen",
+          "selectedPosition": "G"
+        },
+        {
+          "playerKey": "477.p.8040",
+          "name": "Samuel Ersson",
+          "selectedPosition": "G"
+        },
+        {
+          "playerKey": "477.p.5820",
+          "name": "Connor Hellebuyck",
+          "selectedPosition": "IR+"
+        }
+      ]
+    },
+    "477.l.48642.t.7": {
+      "teamKey": "477.l.48642.t.7",
+      "name": "Jacks in the Box",
+      "players": [
+        {
+          "playerKey": "477.p.6744",
+          "name": "Jack Eichel",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.30832",
+          "name": "Logan Cooley",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.8654",
+          "name": "Dylan Holloway",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.8279",
+          "name": "Jack Hughes",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.6368",
+          "name": "Sam Reinhart",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.8644",
+          "name": "Lucas Raymond",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.8296",
+          "name": "Thomas Harley",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.4930",
+          "name": "Roman Josi",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.8884",
+          "name": "Brandt Clarke",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.8282",
+          "name": "Bowen Byram",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.5367",
+          "name": "Mika Zibanejad",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "477.p.30662",
+          "name": "Luca Cagnoni",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.6448",
+          "name": "Brayden Point",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.7264",
+          "name": "Brandon Hagel",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.30548",
+          "name": "Matvei Michkov",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.7111",
+          "name": "Pierre-Luc Dubois",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.6377",
+          "name": "Kevin Fiala",
+          "selectedPosition": "IR"
+        },
+        {
+          "playerKey": "477.p.30075",
+          "name": "Brock Faber",
+          "selectedPosition": "IR+"
+        },
+        {
+          "playerKey": "477.p.6078",
+          "name": "Juuse Saros",
+          "selectedPosition": "G"
+        }
+      ]
+    },
+    "477.l.48642.t.8": {
+      "teamKey": "477.l.48642.t.8",
+      "name": "Nette's Sweaty Yetis",
+      "players": [
+        {
+          "playerKey": "477.p.7582",
+          "name": "Morgan Geekie",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.7535",
+          "name": "Robert Thomas",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.7636",
+          "name": "Drake Batherson",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.6375",
+          "name": "Nikolaj Ehlers",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.6038",
+          "name": "Tyler Bertuzzi",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.5152",
+          "name": "Mark Stone",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.4682",
+          "name": "Victor Hedman",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.7518",
+          "name": "Miro Heiskanen",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.4503",
+          "name": "John Carlson",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.5769",
+          "name": "Shayne Gostisbehere",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.4240",
+          "name": "Patrick Kane",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "477.p.5020",
+          "name": "Tyler Toffoli",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.4491",
+          "name": "Erik Karlsson",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.4687",
+          "name": "Nazem Kadri",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.3358",
+          "name": "Brent Burns",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.5053",
+          "name": "Bryan Rust",
+          "selectedPosition": "IR"
+        },
+        {
+          "playerKey": "477.p.5096",
+          "name": "Zach Hyman",
+          "selectedPosition": "IR+"
+        },
+        {
+          "playerKey": "477.p.6447",
+          "name": "Ilya Sorokin",
+          "selectedPosition": "G"
+        },
+        {
+          "playerKey": "477.p.4947",
+          "name": "Jacob Markstrom",
+          "selectedPosition": "G"
+        }
+      ]
+    },
+    "477.l.48642.t.9": {
+      "teamKey": "477.l.48642.t.9",
+      "name": "Hacklin Celeweenie",
+      "players": [
+        {
+          "playerKey": "477.p.32763",
+          "name": "Macklin Celebrini",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.7134",
+          "name": "Tage Thompson",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.8293",
+          "name": "Cole Caufield",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.4699",
+          "name": "Chris Kreider",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.7947",
+          "name": "Kirill Marchenko",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.9251",
+          "name": "Bobby McMann",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.5703",
+          "name": "Mike Matheson",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.6794",
+          "name": "Jeremy Lauzon",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.6383",
+          "name": "Travis Sanheim",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.5525",
+          "name": "Josh Manson",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.4351",
+          "name": "Brad Marchand",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "477.p.6402",
+          "name": "Ivan Barbashev",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.6057",
+          "name": "Jake Guentzel",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.3737",
+          "name": "Sidney Crosby",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.7944",
+          "name": "Martin Fehervary",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.8895",
+          "name": "Jesper Wallstedt",
+          "selectedPosition": "G"
+        },
+        {
+          "playerKey": "477.p.5853",
+          "name": "Linus Ullmark",
+          "selectedPosition": "G"
+        }
+      ]
+    },
+    "477.l.48642.t.12": {
+      "teamKey": "477.l.48642.t.12",
+      "name": "Jetting out of Winnipeg",
+      "players": [
+        {
+          "playerKey": "477.p.30546",
+          "name": "Adam Fantilli",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.5421",
+          "name": "William Karlsson",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.7900",
+          "name": "Andrei Svechnikov",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.6746",
+          "name": "Mitch Marner",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.30227",
+          "name": "Matthew Knies",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.7526",
+          "name": "Gabriel Vilardi",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.4064",
+          "name": "Kris Letang",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.7117",
+          "name": "Mikhail Sergachev",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.7910",
+          "name": "Noah Dobson",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.6005",
+          "name": "Shea Theodore",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.7115",
+          "name": "Clayton Keller",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "477.p.6762",
+          "name": "Joel Eriksson Ek",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.30549",
+          "name": "Zach Benson",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.6374",
+          "name": "William Nylander",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.30221",
+          "name": "Luke Hughes",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.5981",
+          "name": "Aleksander Barkov",
+          "selectedPosition": "IR"
+        },
+        {
+          "playerKey": "477.p.8155",
+          "name": "Logan Thompson",
+          "selectedPosition": "G"
+        },
+        {
+          "playerKey": "477.p.7541",
+          "name": "Jake Oettinger",
+          "selectedPosition": "G"
+        }
+      ]
+    },
+    "477.l.48642.t.13": {
+      "teamKey": "477.l.48642.t.13",
+      "name": "Calvin and Dobes",
+      "players": [
+        {
+          "playerKey": "477.p.6370",
+          "name": "Sam Bennett",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.5697",
+          "name": "Tomas Hertl",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.8883",
+          "name": "William Eklund",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.8683",
+          "name": "Emil Heineman",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.8357",
+          "name": "Pavel Dorofeyev",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.32790",
+          "name": "Ivan Demidov",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.31751",
+          "name": "Lane Hutson",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.33423",
+          "name": "Matthew Schaefer",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.6184",
+          "name": "MacKenzie Weegar",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.7122",
+          "name": "Charlie McAvoy",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.8649",
+          "name": "Marco Rossi",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "477.p.7520",
+          "name": "Elias Pettersson",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.3638",
+          "name": "Evgeni Malkin",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.8674",
+          "name": "JJ Peterka",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.4990",
+          "name": "Brock Nelson",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.30862",
+          "name": "Jakub Dobes",
+          "selectedPosition": "G"
+        },
+        {
+          "playerKey": "477.p.7983",
+          "name": "Lukas Dostal",
+          "selectedPosition": "G"
+        }
+      ]
+    },
+    "477.l.48642.t.14": {
+      "teamKey": "477.l.48642.t.14",
+      "name": "On The Bench Hockey 2.0",
+      "players": [
+        {
+          "playerKey": "477.p.8879",
+          "name": "Mason McTavish",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.8642",
+          "name": "Quinton Byfield",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.8643",
+          "name": "Tim Stutzle",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.5691",
+          "name": "Filip Forsberg",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.8641",
+          "name": "Alexis Lafreniere",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.6395",
+          "name": "Adrian Kempe",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.8284",
+          "name": "Moritz Seider",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.5983",
+          "name": "Seth Jones",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.32768",
+          "name": "Carter Yakemchuk",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.7908",
+          "name": "Evan Bouchard",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.30849",
+          "name": "Jimmy Snuggerud",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "477.p.6766",
+          "name": "Travis Konecny",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.7525",
+          "name": "Owen Tippett",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.4786",
+          "name": "Ryan O'Reilly",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.6750",
+          "name": "Zach Werenski",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.8653",
+          "name": "Seth Jarvis",
+          "selectedPosition": "IR+"
+        },
+        {
+          "playerKey": "477.p.6887",
+          "name": "Karel Vejmelka",
+          "selectedPosition": "G"
+        },
+        {
+          "playerKey": "477.p.4589",
+          "name": "Jake Allen",
+          "selectedPosition": "G"
+        }
+      ]
+    },
+    "477.l.48642.t.15": {
+      "teamKey": "477.l.48642.t.15",
+      "name": "Pasta La Vista",
+      "players": [
+        {
+          "playerKey": "477.p.6791",
+          "name": "Roope Hintz",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.8310",
+          "name": "Shane Pinto",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.6759",
+          "name": "Kyle Connor",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.7147",
+          "name": "Alex DeBrincat",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.8898",
+          "name": "Wyatt Johnston",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.6391",
+          "name": "David Pastrnak",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.7899",
+          "name": "Rasmus Dahlin",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.5733",
+          "name": "Jake McCabe",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.5689",
+          "name": "Jacob Trouba",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.5995",
+          "name": "Nikita Zadorov",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.5988",
+          "name": "Bo Horvat",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "477.p.5989",
+          "name": "Valeri Nichushkin",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.6384",
+          "name": "Alex Tuch",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.6035",
+          "name": "Artturi Lehkonen",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.5362",
+          "name": "Ryan Nugent-Hopkins",
+          "selectedPosition": "IR+"
+        },
+        {
+          "playerKey": "477.p.7156",
+          "name": "Carter Hart",
+          "selectedPosition": "G"
+        },
+        {
+          "playerKey": "477.p.6818",
+          "name": "Adin Hill",
+          "selectedPosition": "G"
+        },
+        {
+          "playerKey": "477.p.6784",
+          "name": "Mackenzie Blackwood",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.7163",
+          "name": "Filip Gustavsson",
+          "selectedPosition": "IR+"
+        }
+      ]
+    },
+    "477.l.48642.t.16": {
+      "teamKey": "477.l.48642.t.16",
+      "name": "Gavin Mackinaw",
+      "players": [
+        {
+          "playerKey": "477.p.33441",
+          "name": "Ben Kindel",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.8922",
+          "name": "Logan Stankoven",
+          "selectedPosition": "C"
+        },
+        {
+          "playerKey": "477.p.5376",
+          "name": "J.T. Miller",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.33811",
+          "name": "Gavin McKenna",
+          "selectedPosition": "LW"
+        },
+        {
+          "playerKey": "477.p.30109",
+          "name": "Josh Doan",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.8885",
+          "name": "Dylan Guenther",
+          "selectedPosition": "RW"
+        },
+        {
+          "playerKey": "477.p.7161",
+          "name": "Filip Hronek",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.6643",
+          "name": "Darren Raddysh",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.8659",
+          "name": "Braden Schneider",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.6760",
+          "name": "Thomas Chabot",
+          "selectedPosition": "D"
+        },
+        {
+          "playerKey": "477.p.7109",
+          "name": "Auston Matthews",
+          "selectedPosition": "Util"
+        },
+        {
+          "playerKey": "477.p.33420",
+          "name": "Michael Misa",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.5363",
+          "name": "Gabriel Landeskog",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.8012",
+          "name": "Paul Cotter",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.6743",
+          "name": "Connor McDavid",
+          "selectedPosition": "BN"
+        },
+        {
+          "playerKey": "477.p.8291",
+          "name": "Spencer Knight",
+          "selectedPosition": "G"
+        },
+        {
+          "playerKey": "477.p.6941",
+          "name": "Joey Daccord",
+          "selectedPosition": "G"
+        }
+      ]
+    }
+  }
+}
