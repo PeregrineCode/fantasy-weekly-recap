@@ -53,6 +53,36 @@ describe('hockey bench blunders', () => {
   });
 });
 
+describe('hockey defensible benchings', () => {
+  // Week 2 2026: Winnipeg benched Logan Thompson (W 1, 43/49 = .878) while
+  // winning W outright and posting a .957 — ratio protection, not a blunder.
+  const sweptCrease = { stats: { 'SV%': 0.957 }, wonCats: new Set(['W', 'GAA', 'SV%']) };
+
+  it('excuses a benched goalie whose line would have hurt ratios when his win was not needed', () => {
+    assert.equal(hockey.isDefensibleBenching({ W: 1, GA: 6, SV: 43, SA: 49 }, sweptCrease), true);
+  });
+
+  it('still roasts when the benched win would have decided the W category', () => {
+    const tiedWins = { stats: { 'SV%': 0.886 }, wonCats: new Set(['SV%']) };
+    assert.equal(hockey.isDefensibleBenching({ W: 1, GA: 1, SV: 26, SA: 27 }, tiedWins), false);
+  });
+
+  it('still roasts when the benched line would have improved the team save percentage', () => {
+    const weakCrease = { stats: { 'SV%': 0.870 }, wonCats: new Set(['W']) };
+    assert.equal(hockey.isDefensibleBenching({ W: 1, GA: 1, SV: 26, SA: 27 }, weakCrease), false);
+  });
+
+  it('excuses a winless benched start below the team save percentage regardless of the W category', () => {
+    assert.equal(hockey.isDefensibleBenching({ W: 0, GA: 2, SV: 25, SA: 27 },
+      { stats: { 'SV%': 0.945 }, wonCats: new Set() }), true);
+  });
+
+  it('never excuses skaters and never excuses without team context', () => {
+    assert.equal(hockey.isDefensibleBenching({ G: 2, P: 3, SOG: 8 }, sweptCrease), false);
+    assert.equal(hockey.isDefensibleBenching({ W: 1, SV: 20, SA: 30 }, undefined), false);
+  });
+});
+
 describe('hockey dead weight', () => {
   const rosters = {
     't.1': {

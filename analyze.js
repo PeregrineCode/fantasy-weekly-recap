@@ -663,6 +663,22 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
       }
     }
 
+    // Each team's weekly stats + the categories it won outright, so the sport
+    // profile can judge whether a benching was ratio protection (a goalie sat
+    // while the team swept the crease) rather than a blunder.
+    const teamWeekContext = {};
+    for (const m of scoreboard || []) {
+      for (const t of [m.team1, m.team2]) {
+        if (!t?.teamKey) continue;
+        teamWeekContext[t.teamKey] = {
+          stats: t.stats || {},
+          wonCats: new Set((m.statWinners || [])
+            .filter(sw => !sw.isTied && sw.winnerTeamKey === t.teamKey)
+            .map(sw => sw.stat)),
+        };
+      }
+    }
+
     // Build a map: playerKey → { teamKey, daysOnBench, totalDays, benchedWithStats, benchedDayStats[] }
     // Only trust positions from snapshots with nightly position data (positionsSource === 'nightly').
     // Snapshots without nightly positions have stale API positions from the next morning,
@@ -730,6 +746,7 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
       // with counting-stat thresholds (z-scores are calibrated for full weeks)
       sport.normalizeBenchStats(benchStats);
       if (!sport.isNotableBenching(benchStats, info.benchedDayStats)) continue;
+      if (sport.isDefensibleBenching?.(benchStats, teamWeekContext[info.teamKey])) continue;
       const score = sport.benchScore(benchStats);
 
       const weeklyPlayer = weeklyStats[info.playerKey];
@@ -1110,6 +1127,9 @@ async function analyze(week) {
   let scoreboard = fullScoreboard;
   const standings = loadSnapshot(snapshotDir, 'standings.json') || [];
   let transactions = loadSnapshot(snapshotDir, 'transactions.json') || [];
+  // A vetoed trade never actually moved anyone — drop it before any segment
+  // (transaction desk, pickups, roasts) can treat it as a real move.
+  transactions = transactions.filter(tx => !(tx.type === 'trade' && tx.status && tx.status !== 'successful'));
   let rosters = loadSnapshot(snapshotDir, 'rosters.json') || {};
   let weeklyStats = loadSnapshot(snapshotDir, 'weekly-stats.json') || {};
   let weeklyRosters = loadSnapshot(snapshotDir, 'weekly-rosters.json');
