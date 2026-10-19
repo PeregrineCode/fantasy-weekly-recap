@@ -46,6 +46,7 @@ const CRON_DISPATCHES = {
   '7 4 * * *': ['hockey-nightly-positions.yml'],   // 12:07am EDT / 11:07pm EST
   '43 5 * * *': ['hockey-nightly-positions.yml'],  // 1:43am EDT / 12:43am EST (retry; script skips if already captured)
   '23 11 * * *': ['hockey-daily-collect.yml'],     // 7:23am EDT / 6:23am EST
+  '53 13 * * *': ['hockey-daily-collect.yml'],     // 9:53am EDT / 8:53am EST (retry; Cloudflare skipped the 7:23 trigger on 2026-10-13, and the script skips if already collected)
 };
 
 async function dispatchWorkflow(env, workflow) {
