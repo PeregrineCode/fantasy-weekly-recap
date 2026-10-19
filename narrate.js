@@ -13,6 +13,7 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const { activeLeague } = require('./lib/league');
+const { parseManagerNotes, findNoteMentions } = require('./lib/background-notes');
 
 const league = activeLeague();
 const sport = league.sportProfile;
@@ -30,6 +31,8 @@ for (const m of REFERENCE.matchAll(/^\|\s*(t\.\d+)\s*\|\s*([^|]+?)\s*\|/gm)) {
 
 // Set before narration starts with current team key → name mapping
 let teamNameBlock = '';
+// Set before narration starts: manager background already used in recent weeks
+let recentBackgroundBlock = '';
 
 // Writer personas (by role: lead, hottakes, analytics, insider) and any
 // league-specific column titles live in the league's prompts/writers.json.
@@ -56,6 +59,38 @@ const SEGMENT_REGISTRY = [
 // Segment key → title for the active league
 const TITLE = Object.fromEntries(SEGMENT_REGISTRY.map(e => [e.key, e.title]));
 
+// How many prior articles to scan for already-used manager background
+const BACKGROUND_LOOKBACK_WEEKS = 2;
+const BACKGROUND_SENTENCES_PER_MANAGER = 3;
+
+/**
+ * Manager notes from the reference get reused by every column every week.
+ * List where the last couple of articles already used them so writers skip
+ * those facts unless this week's events turn on them.
+ */
+function buildRecentBackgroundBlock(week, rostersPath) {
+  const articles = [];
+  for (let w = week - BACKGROUND_LOOKBACK_WEEKS; w < week; w++) {
+    const p = path.join(league.paths.articles, `week-${String(w).padStart(2, '0')}.md`);
+    if (w >= 1 && fs.existsSync(p)) articles.push(fs.readFileSync(p, 'utf-8'));
+  }
+  if (!articles.length) return '';
+
+  const teamNames = {};
+  if (fs.existsSync(rostersPath)) {
+    for (const t of Object.values(JSON.parse(fs.readFileSync(rostersPath, 'utf-8')))) {
+      teamNames['t.' + t.teamKey.replace(/.*\./, '')] = t.name;
+    }
+  }
+  const notes = parseManagerNotes(REFERENCE).map(n => ({ ...n, teamName: teamNames[n.key] }));
+  const mentions = findNoteMentions(articles, notes);
+  if (!mentions.length) return '';
+
+  const lines = mentions.map(m =>
+    `${m.manager}:\n` + m.sentences.slice(0, BACKGROUND_SENTENCES_PER_MANAGER).map(s => `  - "${s}"`).join('\n'));
+  return `\n\n# Manager Background Already Used Recently\nThe last ${articles.length === 1 ? 'recap' : `${articles.length} recaps`} already used these managers' background notes (quoted below). Readers just read them. Do NOT bring these facts up again this week (returns, past titles, rookie seasons, past finishes, three-peat bids) unless this week's events directly turn on them. Write about what happened this week instead.\n${lines.join('\n')}\n`;
+}
+
 /**
  * Call claude CLI with a batched prompt containing multiple segments.
  * Returns the raw output string.
@@ -63,7 +98,7 @@ const TITLE = Object.fromEntries(SEGMENT_REGISTRY.map(e => [e.key, e.title]));
 function callClaude(prompt, writerKey = 'lead') {
   try {
     const writer = WRITERS[writerKey] || WRITERS.lead;
-    const fullPrompt = `${SYSTEM_PROMPT}\n\n${writer.prompt}\n\n---\n\n# Reference\n\n${REFERENCE}${teamNameBlock}\n\n---\n\n${prompt}`;
+    const fullPrompt = `${SYSTEM_PROMPT}\n\n${writer.prompt}\n\n---\n\n# Reference\n\n${REFERENCE}${teamNameBlock}${recentBackgroundBlock}\n\n---\n\n${prompt}`;
 
     const result = execFileSync('claude', ['--print', '--model', 'sonnet'], {
       input: fullPrompt,
@@ -314,14 +349,29 @@ function promptTransactionDesk(segment) {
   const parts = [];
 
   // Trades section
+  const fmtSides = sides => sides.map(s =>
+    `${s.team} RECEIVED: ${s.received.map(p => `${p.name} (${[p.position, p.team, p.status && `injured as of week's end: ${p.status}`].filter(Boolean).join(', ')})`).join(', ')}`
+  ).join('\n  ');
+  const reversedTrades = segment.reversedTrades || [];
+  const hasTrades = segment.trades.length > 0 || reversedTrades.length > 0;
   if (segment.trades.length > 0) {
     const tradeData = segment.trades.map(t => {
-      const sides = t.sides.map(s =>
-        `${s.team} RECEIVED: ${s.received.map(p => `${p.name} (${p.position}, ${p.team})`).join(', ')}`
-      ).join('\n  ');
-      return `Trade on ${t.date}:\n  ${sides}`;
+      let text = `Trade on ${t.date}:\n  ${fmtSides(t.sides)}`;
+      if (t.beatTrade) {
+        text += `\n  This was a COUNTER OFFER that beat an already-accepted trade. The original deal (agreed ${t.beatTrade.date}, overturned ${t.beatTrade.overturnedDate}) would have been:\n  ${fmtSides(t.beatTrade.sides)}\n  That original trade never stands: the counter offer replaced it.`;
+      }
+      return text;
     }).join('\n\n');
-    parts.push(`TRADES:\n${tradeData}\n\nIMPORTANT: Each team RECEIVED the players listed next to their name. Do NOT reverse the direction.`);
+    parts.push(`TRADES:\n${tradeData}\n\nIMPORTANT: Each team RECEIVED the players listed next to their name. Do NOT reverse the direction. A player marked injured (IR = injured reserve, IR-LT = long-term injured reserve, DTD = day-to-day, O = out) is not producing right now, so don't sell him as immediate production. The status is as of the end of the week, not the trade date: he may have been healthy when traded and hurt afterward, so never say a team traded for an injured player unless the data says so.`);
+  }
+  if (reversedTrades.length > 0) {
+    const reversedData = reversedTrades.map(t =>
+      `Trade agreed ${t.date}, reversed ${t.overturnedDate}:\n  ${fmtSides(t.sides)}`
+    ).join('\n\n');
+    parts.push(`OVERTURNED TRADES (agreed, then undone; no player actually changed teams):\n${reversedData}`);
+  }
+  if (segment.trades.some(t => t.beatTrade) || reversedTrades.length > 0) {
+    parts.push(`LEAGUE RULE: After a trade is accepted, other teams have 48 hours to make a better counter offer. If a counter wins, the original trade is undone and the player goes to the counter-offering team instead. The team that lost the deal got outbid and keeps the players it had offered (it gave up nothing); the team that traded the player away took the better offer.`);
   }
 
   // FAAB section
@@ -351,9 +401,9 @@ function promptTransactionDesk(segment) {
   }
 
   let prompt = `Write the "${TITLE['tx-desk']}" covering this week's major roster moves. `;
-  if (segment.trades.length > 0 && segment.faabClaims.length > 0) {
+  if (hasTrades && segment.faabClaims.length > 0) {
     prompt += `Cover both trades and FAAB waiver bids. For trades, pick a winner and defend it. For FAAB, highlight the biggest bids, whether the spend looks justified, and who's burning through their budget. 3-4 paragraphs.`;
-  } else if (segment.trades.length > 0) {
+  } else if (hasTrades) {
     prompt += `Cover this week's trades. Pick a winner and defend it. 2-3 paragraphs.`;
   } else {
     prompt += `Cover this week's FAAB waiver bidding. Highlight the biggest bids, whether the spend looks justified, and who's burning through their budget vs. sitting on their war chest. 2-3 paragraphs.`;
@@ -386,7 +436,22 @@ function promptRoasts(segment) {
   return `Write "${TITLE.roasts}" roasting the worst roster decisions. Be creative and funny. 2-4 paragraphs.\n\nQuestionable decisions:\n${data}`;
 }
 
-function promptMadDogHotTakes(powerRankings, matchups, playoffs) {
+/**
+ * A writer's own column from recent articles, newest first, so callbacks to
+ * past takes quote what was actually written instead of inventing it.
+ */
+function priorColumns(week, key, lookback = 2) {
+  const columns = [];
+  for (let w = week - 1; w >= Math.max(1, week - lookback); w--) {
+    const p = path.join(league.paths.articles, `week-${String(w).padStart(2, '0')}.md`);
+    if (!fs.existsSync(p)) continue;
+    const section = parseArticleSections(fs.readFileSync(p, 'utf-8'))?.sections.find(s => s.title === TITLE[key]);
+    if (section?.content) columns.push({ week: w, content: section.content });
+  }
+  return columns;
+}
+
+function promptMadDogHotTakes(powerRankings, matchups, playoffs, pastColumns = []) {
   if (playoffs?.isFinals) {
     if (!matchups.length) return null;
     const results = matchups.map(m =>
@@ -401,7 +466,13 @@ function promptMadDogHotTakes(powerRankings, matchups, playoffs) {
   const matchupData = matchups.map(m =>
     m.isTie ? `${m.team1.name} tied ${m.team2.name} ${m.score}` : `${m.winner.name} beat ${m.loser.name} ${m.score}`
   ).join('\n');
-  return `Write "${TITLE.maddog}". Cover 2-3 of: declare a team DONE, crown a dynasty, make a bold prediction for next week, call out something that has you furious. Overreact wildly. 3-4 paragraphs.\n\nStandings:\n${rankData}\n\nResults:\n${matchupData}`;
+  return `Write "${TITLE.maddog}". Cover 2-3 of: declare a team DONE, crown a dynasty, make a bold prediction for next week, call out something that has you furious. Overreact wildly. 3-4 paragraphs.\n\nStandings:\n${rankData}\n\nResults:\n${matchupData}${pastColumnsBlock(pastColumns)}`;
+}
+
+function pastColumnsBlock(pastColumns) {
+  if (!pastColumns.length) return '';
+  const cols = pastColumns.map(c => `--- Week ${c.week} ---\n${c.content}`).join('\n\n');
+  return `\n\nYOUR PAST COLUMNS (the only past takes and predictions that exist). Call back to one where it fits, especially a prediction that just came true or blew up, and spin it in character. Quote or paraphrase only what is actually written here; never claim a take that isn't in these columns. Don't rehash the same lines; this week's column should be new material.\n${cols}`;
 }
 
 /**
@@ -587,9 +658,10 @@ function promptInsiderReport(rumours, powerRankings, transactions) {
   if (transactions?.available) {
     const parts = [];
     if (transactions.trades?.length) {
-      parts.push('Recent trades: ' + transactions.trades.map(t =>
-        t.sides.map(s => `${s.team} received ${s.received.map(p => p.name).join(', ')}`).join(' / ')
-      ).join('; '));
+      parts.push('Recent trades: ' + transactions.trades.map(t => {
+        const fmt = sides => sides.map(s => `${s.team} received ${s.received.map(p => p.name).join(', ')}`).join(' / ');
+        return fmt(t.sides) + (t.beatTrade ? ` (a counter offer that overturned an accepted deal: ${fmt(t.beatTrade.sides)})` : '');
+      }).join('; '));
     }
     if (transactions.faabClaims?.length) {
       const topClaims = transactions.faabClaims.slice(0, 5);
@@ -810,6 +882,8 @@ async function narrate(week, { only, except } = {}) {
     teamNameBlock = `\n\n# Current Team Names\nAttribute each team's performance only to its own manager listed here — never credit a team to a different team's manager.\n${lines.join('\n')}\n`;
   }
 
+  recentBackgroundBlock = buildRecentBackgroundBlock(week, rostersPath);
+
   // Fetch trade rumours from the API and filter out any already consumed
   // by prior weeks (see loadConsumedRumourTimestamps for rationale).
   const rawRumours = await fetchRumours(analysis.weekStart || '');
@@ -865,7 +939,7 @@ async function narrate(week, { only, except } = {}) {
   const insiderSeg = insiderP ? { title: TITLE.insider, prompt: insiderP, fallback: '*Our insider is currently unreachable. Check back next week.*' } : null;
 
   // Individual: hot takes (isolation is the point)
-  const maddogP = promptMadDogHotTakes(segments.powerRankings, segments.matchups, playoffs);
+  const maddogP = promptMadDogHotTakes(segments.powerRankings, segments.matchups, playoffs, priorColumns(week, 'maddog'));
   const maddogSeg = maddogP ? { title: TITLE.maddog, prompt: maddogP, fallback: `*${WRITERS.hottakes.name} was unavailable for comment this week.*` } : null;
 
   // Individual: analytics column (independent)
@@ -1116,4 +1190,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { narrate, SEGMENT_REGISTRY, parseArticleSections, matchSectionsToRegistry, spliceArticle, findToughLuckLosses };
+module.exports = { narrate, SEGMENT_REGISTRY, parseArticleSections, matchSectionsToRegistry, spliceArticle, findToughLuckLosses, priorColumns };

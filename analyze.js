@@ -10,6 +10,7 @@ const path = require('path');
 const { FINALS_ROUNDS } = require('./yahoo-helpers');
 const { activeLeague } = require('./lib/league');
 const { etDate, etHour } = require('./lib/et');
+const { resolveCounterOffers } = require('./lib/trades');
 
 const league = activeLeague();
 const sport = league.sportProfile;
@@ -417,31 +418,64 @@ function analyzeBestStream(transactions, weeklyStats, teamNames, weekEnd) {
 }
 
 /**
- * Trade recap — any trades that happened this week.
+ * Group a trade's players by the team that received them.
  */
+function tradeSides(tx, teamNames, injuryStatus = {}) {
+  const sides = {};
+  for (const p of tx.players) {
+    const dest = p.destTeam;
+    if (!sides[dest]) sides[dest] = { team: teamNames[dest] || dest, received: [] };
+    const received = { name: p.name, team: p.team, position: p.position };
+    // Injury status (as of collection, not the trade), so writers don't sell
+    // a long-term IR stash as a producer
+    if (injuryStatus[p.playerKey]) received.status = injuryStatus[p.playerKey];
+    sides[dest].received.push(received);
+  }
+  return Object.values(sides);
+}
+
+function tradeDate(timestamp) {
+  return new Date(timestamp * 1000).toLocaleDateString('en-US', { timeZone: 'America/New_York' });
+}
+
 /**
  * Transaction desk — trades and FAAB waiver bids for the week.
  * Combines both into a single segment so weeks with only one type still get coverage.
  */
-function analyzeTransactionDesk(transactions, weeklyStats, teamNames, standings, week) {
+function analyzeTransactionDesk(transactions, weeklyStats, teamNames, standings, week, overturnedTrades = [], weeklyRosters = null) {
+  const injuryStatus = {};
+  for (const roster of Object.values(weeklyRosters || {})) {
+    for (const p of roster.players || []) {
+      if (p.status) injuryStatus[p.playerKey] = p.status;
+    }
+  }
+
   // --- Trades ---
   const trades = transactions.filter(tx => tx.type === 'trade').map(tx => {
-    const sides = {};
-    for (const p of tx.players) {
-      const dest = p.destTeam;
-      if (!sides[dest]) sides[dest] = { team: teamNames[dest] || dest, received: [] };
-      sides[dest].received.push({
-        name: p.name,
-        team: p.team,
-        position: p.position,
-      });
-    }
-    return {
+    const trade = {
       timestamp: tx.timestamp,
-      date: new Date(tx.timestamp * 1000).toLocaleDateString(),
-      sides: Object.values(sides),
+      date: tradeDate(tx.timestamp),
+      sides: tradeSides(tx, teamNames, injuryStatus),
     };
+    // This trade won a counter-offer window: it replaced an accepted deal
+    if (tx.counterOffer) {
+      trade.beatTrade = {
+        date: tradeDate(tx.counterOffer.original.timestamp),
+        overturnedDate: tradeDate(tx.counterOffer.reversedAt),
+        sides: tradeSides(tx.counterOffer.original, teamNames, injuryStatus),
+      };
+    }
+    return trade;
   });
+
+  // Overturned trades with no counter trade found (e.g. reversed outright)
+  const reversedTrades = overturnedTrades
+    .filter(o => !o.counter)
+    .map(o => ({
+      date: tradeDate(o.original.timestamp),
+      overturnedDate: tradeDate(o.reversedAt),
+      sides: tradeSides(o.original, teamNames, injuryStatus),
+    }));
 
   // --- FAAB claims ---
   const faabClaims = transactions
@@ -464,7 +498,7 @@ function analyzeTransactionDesk(transactions, weeklyStats, teamNames, standings,
     })
     .sort((a, b) => b.bid - a.bid);
 
-  if (trades.length === 0 && faabClaims.length === 0) {
+  if (trades.length === 0 && reversedTrades.length === 0 && faabClaims.length === 0) {
     return { available: false };
   }
 
@@ -496,6 +530,7 @@ function analyzeTransactionDesk(transactions, weeklyStats, teamNames, standings,
   return {
     available: true,
     trades,
+    reversedTrades,
     faabClaims,
     faabBudgets,
     faabWeekTotal: faabClaims.reduce((sum, c) => sum + c.bid, 0),
@@ -1129,7 +1164,13 @@ async function analyze(week) {
   let transactions = loadSnapshot(snapshotDir, 'transactions.json') || [];
   // A vetoed trade never actually moved anyone — drop it before any segment
   // (transaction desk, pickups, roasts) can treat it as a real move.
-  transactions = transactions.filter(tx => !(tx.type === 'trade' && tx.status && tx.status !== 'successful'));
+  const isVetoed = tx => tx.type === 'trade' && tx.status && tx.status !== 'successful';
+  transactions = transactions.filter(tx => !isVetoed(tx));
+  // A trade overturned by a winning counter offer is undone by an inverse
+  // trade; drop the pair so only the counter trade counts as a real move.
+  const priorTransactions = (loadSnapshot(league.weekDir(week - 1), 'transactions.json') || []).filter(tx => !isVetoed(tx));
+  let overturnedTrades;
+  ({ transactions, overturned: overturnedTrades } = resolveCounterOffers(transactions, priorTransactions));
   let rosters = loadSnapshot(snapshotDir, 'rosters.json') || {};
   let weeklyStats = loadSnapshot(snapshotDir, 'weekly-stats.json') || {};
   let weeklyRosters = loadSnapshot(snapshotDir, 'weekly-rosters.json');
@@ -1210,7 +1251,7 @@ async function analyze(week) {
       bestPickup: analyzeBestPickup(transactions, weeklyStats, teamNames, meta?.weekEnd),
       worstPickup: analyzeWorstPickup(transactions, weeklyStats, teamNames, meta?.weekEnd),
       bestStream: analyzeBestStream(transactions, weeklyStats, teamNames, meta?.weekEnd),
-      transactionDesk: analyzeTransactionDesk(transactions, weeklyStats, teamNames, standings, week),
+      transactionDesk: analyzeTransactionDesk(transactions, weeklyStats, teamNames, standings, week, overturnedTrades, weeklyRosters),
       // Standings are frozen during the playoffs — movers and power rankings
       // would just restate the regular-season table, so the finals skip them.
       standingsMovers: isFinals ? { available: false, movers: [] } : analyzeStandingsMovers(standings, prevStandings, teamNames),
