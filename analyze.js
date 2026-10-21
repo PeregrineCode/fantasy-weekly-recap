@@ -20,6 +20,9 @@ const sport = league.sportProfile;
 const isAbandonedTeam = league.isAbandonedTeam;
 
 const ALL_CATS = sport.allCats;
+// Matchup format: categories won, or fantasy points (lib/scoring.js)
+const scoring = sport.scoring;
+const isPointsLeague = scoring.type === 'points';
 // League minimum innings pitched per week (baseball only); below this, all
 // pitching cats are forfeited
 const MIN_IP = sport.defaultMinIP != null ? (parseInt(league.setting('MIN_IP')) || sport.defaultMinIP) : null;
@@ -106,7 +109,7 @@ function analyzeMatchups(scoreboard, teamNames) {
       .filter(c => !c.isTied)
       .sort((a, b) => a.spreadMargin - b.spreadMargin)[0] || null;
 
-    const isBlowout = !isTie && Math.max(m.team1Wins, m.team2Wins) >= sport.blowoutWins;
+    const isBlowout = !isTie && scoring.isBlowout(Math.max(m.team1Wins, m.team2Wins), Math.min(m.team1Wins, m.team2Wins));
 
     // Flag teams below the minimum IP threshold (forfeit pitching ratio cats)
     const t1BelowIP = MIN_IP != null && (m.team1.stats.IP || 0) < MIN_IP;
@@ -120,7 +123,7 @@ function analyzeMatchups(scoreboard, teamNames) {
         yahooWinnerTeamKey: m.winnerTeamKey || null,
         team1: { teamKey: m.team1.teamKey, name: teamNames[m.team1.teamKey] || m.team1.name, stats: m.team1.stats, belowIPMinimum: t1BelowIP },
         team2: { teamKey: m.team2.teamKey, name: teamNames[m.team2.teamKey] || m.team2.name, stats: m.team2.stats, belowIPMinimum: t2BelowIP },
-        score: `${m.team1Wins}-${m.team2Wins}-${m.ties}`,
+        score: scoring.formatScore(m.team1Wins, m.team2Wins, m.ties),
         winnerWins: m.team1Wins,
         loserWins: m.team2Wins,
         ties: m.ties,
@@ -140,7 +143,7 @@ function analyzeMatchups(scoreboard, teamNames) {
       round: m.round || null,
       winner: { teamKey: winner.teamKey, name: teamNames[winner.teamKey] || winner.name, stats: winner.stats, belowIPMinimum: winnerBelowIP },
       loser: { teamKey: loser.teamKey, name: teamNames[loser.teamKey] || loser.name, stats: loser.stats, belowIPMinimum: loserBelowIP },
-      score: `${Math.max(m.team1Wins, m.team2Wins)}-${Math.min(m.team1Wins, m.team2Wins)}-${m.ties}`,
+      score: scoring.formatScore(Math.max(m.team1Wins, m.team2Wins), Math.min(m.team1Wins, m.team2Wins), m.ties),
       winnerWins: Math.max(m.team1Wins, m.team2Wins),
       loserWins: Math.min(m.team1Wins, m.team2Wins),
       ties: m.ties,
@@ -158,6 +161,28 @@ function analyzeMatchups(scoreboard, teamNames) {
     const bDiff = b.winnerWins - b.loserWins;
     return aDiff - bDiff;
   });
+}
+
+/**
+ * Points leagues: list each matchup team's top fantasy scorers, since in
+ * points the story is who carried the week. Weekly roster stats cover every
+ * day on the roster, bench days included, and lineup slots in the weekly
+ * snapshot are the current ones, so this is who produced, not exact
+ * lineup points.
+ */
+function addTopScorers(matchups, weeklyRosters, count = 3) {
+  if (!isPointsLeague || !weeklyRosters) return matchups;
+  const topFor = teamKey => (weeklyRosters[teamKey]?.players || [])
+    .filter(p => typeof p.stats?.FPTS === 'number')
+    .sort((a, b) => b.stats.FPTS - a.stats.FPTS)
+    .slice(0, count)
+    .map(p => ({ name: p.name, team: p.team, position: p.displayPosition, fpts: p.stats.FPTS }));
+  for (const m of matchups) {
+    for (const side of m.isTie ? [m.team1, m.team2] : [m.winner, m.loser]) {
+      side.topScorers = topFor(side.teamKey);
+    }
+  }
+  return matchups;
 }
 
 /**
@@ -237,6 +262,7 @@ let _statDistributions = {};
  * Higher score = better performance relative to the league.
  */
 function scorePlayer(stats) {
+  if (isPointsLeague) return stats.FPTS || 0;
   let score = 0;
   for (const cat of ALL_CATS) {
     const val = stats[cat.name];
@@ -256,6 +282,7 @@ function scorePlayer(stats) {
  * categories (e.g. batting cats for batters, goalie cats for goalies).
  */
 function scoreCats(stats, cats) {
+  if (isPointsLeague) return stats.FPTS || 0;
   let score = 0;
   for (const cat of cats) {
     const val = stats[cat.name];
@@ -575,6 +602,10 @@ function analyzePowerRankings(standings, scoreboard, teamNames) {
     weeklyPerf[m.team2.teamKey] = { wins: m.team2Wins > m.team1Wins ? 1 : isTie ? 0.5 : 0, catWins: m.team2Wins, catLosses: m.team1Wins, catTies: m.ties || 0, isTie };
   }
 
+  // Where a team's season points-for sits in the league, 0 (lowest) to 1 (highest)
+  const pfSorted = standings.map(t => t.pointsFor || 0).sort((a, b) => a - b);
+  const pfPercentile = pf => pfSorted.length > 1 ? pfSorted.indexOf(pf || 0) / (pfSorted.length - 1) : 0.5;
+
   const ranked = standings
     .map(team => {
       const weekly = weeklyPerf[team.teamKey] || { wins: 0, catWins: 0, catLosses: 0, catTies: 0 };
@@ -583,8 +614,12 @@ function analyzePowerRankings(standings, scoreboard, teamNames) {
       // overwhelm a team's season body of work — a 2-10 week shouldn't move
       // a top-3 team out of the top half.
       const seasonScore = team.pct;
-      const weeklyScore = weekly.catWins / Math.max(1, weekly.catWins + weekly.catLosses);
-      const composite = seasonScore * 0.85 + weeklyScore * 0.15;
+      const weeklyScore = scoring.weeklyForm(weekly.catWins, weekly.catLosses, weekly.catTies);
+      // In a points league, season points-for says more about a team than a
+      // few weeks of W-L luck, so it takes a share of the season weight.
+      const composite = isPointsLeague
+        ? seasonScore * 0.55 + pfPercentile(team.pointsFor) * 0.3 + weeklyScore * 0.15
+        : seasonScore * 0.85 + weeklyScore * 0.15;
 
       return {
         teamKey: team.teamKey,
@@ -593,7 +628,8 @@ function analyzePowerRankings(standings, scoreboard, teamNames) {
         record: `${team.wins}-${team.losses}-${team.ties}`,
         pct: team.pct,
         weeklyResult: weekly.wins === 1 ? 'W' : weekly.isTie ? 'T' : 'L',
-        weeklyCatScore: `${weekly.catWins}-${weekly.catLosses}-${weekly.catTies}`,
+        weeklyCatScore: scoring.formatScore(weekly.catWins, weekly.catLosses, weekly.catTies),
+        ...(isPointsLeague ? { pointsFor: team.pointsFor, pointsAgainst: team.pointsAgainst } : {}),
         composite,
       };
     })
@@ -825,8 +861,8 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
     for (const dropped of droppedPlayers) {
       const stats = weeklyStats[dropped.playerKey]?.stats || {};
       const score = scorePlayer(stats);
-      // z-score > 2 means the dropped player had a strong week
-      if (score > 2) {
+      // A z-score sum (or fantasy point total) above the format's bar
+      if (score > scoring.strongWeek) {
         roasts.push({
           type: 'drop_regret',
           playerName: dropped.name,
@@ -1041,7 +1077,7 @@ function analyzeStorylines(dailySnapshots, finalScoreboard, teamNames) {
     if (matchup.team1Wins === matchup.team2Wins) continue;
 
     const finalWinner = matchup.team1Wins > matchup.team2Wins ? 'team1' : 'team2';
-    const finalScore = `${Math.max(matchup.team1Wins, matchup.team2Wins)}-${Math.min(matchup.team1Wins, matchup.team2Wins)}-${matchup.ties}`;
+    const finalScore = scoring.formatScore(Math.max(matchup.team1Wins, matchup.team2Wins), Math.min(matchup.team1Wins, matchup.team2Wins), matchup.ties);
     const winnerName = finalWinner === 'team1' ? t1Name : t2Name;
     const loserName = finalWinner === 'team1' ? t2Name : t1Name;
 
@@ -1079,10 +1115,10 @@ function analyzeStorylines(dailySnapshots, finalScoreboard, teamNames) {
       const catSwing = Math.abs(
         (last.t1Wins - last.t2Wins) - (secondLast.t1Wins - secondLast.t2Wins)
       );
-      if (catSwing >= 3) {
+      if (catSwing >= scoring.finalDaySwing) {
         biggestSwing = {
-          from: `${secondLast.t1Wins}-${secondLast.t2Wins}`,
-          to: `${last.t1Wins}-${last.t2Wins}`,
+          from: scoring.formatScore(secondLast.t1Wins, secondLast.t2Wins, secondLast.ties),
+          to: scoring.formatScore(last.t1Wins, last.t2Wins, last.ties),
           day: last.day,
           swing: catSwing,
         };
@@ -1091,23 +1127,23 @@ function analyzeStorylines(dailySnapshots, finalScoreboard, teamNames) {
 
     // Build the arc summary for the prompt
     const arcSummary = arc.map(day => {
-      const score = `${day.t1Wins}-${day.t2Wins}-${day.ties}`;
+      const score = scoring.formatScore(day.t1Wins, day.t2Wins, day.ties);
       const leader = day.leader === 'team1' ? t1Name : day.leader === 'team2' ? t2Name : 'Tied';
       return `${day.date}: ${score} — ${leader} leading`;
     });
 
     // Only create a storyline if something interesting happened
-    if (winnerWasLosing && maxDeficit >= 2) {
+    if (winnerWasLosing && maxDeficit >= scoring.comebackDeficit) {
       storylines.push({
         type: 'comeback',
         winner: winnerName,
         loser: loserName,
         finalScore,
-        maxDeficit,
+        maxDeficit: isPointsLeague ? Math.round(maxDeficit * 10) / 10 : maxDeficit,
         leadChanges,
         sundaySwing,
         arc: arcSummary,
-        drama: maxDeficit + leadChanges + (sundaySwing ? 3 : 0),
+        drama: maxDeficit / scoring.dramaUnit + leadChanges + (sundaySwing ? 3 : 0),
       });
     } else if (sundaySwing) {
       storylines.push({
@@ -1117,9 +1153,9 @@ function analyzeStorylines(dailySnapshots, finalScoreboard, teamNames) {
         finalScore,
         biggestSwing,
         arc: arcSummary,
-        drama: 4 + (biggestSwing?.swing || 0),
+        drama: 4 + (biggestSwing?.swing || 0) / scoring.dramaUnit,
       });
-    } else if (wireToWire && (matchup.team1Wins >= sport.blowoutWins || matchup.team2Wins >= sport.blowoutWins)) {
+    } else if (wireToWire && scoring.isBlowout(Math.max(matchup.team1Wins, matchup.team2Wins), Math.min(matchup.team1Wins, matchup.team2Wins))) {
       storylines.push({
         type: 'wire_to_wire',
         winner: winnerName,
@@ -1246,7 +1282,7 @@ async function analyze(week) {
     },
     segments: {
       storylines,
-      matchups: analyzeMatchups(scoreboard, teamNames),
+      matchups: addTopScorers(analyzeMatchups(scoreboard, teamNames), weeklyRosters),
       playersOfTheWeek: analyzePlayersOfTheWeek(weeklyRosters),
       bestPickup: analyzeBestPickup(transactions, weeklyStats, teamNames, meta?.weekEnd),
       worstPickup: analyzeWorstPickup(transactions, weeklyStats, teamNames, meta?.weekEnd),

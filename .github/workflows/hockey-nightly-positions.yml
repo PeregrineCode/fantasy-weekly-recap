@@ -8,6 +8,12 @@ on:
   # keeps the first trusted capture and refuses a post-rollover one.
   workflow_dispatch: # Cloudflare cron dispatch, or manual
 
+# Hockey and KKUPFL are dispatched at the same moment; run them one at a
+# time so they don't race on the git push or the Yahoo token refresh.
+concurrency:
+  group: yahoo-nightly-positions
+  cancel-in-progress: false
+
 jobs:
   capture:
     runs-on: ubuntu-latest

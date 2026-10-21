@@ -74,8 +74,9 @@ describe('rumours worker cron dispatch', () => {
 
   it('dispatches the nightly capture for its cron', async () => {
     const calls = await runCron('7 4 * * *', env);
-    assert.equal(calls.length, 1);
+    assert.equal(calls.length, 2);
     assert.equal(calls[0].url, 'https://api.github.com/repos/me/repo/actions/workflows/hockey-nightly-positions.yml/dispatches');
+    assert.match(calls[1].url, /kkupfl-nightly-positions\.yml\/dispatches$/);
     assert.equal(calls[0].opts.headers.Authorization, 'Bearer tok');
     assert.deepEqual(JSON.parse(calls[0].opts.body), { ref: 'master' });
   });
@@ -83,6 +84,7 @@ describe('rumours worker cron dispatch', () => {
   it('dispatches the daily collect for its cron', async () => {
     const calls = await runCron('23 11 * * *', env);
     assert.match(calls[0].url, /hockey-daily-collect\.yml\/dispatches$/);
+    assert.match(calls[1].url, /kkupfl-daily-collect\.yml\/dispatches$/);
   });
 
   it('does nothing without a token', async () => {

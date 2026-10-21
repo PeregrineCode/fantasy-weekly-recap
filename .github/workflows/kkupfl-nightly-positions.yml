@@ -1,0 +1,64 @@
+name: KKUPFL Nightly Roster Position Capture
+
+on:
+  # Started by the rumours worker's Cloudflare cron (rumours-worker/worker.js,
+  # CRON_DISPATCHES) at 12:07am and 1:43am EDT (11:07pm / 12:43am EST).
+  # GitHub's own `schedule` ran 7+ hours late, past Yahoo's ~3am ET rollover.
+  # NHL lineups lock at puck drop (latest ~10:30pm ET); daily-positions.js
+  # keeps the first trusted capture and refuses a post-rollover one.
+  workflow_dispatch: # Cloudflare cron dispatch, or manual
+
+# Hockey and KKUPFL are dispatched at the same moment; run them one at a
+# time so they don't race on the git push or the Yahoo token refresh.
+concurrency:
+  group: yahoo-nightly-positions
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Write Yahoo token
+        run: echo '${{ secrets.YAHOO_TOKEN_JSON }}' > .yahoo-token.json
+
+      - name: Write .env
+        run: |
+          echo "YAHOO_CLIENT_ID=${{ secrets.YAHOO_CLIENT_ID }}" >> .env
+          echo "YAHOO_CLIENT_SECRET=${{ secrets.YAHOO_CLIENT_SECRET }}" >> .env
+
+      - name: Capture roster positions
+        run: node daily-positions.js --league kkupfl
+
+      - name: Update Yahoo token secret if refreshed
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          if [ -f .yahoo-token.json ]; then
+            gh secret set YAHOO_TOKEN_JSON < .yahoo-token.json
+            echo "Updated YAHOO_TOKEN_JSON secret"
+          fi
+
+      - name: Commit position data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -f leagues/kkupfl/snapshots/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "KKUPFL nightly positions: $(TZ=America/New_York date -d '3 hours ago' +%Y-%m-%d)"
+            git pull --rebase
+            git push
+          fi

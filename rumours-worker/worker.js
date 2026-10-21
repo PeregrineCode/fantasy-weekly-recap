@@ -31,7 +31,7 @@ const CORS_HEADERS = {
 // Rumours auto-expire after 90 days — old tips have no narration value
 const RUMOUR_TTL_DAYS = 90;
 
-const LEAGUES = ['baseball', 'hockey'];
+const LEAGUES = ['baseball', 'hockey', 'kkupfl'];
 const DEFAULT_LEAGUE = 'baseball';
 
 function json(data, status = 200) {
@@ -41,12 +41,16 @@ function json(data, status = 200) {
   });
 }
 
-// Cron expression (UTC, must match wrangler.toml) → workflow files to dispatch
+// Cron expression (UTC, must match wrangler.toml) → workflow files to dispatch.
+// Both hockey leagues run on each trigger; the workflows share a concurrency
+// group so they run one after the other.
+const NIGHTLY = ['hockey-nightly-positions.yml', 'kkupfl-nightly-positions.yml'];
+const DAILY = ['hockey-daily-collect.yml', 'kkupfl-daily-collect.yml'];
 const CRON_DISPATCHES = {
-  '7 4 * * *': ['hockey-nightly-positions.yml'],   // 12:07am EDT / 11:07pm EST
-  '43 5 * * *': ['hockey-nightly-positions.yml'],  // 1:43am EDT / 12:43am EST (retry; script skips if already captured)
-  '23 11 * * *': ['hockey-daily-collect.yml'],     // 7:23am EDT / 6:23am EST
-  '53 13 * * *': ['hockey-daily-collect.yml'],     // 9:53am EDT / 8:53am EST (retry; Cloudflare skipped the 7:23 trigger on 2026-10-13, and the script skips if already collected)
+  '7 4 * * *': NIGHTLY,   // 12:07am EDT / 11:07pm EST
+  '43 5 * * *': NIGHTLY,  // 1:43am EDT / 12:43am EST (retry; script skips if already captured)
+  '23 11 * * *': DAILY,   // 7:23am EDT / 6:23am EST
+  '53 13 * * *': DAILY,   // 9:53am EDT / 8:53am EST (retry; Cloudflare skipped the 7:23 trigger on 2026-10-13, and the script skips if already collected)
 };
 
 async function dispatchWorkflow(env, workflow) {

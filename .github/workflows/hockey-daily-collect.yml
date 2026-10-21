@@ -6,6 +6,12 @@ on:
   # yesterday and merges positions from the nightly capture.
   workflow_dispatch: # Cloudflare cron dispatch, or manual
 
+# Hockey and KKUPFL are dispatched at the same moment; run them one at a
+# time so they don't race on the git push or the Yahoo token refresh.
+concurrency:
+  group: yahoo-daily-collect
+  cancel-in-progress: false
+
 jobs:
   collect:
     runs-on: ubuntu-latest

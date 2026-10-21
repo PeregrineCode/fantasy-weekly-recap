@@ -3,7 +3,10 @@
  * Used by both collect.js and daily-collect.js.
  */
 
-const { STAT_ID_MAP } = require('./lib/stat-categories');
+const { STAT_ID_MAP, deriveStats } = require('./lib/stat-categories');
+const { activeLeague } = require('./lib/league');
+
+const scoring = activeLeague().sportProfile.scoring;
 
 /**
  * Parse team info from Yahoo's nested array format.
@@ -37,7 +40,7 @@ function parseStatValues(statsArray) {
       stats[name] = val;
     }
   }
-  return stats;
+  return deriveStats(stats);
 }
 
 /**
@@ -61,16 +64,20 @@ function parseScoreboardResponse(data) {
       const teamInfo = parseTeamInfo(teamEntry[0]);
       const stats = parseStatValues(teamEntry[1]?.team_stats?.stats);
 
+      const points = parseFloat(teamEntry[1]?.team_points?.total);
       teams.push({
         teamKey: teamInfo.team_key,
         name: teamInfo.name,
         stats,
+        points: isNaN(points) ? null : points,
       });
     }
 
-    // Parse stat winners (which team won each category)
+    // Parse stat winners (which team won each category). A points league
+    // still lists per-stat winners, but they decide nothing.
+    const isPoints = scoring?.type === 'points';
     const statWinners = [];
-    if (matchup.stat_winners) {
+    if (matchup.stat_winners && !isPoints) {
       for (const sw of matchup.stat_winners) {
         const winner = sw?.stat_winner;
         if (winner) {
@@ -84,8 +91,13 @@ function parseScoreboardResponse(data) {
       }
     }
 
-    // Compute overall score
+    // Compute overall score: categories won, or fantasy points in a points
+    // league (see lib/scoring.js for why the fields keep the "Wins" names)
     let team1Wins = 0, team2Wins = 0, ties = 0;
+    if (isPoints) {
+      team1Wins = teams[0].points ?? 0;
+      team2Wins = teams[1].points ?? 0;
+    }
     for (const sw of statWinners) {
       if (sw.isTied) ties++;
       else if (sw.winnerTeamKey === teams[0].teamKey) team1Wins++;

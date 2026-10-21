@@ -185,6 +185,20 @@ const teamStatLine = (stats) => Object.entries(stats)
   .map(([k, v]) => fmtStat(k, v))
   .join(', ');
 
+const { fmtPoints } = require('./lib/scoring');
+const scoring = sport.scoring;
+const isPointsLeague = scoring.type === 'points';
+
+// How matchup scores work, for the matchup and finals prompts
+const SCORE_RULE = isPointsLeague
+  ? 'This is a head-to-head POINTS league: each matchup score is the two teams\' fantasy point totals for the week (winner first). There are no categories, so never describe a matchup as won or lost "on categories". FPTS is a fantasy point total.'
+  : `This is a ${sport.allCats.length}-category league — all scores must add up to ${sport.allCats.length}.`;
+
+// Points leagues: each team's top fantasy producers for the week
+const topScorersLine = team => (team.topScorers?.length
+  ? `\n  ${team.name} top scorers (fantasy points over the week, bench days included): ${team.topScorers.map(p => `${p.name} (${p.position}, ${p.team}) ${p.fpts.toFixed(2)}`).join(', ')}`
+  : '');
+
 // Bracket label shown ahead of a playoff matchup line, e.g. "[CHAMPIONSHIP] ".
 function roundTag(m) {
   if (!m.round) return '';
@@ -218,6 +232,7 @@ function promptMatchupRecaps(matchups, storylines, playoffs) {
         closestNote(m, m.team1, m.team2) +
         `\n  ${m.team1.name} stats: ${t1Stats}` +
         `\n  ${m.team2.name} stats: ${t2Stats}` +
+        topScorersLine(m.team1) + topScorersLine(m.team2) +
         categoryWins(m, m.team1, m.team2);
     }
     const winnerStats = teamStatLine(m.winner.stats);
@@ -238,12 +253,14 @@ function promptMatchupRecaps(matchups, storylines, playoffs) {
       if (wouldWin.length) warn += ` But would have WON ${wouldWin.join(', ')} — gave away ${wouldWin.length} categories for free, flipping the matchup result.`;
       ipWarnings.push(warn);
     }
-    return `RESULT: ${roundTag(m)}${m.winner.name} beat ${m.loser.name} ${m.score}` +
+    const marginNote = isPointsLeague ? ` (margin: ${fmtPoints(m.winnerWins - m.loserWins)} points)` : '';
+    return `RESULT: ${roundTag(m)}${m.winner.name} beat ${m.loser.name} ${m.score}${marginNote}` +
       (m.isBlowout ? ' (BLOWOUT)' : '') +
       closestNote(m, m.winner, m.loser) +
       (ipWarnings.length ? `\n  ⚠️ ${ipWarnings.join('; ')}` : '') +
       `\n  ${m.winner.name} stats: ${winnerStats}` +
       `\n  ${m.loser.name} stats: ${loserStats}` +
+      topScorersLine(m.winner) + topScorersLine(m.loser) +
       categoryWins(m, m.winner, m.loser);
   }).join('\n\n');
 
@@ -253,7 +270,7 @@ function promptMatchupRecaps(matchups, storylines, playoffs) {
     const typeLabels = { comeback: 'COMEBACK', sunday_swing: 'SUNDAY SWING', wire_to_wire: 'WIRE-TO-WIRE DOMINANCE', seesaw: 'SEESAW BATTLE' };
     const arcs = storylines.storylines.map(s => {
       let detail = `[${typeLabels[s.type] || s.type.toUpperCase()}] ${s.winner} def. ${s.loser} ${s.finalScore}`;
-      if (s.maxDeficit) detail += ` — overcame a ${s.maxDeficit}-category deficit`;
+      if (s.maxDeficit) detail += ` — overcame a ${s.maxDeficit}-${scoring.unit} deficit`;
       if (s.leadChanges) detail += ` — ${s.leadChanges} lead change(s)`;
       if (s.sundaySwing) detail += ` — won it on the final day`;
       detail += '\n  Day-by-day:\n  ' + s.arc.join('\n  ');
@@ -261,8 +278,6 @@ function promptMatchupRecaps(matchups, storylines, playoffs) {
     }).join('\n\n');
     storylineBlock = `\n\nMid-week drama (use this to add color to the relevant matchup recaps — lead changes, comebacks, Sunday swings):\n${arcs}`;
   }
-
-  const numCats = sport.allCats.length;
 
   if (playoffs?.isFinals) {
     const champ = matchups.find(m => m.round === 'Championship');
@@ -274,13 +289,13 @@ function promptMatchupRecaps(matchups, storylines, playoffs) {
       const t = [champ.team1, champ.team2].find(x => x.teamKey === champ.yahooWinnerTeamKey);
       if (t) {
         champion = t.name;
-        tiebreakNote = ` The championship finished TIED on categories; Yahoo's tiebreaker awarded the title to ${t.name} — report the tie score exactly and explain the title was decided on the tiebreaker.`;
+        tiebreakNote = ` The championship finished TIED; Yahoo's tiebreaker awarded the title to ${t.name} — report the tie score exactly and explain the title was decided on the tiebreaker.`;
       }
     }
-    return `Write the "${TITLE.matchups}" segment for the LEAGUE FINALS — the last week of the season. Only two matchups are listed: the CHAMPIONSHIP and the THIRD-PLACE GAME. This is a ${numCats}-category league — all scores must add up to ${numCats}.\n\nLead with the championship${champion ? ` and crown ${champion} as league champion` : ''} — this is the season's climax, so give it the weight of a title game: the trophy, the season-long journey ending here, what sealed it. Then cover the third-place game as the undercard. Both matchups MUST be covered. Use the EXACT scores provided. If a matchup says TIED, report it as a tie. Do NOT mention consolation matchups, next week, or the standings race — the season is over after this.${tiebreakNote}\n\nFor matchups that had mid-week drama (comebacks, lead changes, Sunday swings), weave the storyline into the recap — tell the story of how the title was won.\n\nIMPORTANT: Each team's stats are labeled with their name. Do NOT swap stats between teams.\n\nIMPORTANT: The "stats" lines below are FULL-WEEK CUMULATIVE TOTALS. They are NOT single-day numbers. When describing a Sunday swing, comeback, or lead change, do NOT pair these totals with single-day language. Either describe the swing qualitatively, or make it explicit the numbers are the week's final tally.\n\nMatchup results:\n${data}${storylineBlock}`;
+    return `Write the "${TITLE.matchups}" segment for the LEAGUE FINALS — the last week of the season. Only two matchups are listed: the CHAMPIONSHIP and the THIRD-PLACE GAME. ${SCORE_RULE}\n\nLead with the championship${champion ? ` and crown ${champion} as league champion` : ''} — this is the season's climax, so give it the weight of a title game: the trophy, the season-long journey ending here, what sealed it. Then cover the third-place game as the undercard. Both matchups MUST be covered. Use the EXACT scores provided. If a matchup says TIED, report it as a tie. Do NOT mention consolation matchups, next week, or the standings race — the season is over after this.${tiebreakNote}\n\nFor matchups that had mid-week drama (comebacks, lead changes, Sunday swings), weave the storyline into the recap — tell the story of how the title was won.\n\nIMPORTANT: Each team's stats are labeled with their name. Do NOT swap stats between teams.\n\nIMPORTANT: The "stats" lines below are FULL-WEEK CUMULATIVE TOTALS. They are NOT single-day numbers. When describing a Sunday swing, comeback, or lead change, do NOT pair these totals with single-day language. Either describe the swing qualitatively, or make it explicit the numbers are the week's final tally.\n\nMatchup results:\n${data}${storylineBlock}`;
   }
 
-  return `Write the "${TITLE.matchups}" segment. This is a ${numCats}-category league — all scores must add up to ${numCats}. Lead with the most dramatic matchup. Every matchup MUST be mentioned. Use the EXACT scores provided. If a matchup says TIED, report it as a tie.\n\nFor matchups that had mid-week drama (comebacks, lead changes, Sunday swings), weave the storyline into the recap — don't just report the final score, tell the story of how it got there.\n\nIMPORTANT: Each team's stats are labeled with their name. Do NOT swap stats between teams.\n\nIMPORTANT: The "stats" lines below are FULL-WEEK CUMULATIVE TOTALS. They are NOT single-day numbers. When describing a Sunday swing, comeback, or lead change, do NOT pair these totals with single-day language (e.g., ${sport.narrative.weeklyTotalsExample}). Either describe the swing qualitatively, or make it explicit the numbers are the week's final tally.\n\nMatchup results:\n${data}${storylineBlock}`;
+  return `Write the "${TITLE.matchups}" segment. ${SCORE_RULE} Lead with the most dramatic matchup. Every matchup MUST be mentioned. Use the EXACT scores provided. If a matchup says TIED, report it as a tie.\n\nFor matchups that had mid-week drama (comebacks, lead changes, Sunday swings), weave the storyline into the recap — don't just report the final score, tell the story of how it got there.\n\nIMPORTANT: Each team's stats are labeled with their name. Do NOT swap stats between teams.\n\nIMPORTANT: The "stats" lines below are FULL-WEEK CUMULATIVE TOTALS. They are NOT single-day numbers. When describing a Sunday swing, comeback, or lead change, do NOT pair these totals with single-day language (e.g., ${sport.narrative.weeklyTotalsExample}). Either describe the swing qualitatively, or make it explicit the numbers are the week's final tally.\n\nMatchup results:\n${data}${storylineBlock}`;
 }
 
 function promptPlayersOfTheWeek(segment) {
@@ -311,9 +326,13 @@ function promptPlayersOfTheWeek(segment) {
 function promptPowerRankings(rankings) {
   if (!rankings.length) return null;
   const data = rankings.map((t, i) =>
-    `${i + 1}. ${t.name} [${t.tier}] — ${t.record} (${t.pct.toFixed(3).replace(/^0\./, '.')}) — This week: ${t.weeklyResult} (${t.weeklyCatScore})`
+    `${i + 1}. ${t.name} [${t.tier}] — ${t.record} (${t.pct.toFixed(3).replace(/^0\./, '.')}) — This week: ${t.weeklyResult} (${t.weeklyCatScore})` +
+    (t.pointsFor != null ? ` — season points for ${fmtPoints(t.pointsFor)}, against ${fmtPoints(t.pointsAgainst)}` : '')
   ).join('\n');
-  return `Write the "${TITLE.rankings}". Rank every team explicitly #1 through #${rankings.length}, grouped by tier (Contenders, Solid, Mediocre, Rebuilding) with a brief intro per tier. Label each tier with bold text on its own line (e.g. **Contenders**), never a markdown heading — headings break the article's section structure.\n\nFormat each team as its own entry: a bold header line, then the take. The header line must be exactly:\n**#N Team Name** — record (pct) — W/L/T, weekly category score\nExample: ${sport.narrative.rankingsExample}\nUse the records and weekly scores exactly as provided. Follow each header with a 1-2 sentence take as its own paragraph.\n\nRankings:\n${data}`;
+  const pointsNote = isPointsLeague
+    ? '\n\nThis is a points league: the weekly score is fantasy points (team first, opponent second), and the ranking weighs season points-for alongside the record, so a team with a weak record but big points can rank above its standing. Points against is schedule luck — a good team that keeps facing big scores is unlucky, not bad.'
+    : '';
+  return `Write the "${TITLE.rankings}". Rank every team explicitly #1 through #${rankings.length}, grouped by tier (Contenders, Solid, Mediocre, Rebuilding) with a brief intro per tier. Label each tier with bold text on its own line (e.g. **Contenders**), never a markdown heading — headings break the article's section structure.\n\nFormat each team as its own entry: a bold header line, then the take. The header line must be exactly:\n**#N Team Name** — record (pct) — W/L/T, weekly ${isPointsLeague ? 'points score' : 'category score'}\nExample: ${sport.narrative.rankingsExample}\nUse the records and weekly scores exactly as provided. Follow each header with a 1-2 sentence take as its own paragraph.${pointsNote}\n\nRankings:\n${data}`;
 }
 
 function promptBestPickup(segment) {
@@ -569,7 +588,7 @@ function promptNumbersDontLie(matchups, powerRankings, scoreboard, playoffs) {
     return `Write "${TITLE.numbers}" — FINALS edition. Only the four finalists played matchups that matter this week, so every comparison below is among those four teams (not the whole league — say "among the finalists", never "league-wide"). Find 2-3 statistical stories from the championship and third-place game: the category that decided the title, a finalist that dominated a stat but still lost, matchup luck, a line that won't hold up. 3-4 paragraphs.\n\nCategory leaders among the four finalists:\n${leagueContext.join('\n')}${toughLuckBlock.replace(/in the entire league|in the league|league-wide/g, 'among the finalists')}\n\nMatchup details:\n${matchupData}`;
   }
 
-  return `Write "${TITLE.numbers}". Find 2-3 interesting statistical stories: teams that led the league in a stat but lost, record performances, matchup luck, unsustainable lines. Compare against league averages. 3-4 paragraphs.\n\nLeague-wide category leaders:\n${leagueContext.join('\n')}${toughLuckBlock}\n\nMatchup details:\n${matchupData}`;
+  return `Write "${TITLE.numbers}". Find 2-3 interesting statistical stories: teams that led the league in a stat but lost, record performances, matchup luck, unsustainable lines. Compare against league averages.${isPointsLeague ? ' This is a points league: FPTS is each team\'s fantasy point total for the week (the matchup score), and every other stat feeds into it. Good angles: a team that scored big but lost to a bigger score, the stat that drove the week\'s points, goaltending that cost a team its matchup.' : ''} 3-4 paragraphs.\n\nLeague-wide ${isPointsLeague ? 'stat' : 'category'} leaders:\n${leagueContext.join('\n')}${toughLuckBlock}\n\nMatchup details:\n${matchupData}`;
 }
 
 // --- Rumours ---

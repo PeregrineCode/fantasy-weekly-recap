@@ -1,6 +1,6 @@
 # Fantasy Weekly Recap
 
-Automated weekly fantasy recap sites for Dennis's leagues: Dad's Baseball League 9.0 and Dad's Hockey League 10.0. Every script serves one league per run, chosen with `--league <id>` (or `LEAGUE=<id>`); the default is `baseball`.
+Automated weekly fantasy recap sites for Dennis's leagues: Dad's Baseball League 9.0, Dad's Hockey League 10.0, and KKUPFL - T6 Clouston. Recaps for both hockey leagues are run on Mondays. Every script serves one league per run, chosen with `--league <id>` (or `LEAGUE=<id>`); the default is `baseball`.
 
 ## Leagues
 
@@ -8,10 +8,12 @@ Automated weekly fantasy recap sites for Dennis's leagues: Dad's Baseball League
 |--------|-----------|-------|-----|-------|--------|
 | Dad's Baseball League 9.0 | `baseball` (default) | MLB | 469.l.75479 | 10 | H2H Categories, Auction, FAAB ($200) |
 | Dad's Hockey League 10.0 | `hockey` | NHL | 477.l.48642 | 14 | H2H Categories, Auction, FAAB ($100) |
+| KKUPFL - T6 Clouston | `kkupfl` | NHL | 477.l.121227 | 14 | H2H Points, Snake, FAAB ($100) |
 
 ## Multiple Leagues
 - **Registry:** `lib/league.js` defines each league (game code, Yahoo league ID, paths, env prefix, abandoned teams). `activeLeague()` resolves the league from `--league`/`LEAGUE` once per process.
-- **Sport profiles:** `lib/sports/baseball.js` and `lib/sports/hockey.js` hold everything sport-specific: stat IDs and categories, player groups (batter/pitcher, skater/goalie), stream rules, bench-blunder thresholds, dead-weight rules, the pro schedule API (MLB Stats API / NHL `api-web.nhle.com`), and prompt wording. `analyze.js` and `narrate.js` stay sport-neutral; put new sport logic in the profile, not behind `if (sport === ...)` checks.
+- **Sport profiles:** `lib/sports/baseball.js`, `lib/sports/hockey.js` and `lib/sports/hockey-points.js` (KKUPFL) hold everything sport-specific: stat IDs and categories, player groups (batter/pitcher, skater/goalie), stream rules, bench-blunder thresholds, dead-weight rules, the pro schedule API (MLB Stats API / NHL `api-web.nhle.com`), and prompt wording. `analyze.js` and `narrate.js` stay sport-neutral; put new sport logic in the profile, not behind `if (sport === ...)` checks.
+- **Scoring formats:** each profile's `scoring` (from `lib/scoring.js`) is either categories or points. It formats matchup scores, defines blowouts and storyline thresholds, and sets power-ranking form. In a points league, scoreboard matchups keep the `team1Wins`/`team2Wins` field names but hold fantasy points, per-stat `statWinners` are dropped, and `deriveStats` adds `FPTS` (plus P, SA, SV%) to every parsed stat line, so player value, bench blunders, pickups and streams rank by fantasy points.
 - **Stat IDs collide across sports** (26 is ERA in MLB, SV% in NHL), so `STAT_ID_MAP` in `lib/stat-categories.js` is built from the active league's profile.
 - **Paths:** baseball predates multi-league support and keeps its data at the repo root (`snapshots/`, `articles/`, `site/`, `.deploy/`, `prompts/`). Other leagues live under `leagues/<id>/` with the same layout (`leagues/hockey/prompts/` is committed; snapshots/articles/site are gitignored).
 - **Env vars:** baseball uses the unprefixed names; other leagues prefix league-scoped settings (`HOCKEY_DEPLOY_REPO`, `HOCKEY_LEAGUE_NAME`, `HOCKEY_FAAB_BUDGET`). `RUMOURS_API_URL` and the Yahoo credentials are shared.
@@ -24,6 +26,11 @@ Automated weekly fantasy recap sites for Dennis's leagues: Dad's Baseball League
 **League mechanics:** Rosters are 2C/2LW/2RW/4D/1Util/2G with 4 BN, 1 IR and 2 IR+. Lineups are set daily and lock at puck drop. FAAB is $100 with a maximum of 4 adds per week (free agents not on waivers cost $0, so most adds carry no bid). Trade deadline 2027-03-03. Playoffs: 8 teams; QF week 24, SF week 25, final week 26, with reseeding. Season runs 2026-09-29 to 2027-04-04. Dennis won 2025 (Hockey 9.0, as Mr. Roboto).
 
 **Hockey segment variants:** Players of the Week crowns a skater and a goalie (goalies need ~20 shots against to qualify). The stream segment is "Goalie Stream of the Week". Dead weight flags skaters with zero points despite shots, and goalies under .870. There is no innings-style minimum and no IR-hoarding roast (the league allows 3 IR slots).
+
+## KKUPFL (Points League)
+One 14-team division (Clouston, Tier 6 of 6) of the KKUPFL, the Keeping Karlsson podcast's Patreon league of 700+ managers with promotion and relegation between tiers. Dennis manages t.2 (dMC). League context, rules and the writer cast (Dale Prychitko, Tank Mercier, Priya Raman, Frankie "Two Phones" Lombardi) are in `leagues/kkupfl/prompts/`.
+
+**Scoring:** H2H Points. Skaters: G 4.5, A 3, SHP 2, SOG 0.5, HIT 0.25, BLK 0.5. Goalies: W 3, GA -1.5, SV 0.3, SHO 3 (stat modifiers live in `lib/sports/hockey-points.js`). Rosters 2C/2LW/2RW/4D/2Util/2G, 4 BN, 4 IR+. Trade deadline 2027-02-17, trades within the division only, 24-hour counter-offer window. Playoffs: 6 teams, weeks 23-25, top two seeds get byes. Season ends 2027-03-28.
 
 ## Baseball League
 
@@ -81,7 +88,7 @@ Daily snapshots use a two-phase capture to get both accurate roster positions an
 
 **Bench blunder detection** in `analyze.js` only trusts positions from snapshots with `positionsSource: "nightly"`. Days without nightly position data are excluded from bench analysis to avoid false positives, and a week with no daily snapshots gets no bench blunders at all (weekly roster positions are the *current* lineup).
 
-**Hockey** runs the same two phases via `hockey-nightly-positions.yml` and `hockey-daily-collect.yml`, but they have no GitHub `schedule` (it ran 7+ hours late). The rumours worker's Cloudflare cron triggers start them via `workflow_dispatch` at 12:07 AM + 1:43 AM and 7:23 AM + 9:53 AM EDT (one hour earlier in EST; Cloudflare crons are best-effort, so each job has a retry) — see `CRON_DISPATCHES` in `rumours-worker/worker.js`, which needs the `GITHUB_DISPATCH_TOKEN` secret (fine-grained PAT, Actions read/write, expires after the season). The baseball workflows are disabled in the offseason; re-enable them in the GitHub UI when the MLB season starts.
+**Hockey and KKUPFL** run the same two phases via `hockey-*.yml` and `kkupfl-*.yml` (`nightly-positions` and `daily-collect`); each trigger dispatches both leagues, and the workflows share a concurrency group so they run one after the other. They have no GitHub `schedule` (it ran 7+ hours late). The rumours worker's Cloudflare cron triggers start them via `workflow_dispatch` at 12:07 AM + 1:43 AM and 7:23 AM + 9:53 AM EDT (one hour earlier in EST; Cloudflare crons are best-effort, so each job has a retry) — see `CRON_DISPATCHES` in `rumours-worker/worker.js`, which needs the `GITHUB_DISPATCH_TOKEN` secret (fine-grained PAT, Actions read/write, expires after the season). The baseball workflows are disabled in the offseason; re-enable them in the GitHub UI when the MLB season starts.
 
 ## Usage
 ```bash
@@ -151,6 +158,10 @@ YAHOO_NHL_LEAGUE_ID      # Optional: defaults to 48642
 HOCKEY_DEPLOY_REPO       # GitHub Pages target for the hockey site
 HOCKEY_LEAGUE_NAME       # Optional
 HOCKEY_FAAB_BUDGET       # Optional (default: 100)
+
+# KKUPFL (KKUPFL_ prefix)
+YAHOO_KKUPFL_LEAGUE_ID   # Optional: defaults to 121227
+KKUPFL_DEPLOY_REPO       # GitHub Pages target for the KKUPFL site
 ```
 
 ## Trade Rumours
