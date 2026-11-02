@@ -10,7 +10,10 @@ const path = require('path');
 const { FINALS_ROUNDS } = require('./yahoo-helpers');
 const { activeLeague } = require('./lib/league');
 const { etDate, etHour } = require('./lib/et');
+const { hasDayTotals } = require('./lib/daily-totals');
 const { resolveCounterOffers } = require('./lib/trades');
+const { buildAcquisitionTimestamps } = require('./lib/acquisitions');
+const { gamesOnTeam } = require('./lib/games-played');
 
 const league = activeLeague();
 const sport = league.sportProfile;
@@ -326,7 +329,7 @@ function computeDaysRostered(addTimestampSec, weekEndStr) {
   return Math.max(0, Math.round((weekEndDay - startDay) / 86400000) + 1);
 }
 
-function findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd) {
+function findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd, dailySnapshots, gameStarts) {
   const adds = transactions.filter(tx =>
     tx.type === 'add' || tx.type === 'add/drop'
   );
@@ -366,6 +369,8 @@ function findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd
         group: sport.groupForPosition(added.position),
         timestamp: tx.timestamp,
         daysRostered: computeDaysRostered(tx.timestamp, weekEnd),
+        gamesPlayed: gamesOnTeam(dailySnapshots, added.playerKey, added.destTeam, sport.inactiveSlots,
+          { at: tx.timestamp, proTeam: added.team, gameStarts }),
       });
     }
   }
@@ -376,8 +381,8 @@ function findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd
 /**
  * Best pickup — added player with best weekly stat line.
  */
-function analyzeBestPickup(transactions, weeklyStats, teamNames, weekEnd) {
-  const added = findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd);
+function analyzeBestPickup(transactions, weeklyStats, teamNames, weekEnd, dailySnapshots, gameStarts) {
+  const added = findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd, dailySnapshots, gameStarts);
   const sorted = added
     .filter(p => p.group === sport.pickupGroup)
     .sort((a, b) => b.score - a.score);
@@ -390,6 +395,7 @@ function analyzeBestPickup(transactions, weeklyStats, teamNames, weekEnd) {
       fantasyTeam: p.fantasyTeam,
       stats: p.stats,
       daysRostered: p.daysRostered,
+      gamesPlayed: p.gamesPlayed,
     })),
     count: sorted.length,
   };
@@ -398,13 +404,21 @@ function analyzeBestPickup(transactions, weeklyStats, teamNames, weekEnd) {
 /**
  * Worst pickup — added player who produced nothing or negative value.
  * Excludes players added too late in the week to have a real chance to
- * contribute (≤1 fantasy day) — a 0-fer in a single game isn't a roastable
- * decision, the manager simply didn't have a week of data to look bad.
+ * contribute (≤1 fantasy day). Among the rest, players who were bad across
+ * several lineup games rank ahead of one-game duds: a 0-fer in a single game
+ * is a thin roast, so a one-gamer only makes the list when there aren't
+ * enough multi-game flops. With no daily data (games unknown) the player
+ * ranks with the multi-game group, as before.
  */
-function analyzeWorstPickup(transactions, weeklyStats, teamNames, weekEnd) {
-  const added = findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd);
+// Lineup games a Hall of Shame pick should have before a one-gamer is used
+const MIN_SHAME_GAMES = 2;
+
+function analyzeWorstPickup(transactions, weeklyStats, teamNames, weekEnd, dailySnapshots, gameStarts) {
+  const added = findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd, dailySnapshots, gameStarts);
   const eligible = added.filter(p => p.daysRostered == null || p.daysRostered >= 2);
-  const sorted = eligible.sort((a, b) => a.score - b.score);
+  const lineupGames = p => p.gamesPlayed ? (p.gamesPlayed.lineupGames ?? p.gamesPlayed.games) : null;
+  const thin = p => lineupGames(p) != null && lineupGames(p) < MIN_SHAME_GAMES;
+  const sorted = eligible.sort((a, b) => (thin(a) - thin(b)) || (a.score - b.score));
 
   return {
     bottom: sorted.slice(0, 3).map(p => ({
@@ -414,6 +428,7 @@ function analyzeWorstPickup(transactions, weeklyStats, teamNames, weekEnd) {
       fantasyTeam: p.fantasyTeam,
       stats: p.stats,
       daysRostered: p.daysRostered,
+      gamesPlayed: p.gamesPlayed,
     })),
     count: sorted.length,
   };
@@ -424,8 +439,8 @@ function analyzeWorstPickup(transactions, weeklyStats, teamNames, weekEnd) {
  * The sport's streamQualifies sets a workload floor (5+ IP, ~a full start in
  * net) so tiny relief lines can't dominate the ratio-stat z-scores.
  */
-function analyzeBestStream(transactions, weeklyStats, teamNames, weekEnd) {
-  const added = findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd);
+function analyzeBestStream(transactions, weeklyStats, teamNames, weekEnd, dailySnapshots, gameStarts) {
+  const added = findAddedPlayersWithStats(transactions, weeklyStats, teamNames, weekEnd, dailySnapshots, gameStarts);
   const streamCats = sport.playerGroups.find(g => g.key === sport.streamGroup).cats;
   const pitchers = added
     .filter(p => p.group === sport.streamGroup && sport.streamQualifies(p.stats))
@@ -439,6 +454,7 @@ function analyzeBestStream(transactions, weeklyStats, teamNames, weekEnd) {
       fantasyTeam: p.fantasyTeam,
       stats: p.stats,
       daysRostered: p.daysRostered,
+      gamesPlayed: p.gamesPlayed,
     })),
     count: pitchers.length,
   };
@@ -653,7 +669,10 @@ function analyzePowerRankings(standings, scoreboard, teamNames) {
  * Players of the Week — standout individual performances across all rosters.
  * Finds the top players in each of the sport's player groups (batters and
  * pitchers, or skaters and goalies) by z-score from weekly roster stats.
- * Excludes bench and injured-list players.
+ * Yahoo's weekly team-roster stats already count only the days a player was
+ * in that team's active lineup (bench, IR and days on another team are left
+ * out), so the line is used as is. Don't filter on selectedPosition: it is the
+ * *current* lineup, and would drop a star who happens to be benched today.
  * Returns { <group>: top, <group>RunnersUp: [...] } for each group.
  */
 function analyzePlayersOfTheWeek(weeklyRosters) {
@@ -666,9 +685,6 @@ function analyzePlayersOfTheWeek(weeklyRosters) {
   for (const [teamKey, roster] of Object.entries(weeklyRosters || {})) {
     if (isAbandonedTeam(teamKey)) continue;
     for (const player of roster.players) {
-      // Skip bench and IL players — only count active lineup contributions
-      if (sport.inactiveSlots.includes(player.selectedPosition)) continue;
-
       const stats = player.stats || {};
       if (Object.keys(stats).length === 0) continue;
       if (!hasRealStats(stats)) continue;
@@ -718,21 +734,9 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
   //    Also excludes days where the player was added after their game started —
   //    if a manager picked up a player after their game, they couldn't have started them.
   if (dailySnapshots && dailySnapshots.length > 0 && weeklyRosters) {
-    // Build a lookup: "playerKey|teamKey" → add timestamp (Unix seconds)
-    const addTimestamps = {};
-    const addedPlayerTeams = {}; // playerKey → pro team abbrev at time of add
-    for (const tx of transactions) {
-      if (tx.type !== 'add' && tx.type !== 'add/drop') continue;
-      for (const p of tx.players) {
-        if (p.type !== 'add' || !p.destTeam) continue;
-        const key = `${p.playerKey}|${p.destTeam}`;
-        // Keep earliest add timestamp if multiple
-        if (!addTimestamps[key] || tx.timestamp < addTimestamps[key]) {
-          addTimestamps[key] = tx.timestamp;
-          addedPlayerTeams[key] = p.team; // pro team abbreviation
-        }
-      }
-    }
+    // "playerKey|teamKey" → when the player joined that team (adds and trades,
+    // Unix seconds) and his pro team, to rule out days he couldn't be started
+    const { addTimestamps, addedPlayerTeams } = buildAcquisitionTimestamps(transactions);
 
     // Each team's weekly stats + the categories it won outright, so the sport
     // profile can judge whether a benching was ratio protection (a goalie sat
@@ -1025,6 +1029,8 @@ function analyzeRoasts(transactions, weeklyStats, rosters, weeklyRosters, teamNa
  * Looks for comebacks, collapses, lead changes, sunday heroics, wire-to-wire dominance.
  */
 function analyzeStorylines(dailySnapshots, finalScoreboard, teamNames) {
+  // Backfilled days carry a later score under an early date; leave them out
+  dailySnapshots = (dailySnapshots || []).filter(hasDayTotals);
   if (!dailySnapshots || dailySnapshots.length < 2) {
     return { available: false, storylines: [] };
   }
@@ -1099,7 +1105,10 @@ function analyzeStorylines(dailySnapshots, finalScoreboard, teamNames) {
     }, 0);
 
     // Check for wire-to-wire: winner led every single day
-    const wireToWire = arc.every(day => day.leader === finalWinner);
+    // Only wire-to-wire if the arc covers the week's first day (backfilled
+    // early days are dropped, and the missing days could have had either leader)
+    const coversWeekStart = !matchup.weekStart || arc[0].date === matchup.weekStart;
+    const wireToWire = coversWeekStart && arc.every(day => day.leader === finalWinner);
 
     // Sunday swing: leader changed on the final day
     const sundaySwing = arc.length >= 2 &&
@@ -1284,9 +1293,9 @@ async function analyze(week) {
       storylines,
       matchups: addTopScorers(analyzeMatchups(scoreboard, teamNames), weeklyRosters),
       playersOfTheWeek: analyzePlayersOfTheWeek(weeklyRosters),
-      bestPickup: analyzeBestPickup(transactions, weeklyStats, teamNames, meta?.weekEnd),
-      worstPickup: analyzeWorstPickup(transactions, weeklyStats, teamNames, meta?.weekEnd),
-      bestStream: analyzeBestStream(transactions, weeklyStats, teamNames, meta?.weekEnd),
+      bestPickup: analyzeBestPickup(transactions, weeklyStats, teamNames, meta?.weekEnd, dailySnapshots_, gameStarts),
+      worstPickup: analyzeWorstPickup(transactions, weeklyStats, teamNames, meta?.weekEnd, dailySnapshots_, gameStarts),
+      bestStream: analyzeBestStream(transactions, weeklyStats, teamNames, meta?.weekEnd, dailySnapshots_, gameStarts),
       transactionDesk: analyzeTransactionDesk(transactions, weeklyStats, teamNames, standings, week, overturnedTrades, weeklyRosters),
       // Standings are frozen during the playoffs — movers and power rankings
       // would just restate the regular-season table, so the finals skip them.

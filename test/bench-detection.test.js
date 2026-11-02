@@ -1,5 +1,6 @@
 const { describe, it } = require('node:test');
 const assert = require('node:assert/strict');
+const { buildAcquisitionTimestamps } = require('../lib/acquisitions');
 
 /**
  * Tests for the bench detection logic in analyzeRoasts.
@@ -12,20 +13,7 @@ const assert = require('node:assert/strict');
 
 // Replicate the core bench detection logic from analyze.js for unit testing
 function detectBenchFailures(dailySnapshots, transactions, gameStarts) {
-  // Build add timestamps lookup
-  const addTimestamps = {};
-  const addedPlayerTeams = {};
-  for (const tx of transactions) {
-    if (tx.type !== 'add' && tx.type !== 'add/drop') continue;
-    for (const p of tx.players) {
-      if (p.type !== 'add' || !p.destTeam) continue;
-      const key = `${p.playerKey}|${p.destTeam}`;
-      if (!addTimestamps[key] || tx.timestamp < addTimestamps[key]) {
-        addTimestamps[key] = tx.timestamp;
-        addedPlayerTeams[key] = p.team;
-      }
-    }
-  }
+  const { addTimestamps, addedPlayerTeams } = buildAcquisitionTimestamps(transactions);
 
   // Build bench days
   const benchDays = {};
@@ -297,5 +285,66 @@ describe('fetchGameStartTimes', () => {
       const ts = new Date(game.gameDate).getTime();
       assert.ok(!isNaN(ts), `gameDate "${game.gameDate}" should be a valid timestamp`);
     }
+  });
+});
+
+describe('bench detection — players acquired by trade', () => {
+  // KKUPFL 2026-10-31: Crosby played for his old team, the trade went through
+  // after the nightly capture, and the morning snapshot put him on the new
+  // team's bench. The new manager never had him that night.
+  const OCT31_7PM_ET = Math.floor(new Date('2026-10-31T23:00:00Z').getTime() / 1000);
+  const NOV01_413AM_ET = Math.floor(new Date('2026-11-01T08:13:00Z').getTime() / 1000);
+  const trade = ts => [{
+    type: 'trade', status: 'successful', timestamp: ts,
+    players: [
+      { type: 'trade', playerKey: 'p.1', team: 'PIT', sourceTeam: 't.2', destTeam: 't.1' },
+      { type: 'trade', playerKey: 'p.2', team: 'NYI', sourceTeam: 't.1', destTeam: 't.2' },
+    ],
+  }];
+  const snaps = [makeSnap('2026-10-31', [{ key: 'p.1', name: 'Crosby', pos: 'BN', stats: { G: 1, A: 2, SOG: 2 } }])];
+
+  it('does not flag a player traded in after his game started', () => {
+    const gameStarts = new Map([['PIT|2026-10-31', OCT31_7PM_ET]]);
+    const result = detectBenchFailures(snaps, trade(NOV01_413AM_ET), gameStarts);
+    assert.equal(result['p.1|t.1'].benchedWithStats, 0);
+  });
+
+  it('does not flag it without game start data either (day-level fallback)', () => {
+    const result = detectBenchFailures(snaps, trade(NOV01_413AM_ET), new Map());
+    assert.equal(result['p.1|t.1'].benchedWithStats, 0);
+  });
+
+  it('still flags a player traded in before his game', () => {
+    const gameStarts = new Map([['PIT|2026-10-31', OCT31_7PM_ET]]);
+    const result = detectBenchFailures(snaps, trade(OCT31_7PM_ET - 3600 * 6), gameStarts);
+    assert.equal(result['p.1|t.1'].benchedWithStats, 1);
+  });
+});
+
+describe('buildAcquisitionTimestamps', () => {
+  it('records adds and both sides of a trade, and skips drops and failed trades', () => {
+    const { addTimestamps, addedPlayerTeams } = buildAcquisitionTimestamps([
+      { type: 'add/drop', timestamp: 100, players: [
+        { type: 'add', playerKey: 'p.1', team: 'BOS', destTeam: 't.1' },
+        { type: 'drop', playerKey: 'p.9', team: 'BOS', sourceTeam: 't.1' },
+      ] },
+      { type: 'trade', status: 'successful', timestamp: 200, players: [
+        { type: 'trade', playerKey: 'p.2', team: 'PIT', sourceTeam: 't.2', destTeam: 't.1' },
+        { type: 'trade', playerKey: 'p.3', team: 'NYI', sourceTeam: 't.1', destTeam: 't.2' },
+      ] },
+      { type: 'trade', status: 'vetoed', timestamp: 300, players: [
+        { type: 'trade', playerKey: 'p.4', team: 'TOR', sourceTeam: 't.3', destTeam: 't.1' },
+      ] },
+    ]);
+    assert.deepEqual(addTimestamps, { 'p.1|t.1': 100, 'p.2|t.1': 200, 'p.3|t.2': 200 });
+    assert.equal(addedPlayerTeams['p.2|t.1'], 'PIT');
+  });
+
+  it('keeps the earliest arrival when a player joins the same team twice', () => {
+    const { addTimestamps } = buildAcquisitionTimestamps([
+      { type: 'add', timestamp: 500, players: [{ type: 'add', playerKey: 'p.1', team: 'BOS', destTeam: 't.1' }] },
+      { type: 'add', timestamp: 100, players: [{ type: 'add', playerKey: 'p.1', team: 'BOS', destTeam: 't.1' }] },
+    ]);
+    assert.equal(addTimestamps['p.1|t.1'], 100);
   });
 });

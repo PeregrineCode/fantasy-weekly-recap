@@ -11,7 +11,8 @@ const path = require('path');
 const { createClient } = require('yahoo-fantasy-api');
 const { fetchStandings, fetchAllRosters } = require('./lib/yahoo-fetch');
 const { parseYahooStats } = require('./lib/stat-categories');
-const { parseScoreboardResponse, labelPlayoffRounds } = require('./yahoo-helpers');
+const { parseScoreboardResponse, labelPlayoffRounds, useFinalDayTeamStats } = require('./yahoo-helpers');
+const { hasDayTotals } = require('./lib/daily-totals');
 const { activeLeague } = require('./lib/league');
 const { etMidnightUTC } = require('./lib/et');
 
@@ -303,6 +304,17 @@ async function collect(targetWeek) {
   };
   fs.writeFileSync(path.join(snapshotDir, 'meta.json'), JSON.stringify(metaFile, null, 2));
   console.log(`  Saved meta.json`);
+
+  // Take team stat lines from the final day's snapshot when it was collected on
+  // time; a late collect can pick up next week's games in team_stats
+  const finalDailyFile = path.join(snapshotDir, 'daily', `${metaFile.weekEnd}.json`);
+  if (fs.existsSync(finalDailyFile)) {
+    const finalDaily = JSON.parse(fs.readFileSync(finalDailyFile, 'utf8'));
+    if (hasDayTotals(finalDaily)) {
+      const changed = useFinalDayTeamStats(scoreboard, finalDaily);
+      if (changed) console.log(`  Team stats for ${changed} teams taken from the ${metaFile.weekEnd} daily snapshot (Yahoo's weekly totals had moved)`);
+    }
+  }
 
   fs.writeFileSync(path.join(snapshotDir, 'scoreboard.json'), JSON.stringify(scoreboard, null, 2));
   console.log(`  Saved scoreboard.json (${scoreboard.length} matchups)`);

@@ -14,6 +14,7 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const { activeLeague } = require('./lib/league');
 const { parseManagerNotes, findNoteMentions } = require('./lib/background-notes');
+const { describeGames } = require('./lib/games-played');
 
 const league = activeLeague();
 const sport = league.sportProfile;
@@ -170,6 +171,8 @@ const fmtStat = (k, v) => {
   // Hockey goalie ratios keep fixed precision even when whole: .917 / 1.000, 3.00
   if (k === 'SV%' && typeof v === 'number') return `${k}: ${v.toFixed(3).replace(/^0\./, '.')}`;
   if (k === 'GAA' && typeof v === 'number') return `${k}: ${v.toFixed(2)}`;
+  // Fantasy points read to one decimal everywhere (10.75 → 10.8), matching scores
+  if (k === 'FPTS' && typeof v === 'number') return `${k}: ${fmtPoints(v)}`;
   if (typeof v !== 'number' || v % 1 === 0) return `${k}: ${v}`;
   if (THREE_DECIMAL_STATS.has(k)) return `${k}: ${v.toFixed(3)}`;
   if (TWO_DECIMAL_STATS.has(k)) return `${k}: ${v.toFixed(2)}`;
@@ -189,6 +192,24 @@ const { fmtPoints } = require('./lib/scoring');
 const scoring = sport.scoring;
 const isPointsLeague = scoring.type === 'points';
 
+/**
+ * Points leagues only: every team's weekly score, ranked, so writers can say
+ * "third-highest" without ranking 14 totals themselves (they get it wrong).
+ */
+function weeklyScoreRankBlock(scoreboard) {
+  if (!isPointsLeague || !scoreboard?.length) return '';
+  const rows = scoreboard.flatMap(m => [
+    { name: m.team1.name, pts: m.team1Wins, won: m.winnerTeamKey === m.team1.teamKey, tied: !m.winnerTeamKey },
+    { name: m.team2.name, pts: m.team2Wins, won: m.winnerTeamKey === m.team2.teamKey, tied: !m.winnerTeamKey },
+  ]).filter(r => typeof r.pts === 'number').sort((a, b) => b.pts - a.pts);
+  const lines = rows.map(r => {
+    const rank = rows.findIndex(o => o.pts === r.pts) + 1;
+    const tied = rows.filter(o => o.pts === r.pts).length > 1;
+    return `  ${tied ? 'T-' : ''}${rank}. ${r.name} ${fmtPoints(r.pts)} (${r.tied ? 'tied' : r.won ? 'won' : 'lost'})`;
+  });
+  return `\n\nEvery team's score this week, highest first. Take any ranking of weekly scores ("second-highest", "only X scored more", "N teams topped it") from this list exactly; never rank the scores yourself:\n${lines.join('\n')}`;
+}
+
 // How matchup scores work, for the matchup and finals prompts
 const SCORE_RULE = isPointsLeague
   ? 'This is a head-to-head POINTS league: each matchup score is the two teams\' fantasy point totals for the week (winner first). There are no categories, so never describe a matchup as won or lost "on categories". FPTS is a fantasy point total.'
@@ -196,7 +217,7 @@ const SCORE_RULE = isPointsLeague
 
 // Points leagues: each team's top fantasy producers for the week
 const topScorersLine = team => (team.topScorers?.length
-  ? `\n  ${team.name} top scorers (fantasy points over the week, bench days included): ${team.topScorers.map(p => `${p.name} (${p.position}, ${p.team}) ${p.fpts.toFixed(2)}`).join(', ')}`
+  ? `\n  ${team.name} top scorers (fantasy points over the week, bench days included): ${team.topScorers.map(p => `${p.name} (${p.position}, ${p.team}) ${fmtPoints(p.fpts)}`).join(', ')}`
   : '');
 
 // Bracket label shown ahead of a playoff matchup line, e.g. "[CHAMPIONSHIP] ".
@@ -323,7 +344,7 @@ function promptPlayersOfTheWeek(segment) {
   return `Write "${TITLE.potw}" highlighting the most dominant individual performances across the league. ${sport.narrative.potwInstruction} 2-3 paragraphs.\n\n${parts.join('\n\n')}`;
 }
 
-function promptPowerRankings(rankings) {
+function promptPowerRankings(rankings, scoreboard) {
   if (!rankings.length) return null;
   const data = rankings.map((t, i) =>
     `${i + 1}. ${t.name} [${t.tier}] — ${t.record} (${t.pct.toFixed(3).replace(/^0\./, '.')}) — This week: ${t.weeklyResult} (${t.weeklyCatScore})` +
@@ -332,14 +353,14 @@ function promptPowerRankings(rankings) {
   const pointsNote = isPointsLeague
     ? '\n\nThis is a points league: the weekly score is fantasy points (team first, opponent second), and the ranking weighs season points-for alongside the record, so a team with a weak record but big points can rank above its standing. Points against is schedule luck — a good team that keeps facing big scores is unlucky, not bad.'
     : '';
-  return `Write the "${TITLE.rankings}". Rank every team explicitly #1 through #${rankings.length}, grouped by tier (Contenders, Solid, Mediocre, Rebuilding) with a brief intro per tier. Label each tier with bold text on its own line (e.g. **Contenders**), never a markdown heading — headings break the article's section structure.\n\nFormat each team as its own entry: a bold header line, then the take. The header line must be exactly:\n**#N Team Name** — record (pct) — W/L/T, weekly ${isPointsLeague ? 'points score' : 'category score'}\nExample: ${sport.narrative.rankingsExample}\nUse the records and weekly scores exactly as provided. Follow each header with a 1-2 sentence take as its own paragraph.${pointsNote}\n\nRankings:\n${data}`;
+  return `Write the "${TITLE.rankings}". Rank every team explicitly #1 through #${rankings.length}, grouped by tier (Contenders, Solid, Mediocre, Rebuilding) with a brief intro per tier. Label each tier with bold text on its own line (e.g. **Contenders**), never a markdown heading — headings break the article's section structure.\n\nFormat each team as its own entry: a bold header line, then the take. The header line must be exactly:\n**#N Team Name** — record (pct) — W/L/T, weekly ${isPointsLeague ? 'points score' : 'category score'}\nExample: ${sport.narrative.rankingsExample}\nUse the records and weekly scores exactly as provided. Follow each header with a 1-2 sentence take as its own paragraph.${pointsNote}\n\nRankings:\n${data}${weeklyScoreRankBlock(scoreboard)}`;
 }
 
 function promptBestPickup(segment) {
   if (!segment.top.length) return null;
   const data = segment.top.map(p => {
     const statLine = Object.entries(p.stats).filter(([k, v]) => v !== 0 && !isNaN(v)).map(([k, v]) => fmtStat(k, v)).join(', ');
-    return `${p.name} (${p.position}, ${p.team}) — picked up by ${p.fantasyTeam}\n  Stats: ${statLine}`;
+    return `${p.name} (${p.position}, ${p.team}) — picked up by ${p.fantasyTeam}\n  Stats: ${statLine}` + (describeGames(p.gamesPlayed) ? `\n  ${describeGames(p.gamesPlayed)}` : '');
   }).join('\n\n');
   return `Write the "${TITLE['best-pickup']}". Crown the #1 pickup, praise the manager, mention runners-up briefly.\n\nTop pickups:\n${data}`;
 }
@@ -348,7 +369,7 @@ function promptWorstPickup(segment) {
   if (!segment.bottom.length) return null;
   const data = segment.bottom.map(p => {
     const statLine = Object.entries(p.stats).filter(([k, v]) => !isNaN(v)).map(([k, v]) => fmtStat(k, v)).join(', ');
-    return `${p.name} (${p.position}, ${p.team}) — picked up by ${p.fantasyTeam}\n  Stats: ${statLine}`;
+    return `${p.name} (${p.position}, ${p.team}) — picked up by ${p.fantasyTeam}\n  Stats: ${statLine}` + (describeGames(p.gamesPlayed) ? `\n  ${describeGames(p.gamesPlayed)}` : '');
   }).join('\n\n');
   return `Write the "${TITLE['hall-of-shame']}" about the worst waiver pickups this week. Roast the decisions. Be funny about it.\n\nWorst pickups:\n${data}`;
 }
@@ -357,7 +378,7 @@ function promptBestStream(segment) {
   if (!segment.top.length) return null;
   const data = segment.top.map(p => {
     const statLine = Object.entries(p.stats).filter(([k, v]) => !isNaN(v)).map(([k, v]) => fmtStat(k, v)).join(', ');
-    return `${p.name} (${p.position}, ${p.team}) — streamed by ${p.fantasyTeam}\n  Stats: ${statLine}`;
+    return `${p.name} (${p.position}, ${p.team}) — streamed by ${p.fantasyTeam}\n  Stats: ${statLine}` + (describeGames(p.gamesPlayed) ? `\n  ${describeGames(p.gamesPlayed)}` : '');
   }).join('\n\n');
   return `Write the "${TITLE.stream}" ${sport.narrative.streamFocus}\n\n${sport.narrative.streamListLabel}:\n${data}`;
 }
@@ -390,7 +411,7 @@ function promptTransactionDesk(segment) {
     parts.push(`OVERTURNED TRADES (agreed, then undone; no player actually changed teams):\n${reversedData}`);
   }
   if (segment.trades.some(t => t.beatTrade) || reversedTrades.length > 0) {
-    parts.push(`LEAGUE RULE: After a trade is accepted, other teams have 48 hours to make a better counter offer. If a counter wins, the original trade is undone and the player goes to the counter-offering team instead. The team that lost the deal got outbid and keeps the players it had offered (it gave up nothing); the team that traded the player away took the better offer.`);
+    parts.push(`LEAGUE RULE: After a trade is accepted, other teams have ${league.counterOfferHours || 48} hours to make a better counter offer. If a counter wins, the original trade is undone and the player goes to the counter-offering team instead. The team that lost the deal got outbid and keeps the players it had offered (it gave up nothing); the team that traded the player away took the better offer.`);
   }
 
   // FAAB section
@@ -588,7 +609,7 @@ function promptNumbersDontLie(matchups, powerRankings, scoreboard, playoffs) {
     return `Write "${TITLE.numbers}" — FINALS edition. Only the four finalists played matchups that matter this week, so every comparison below is among those four teams (not the whole league — say "among the finalists", never "league-wide"). Find 2-3 statistical stories from the championship and third-place game: the category that decided the title, a finalist that dominated a stat but still lost, matchup luck, a line that won't hold up. 3-4 paragraphs.\n\nCategory leaders among the four finalists:\n${leagueContext.join('\n')}${toughLuckBlock.replace(/in the entire league|in the league|league-wide/g, 'among the finalists')}\n\nMatchup details:\n${matchupData}`;
   }
 
-  return `Write "${TITLE.numbers}". Find 2-3 interesting statistical stories: teams that led the league in a stat but lost, record performances, matchup luck, unsustainable lines. Compare against league averages.${isPointsLeague ? ' This is a points league: FPTS is each team\'s fantasy point total for the week (the matchup score), and every other stat feeds into it. Good angles: a team that scored big but lost to a bigger score, the stat that drove the week\'s points, goaltending that cost a team its matchup.' : ''} 3-4 paragraphs.\n\nLeague-wide ${isPointsLeague ? 'stat' : 'category'} leaders:\n${leagueContext.join('\n')}${toughLuckBlock}\n\nMatchup details:\n${matchupData}`;
+  return `Write "${TITLE.numbers}". Find 2-3 interesting statistical stories: teams that led the league in a stat but lost, record performances, matchup luck, unsustainable lines. Compare against league averages.${isPointsLeague ? ' This is a points league: FPTS is each team\'s fantasy point total for the week (the matchup score), and every other stat feeds into it. Good angles: a team that scored big but lost to a bigger score, the stat that drove the week\'s points, goaltending that cost a team its matchup.' : ''} 3-4 paragraphs.\n\nLeague-wide ${isPointsLeague ? 'stat' : 'category'} leaders:\n${leagueContext.join('\n')}${toughLuckBlock}${weeklyScoreRankBlock(sb)}\n\nMatchup details:\n${matchupData}`;
 }
 
 // --- Rumours ---
@@ -929,7 +950,7 @@ async function narrate(week, { only, except } = {}) {
   const potwSeg = potwP ? { title: TITLE.potw, prompt: potwP, fallback: '*No standout performances this week.*' } : null;
 
   // Individual: Power Rankings
-  const prP = promptPowerRankings(segments.powerRankings);
+  const prP = promptPowerRankings(segments.powerRankings, rawScoreboard);
   const prSeg = prP ? { title: TITLE.rankings, prompt: prP, fallback: () => fallbackPowerRankings(segments.powerRankings) } : null;
 
   // Individual: Standings Movers (if available)
@@ -1209,4 +1230,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { narrate, SEGMENT_REGISTRY, parseArticleSections, matchSectionsToRegistry, spliceArticle, findToughLuckLosses, priorColumns };
+module.exports = { narrate, SEGMENT_REGISTRY, parseArticleSections, matchSectionsToRegistry, spliceArticle, findToughLuckLosses, priorColumns, weeklyScoreRankBlock };

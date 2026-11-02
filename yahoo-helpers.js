@@ -158,4 +158,31 @@ function labelPlayoffRounds(matchups, prevMatchups, weeksRemaining) {
 
 const FINALS_ROUNDS = new Set(['Championship', 'Third Place']);
 
-module.exports = { parseTeamInfo, parseStatValues, parseScoreboardResponse, labelPlayoffRounds, FINALS_ROUNDS };
+/**
+ * Replace each team's weekly stat line with the one from the week's final daily
+ * snapshot (collected the morning after the last day). Once the next week has
+ * started, Yahoo's scoreboard for the finished week can fold that week's new
+ * games into team_stats while the matchup score stays put (seen in KKUPFL
+ * 2026-10-26: dMC's stat line was worth 285.2 against an official 276.2).
+ * Scores, points and category winners stay as Yahoo reports them.
+ *
+ * @returns {number} How many teams' stat lines changed
+ */
+function useFinalDayTeamStats(matchups, finalDaily) {
+  const finalStats = {};
+  for (const m of finalDaily?.matchups || []) {
+    for (const t of [m.team1, m.team2]) finalStats[t.teamKey] = t.stats;
+  }
+  let changed = 0;
+  for (const m of matchups) {
+    for (const t of [m.team1, m.team2]) {
+      const stats = finalStats[t.teamKey];
+      if (!stats) continue;
+      if (JSON.stringify(stats) !== JSON.stringify(t.stats)) changed++;
+      t.stats = stats;
+    }
+  }
+  return changed;
+}
+
+module.exports = { parseTeamInfo, parseStatValues, parseScoreboardResponse, labelPlayoffRounds, useFinalDayTeamStats, FINALS_ROUNDS };
