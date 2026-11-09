@@ -47,7 +47,7 @@ function buildEditorNotesBlock(snapshotDir) {
   if (!fs.existsSync(p)) return '';
   const notes = fs.readFileSync(p, 'utf-8').trim();
   if (!notes) return '';
-  return `\n\n# Editor's Notes This Week\nThe commissioner supplied these facts for this week. They are verified and outrank the reference's hedging rules where they speak to the same claim (if a note calls something a league record, call it a league record). The Matchup Recaps MUST feature every note prominently in the relevant matchup. Other columns may react to a note where it fits their beat, but keep it to a line or two so the issue doesn't repeat itself. Do not invent details beyond what the notes and data say.\n${notes}\n`;
+  return `\n\n# Editor's Notes This Week\nThese facts are verified. State them as plain fact in your own voice, and never attribute them to a commissioner, editor or confirmation. They outrank the reference's hedging rules where they speak to the same claim (if a note calls something a league record, call it a league record). The Matchup Recaps MUST feature every note prominently in the relevant matchup. Every other column leaves the notes alone unless one is that column's own subject (a record-setting player in Players of the Week, say), and even then gives it one sentence at most. Readers will already have read it in the lead. Do not invent details beyond what the notes and data say.\n${notes}\n`;
 }
 
 // Writer personas (by role: lead, hottakes, analytics, insider) and any
@@ -366,18 +366,18 @@ function promptPowerRankings(rankings, scoreboard) {
     (t.pointsFor != null ? ` — season points for ${fmtPoints(t.pointsFor)}, against ${fmtPoints(t.pointsAgainst)}` : '')
   ).join('\n');
   const pointsNote = isPointsLeague
-    ? '\n\nThis is a points league: the weekly score is fantasy points (team first, opponent second), and the ranking weighs season points-for alongside the record, so a team with a weak record but big points can rank above its standing. Points against is schedule luck — a good team that keeps facing big scores is unlucky, not bad.'
+    ? '\n\nThis is a points league: the weekly score is fantasy points (team first, opponent second), and the ranking weighs season points-for alongside the record, so a team with a weak record but big points can rank above its standing. Points against is schedule luck. High points against means a hard schedule (a good team that keeps facing big scores is unlucky); low points against means an easy one (the schedule has helped). Never cite a low points-against total as proof a team needed no help.'
     : '';
   return `Write the "${TITLE.rankings}". Rank every team explicitly #1 through #${rankings.length}, grouped by tier (Contenders, Solid, Mediocre, Rebuilding) with a brief intro per tier. Label each tier with bold text on its own line (e.g. **Contenders**), never a markdown heading — headings break the article's section structure.\n\nFormat each team as its own entry: a bold header line, then the take. The header line must be exactly:\n**#N Team Name** — record (pct) — W/L/T, weekly ${isPointsLeague ? 'points score' : 'category score'}\nExample: ${sport.narrative.rankingsExample}\nUse the records and weekly scores exactly as provided. Follow each header with a 1-2 sentence take as its own paragraph.${pointsNote}\n\nRankings:\n${data}${weeklyScoreRankBlock(scoreboard)}`;
 }
 
 function promptBestPickup(segment) {
   if (!segment.top.length) return null;
-  const data = segment.top.map(p => {
+  const data = segment.top.map((p, i) => {
     const statLine = Object.entries(p.stats).filter(([k, v]) => v !== 0 && !isNaN(v)).map(([k, v]) => fmtStat(k, v)).join(', ');
-    return `${p.name} (${p.position}, ${p.team}) — picked up by ${p.fantasyTeam}\n  Stats: ${statLine}` + (describeGames(p.gamesPlayed) ? `\n  ${describeGames(p.gamesPlayed)}` : '');
+    return `#${i + 1}: ${p.name} (${p.position}, ${p.team}) — picked up by ${p.fantasyTeam}\n  Stats: ${statLine}` + (describeGames(p.gamesPlayed) ? `\n  ${describeGames(p.gamesPlayed)}` : '');
   }).join('\n\n');
-  return `Write the "${TITLE['best-pickup']}". Crown the #1 pickup, praise the manager, mention runners-up briefly.\n\nTop pickups:\n${data}`;
+  return `Write the "${TITLE['best-pickup']}". Crown the #1 pickup, praise the manager, mention runners-up briefly. The list is already ranked: crown #1 as listed and keep the runners-up in order. Do not re-rank them or argue that a runner-up deserved the top spot.\n\nTop pickups:\n${data}`;
 }
 
 function promptWorstPickup(segment) {
