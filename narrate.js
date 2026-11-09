@@ -34,6 +34,21 @@ for (const m of REFERENCE.matchAll(/^\|\s*(t\.\d+)\s*\|\s*([^|]+?)\s*\|/gm)) {
 let teamNameBlock = '';
 // Set before narration starts: manager background already used in recent weeks
 let recentBackgroundBlock = '';
+// Set before narration starts: commissioner's notes for this week (editor-notes.md)
+let editorNotesBlock = '';
+
+/**
+ * Optional snapshots/week-N/editor-notes.md: facts the data can't know (all-time
+ * league records, real-life news) that the commissioner wants in the recap.
+ * Every writer sees them; the Matchup Recaps must cover them.
+ */
+function buildEditorNotesBlock(snapshotDir) {
+  const p = path.join(snapshotDir, 'editor-notes.md');
+  if (!fs.existsSync(p)) return '';
+  const notes = fs.readFileSync(p, 'utf-8').trim();
+  if (!notes) return '';
+  return `\n\n# Editor's Notes This Week\nThe commissioner supplied these facts for this week. They are verified and outrank the reference's hedging rules where they speak to the same claim (if a note calls something a league record, call it a league record). The Matchup Recaps MUST feature every note prominently in the relevant matchup. Other columns may react to a note where it fits their beat, but keep it to a line or two so the issue doesn't repeat itself. Do not invent details beyond what the notes and data say.\n${notes}\n`;
+}
 
 // Writer personas (by role: lead, hottakes, analytics, insider) and any
 // league-specific column titles live in the league's prompts/writers.json.
@@ -99,7 +114,7 @@ function buildRecentBackgroundBlock(week, rostersPath) {
 function callClaude(prompt, writerKey = 'lead') {
   try {
     const writer = WRITERS[writerKey] || WRITERS.lead;
-    const fullPrompt = `${SYSTEM_PROMPT}\n\n${writer.prompt}\n\n---\n\n# Reference\n\n${REFERENCE}${teamNameBlock}${recentBackgroundBlock}\n\n---\n\n${prompt}`;
+    const fullPrompt = `${SYSTEM_PROMPT}\n\n${writer.prompt}\n\n---\n\n# Reference\n\n${REFERENCE}${teamNameBlock}${recentBackgroundBlock}${editorNotesBlock}\n\n---\n\n${prompt}`;
 
     const result = execFileSync('claude', ['--print', '--model', 'sonnet'], {
       input: fullPrompt,
@@ -923,6 +938,8 @@ async function narrate(week, { only, except } = {}) {
   }
 
   recentBackgroundBlock = buildRecentBackgroundBlock(week, rostersPath);
+  editorNotesBlock = buildEditorNotesBlock(snapshotDir);
+  if (editorNotesBlock) console.log('  Loaded editor notes for this week');
 
   // Fetch trade rumours from the API and filter out any already consumed
   // by prior weeks (see loadConsumedRumourTimestamps for rationale).
